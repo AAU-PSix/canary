@@ -1,6 +1,3 @@
-activate:
-	source ./canary-env/bin/activate
-
 run:
 	python3 ./
 
