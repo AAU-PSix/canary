@@ -1,30 +1,29 @@
-import string
 from . import *
 
+import unittest
 from importlib.resources import path
 from tree_sitter.binding import Query as _Query
 from tree_sitter import Language as _Language
-import unittest
 from os import path
 
 class TestLanguageLibrary(unittest.TestCase):
-    def test_vendor_path(self):
+    def test_vendor_path(self) -> None:
         self.assertEqual(LanguageLibrary.vendor_path(), './vendor')
         self.assertIsInstance(LanguageLibrary.vendor_path(), str)
 
-    def test_build_path(self):
+    def test_build_path(self) -> None:
         self.assertEqual(LanguageLibrary.build_path(), './build')
         self.assertIsInstance(LanguageLibrary.build_path(), str)
 
-    def test_build_file(self):
+    def test_build_file(self) -> None:
         self.assertEqual(LanguageLibrary.build_file(), 'my-languages.so')
         self.assertIsInstance(LanguageLibrary.build_file(), str)
 
-    def test_full_build_path(self):
+    def test_full_build_path(self) -> None:
         self.assertEqual(LanguageLibrary.full_build_path(), './build/my-languages.so')
         self.assertIsInstance(LanguageLibrary.full_build_path(), str)
 
-    def test_build(self):
+    def test_build(self) -> None:
         LanguageLibrary.build()
         self.assertTrue(path.exists(LanguageLibrary.full_build_path()))
         js = LanguageLibrary.js()
@@ -40,16 +39,16 @@ class TestLanguage(unittest.TestCase):
         self._js_language = LanguageLibrary.js()
         return super().setUp()
 
-    def test_id(self):
+    def test_id(self) -> None:
         self.assertIsNotNone(self._js_language.id)
         self.assertIsInstance(self._js_language.id, int)
 
-    def test_name(self):
+    def test_name(self) -> None:
         self.assertIsNotNone(self._js_language.name)
         self.assertEqual(self._js_language.name, 'javascript')
         self.assertIsInstance(self._js_language.name, str)
 
-    def test_field_id_for_name(self):
+    def test_field_id_for_name(self) -> None:
         self.assertIsInstance(self._js_language.field_id_for_name('kind'), int)
         self.assertEqual(self._js_language.field_id_for_name('kind'), 21)
         self.assertIsInstance(self._js_language.field_id_for_name('name'), int)
@@ -63,8 +62,7 @@ class TestLanguage(unittest.TestCase):
         self.assertIsInstance(self._js_language.field_id_for_name('alternative'), int)
         self.assertEqual(self._js_language.field_id_for_name('alternative'), 2)
 
-    def test_query(self):
+    def test_query(self) -> None:
         query = self._js_language.query('(binary_expression (number) (number))')
         self.assertIsInstance(query, Query)
         self.assertIsInstance(query._query, _Query)
-        pass

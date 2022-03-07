@@ -21,15 +21,19 @@ print(cursor)
 
 print(tree.root_node.sexp())
 
+new_tree = parser.parse(bytes("1+2", "utf8"))
+print(new_tree.text)
+print(dir(new_tree))
+
 reached_root = False
 while not reached_root:
   curr = cursor.node
-  print(curr)
-  print(curr.type)
-  print(curr.start_point)
-  print(curr.start_byte)
-  print(curr.end_point)
-  print(curr.end_byte)
+  #print(curr)
+  #print(curr.type)
+  #print(curr.start_point)
+  #print(curr.start_byte)
+  #print(curr.end_point)
+  #print(curr.end_byte)
 
   if cursor.goto_first_child():
     continue
