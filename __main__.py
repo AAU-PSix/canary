@@ -21,6 +21,12 @@ print(cursor)
 
 print(tree.root_node.sexp())
 
+class Node:
+  _obj
+  
+  def __init__(self, obj):
+    self._obj = obj
+
 reached_root = False
 while not reached_root:
   curr = cursor.node
