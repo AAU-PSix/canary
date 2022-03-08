@@ -16,10 +16,6 @@ class Range:
     def __init__(self) -> None:
         pass
 
-class Cursor:
-    def __init__(self) -> None:
-        pass
-
 class Node:
     def __init__(self, node: _Node) -> None:
         self._node = node
@@ -174,7 +170,7 @@ class Tree:
             new_end_point,
         )
 
-    def walk(self) -> Cursor:
+    def walk(self) -> TreeCursor:
         return TreeCursor(self._tree.walk())
 
 class Parser:
@@ -212,8 +208,8 @@ class Query:
         """
         self._query(node._node)
 
-#    def captures(self, node: Node) -> List[Tuple[Node, str]]:
-#        return self._query.captures(node)
+    def captures(self, node: Node) -> List[Tuple[Node, str]]:
+        return self._query.captures(node)
 
 class Language:
     def __init__(self, language: _Language) -> None:
