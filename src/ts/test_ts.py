@@ -132,24 +132,6 @@ class TestParser(unittest.TestCase):
         tree: Tree = self._parser.parse("1+2")
         self.assertIsInstance(tree, Tree)
 
-    def test_edit(self) -> None:
-        source: str = "1+2"
-        tree: Tree = self._parser.parse(source)
-        start: int = 0
-        length: int = 3
-        tree.edit(
-            start_byte=start,
-            old_end_byte=start,
-            new_end_byte=start + length,
-            start_point=(0, start),
-            old_end_point=(0, start),
-            new_end_point=(0, start + length)
-        )
-
-        new_source: str = "1+1+2"
-        new_tree: Tree = self._parser.parse(new_source, tree)
-        self.assertEqual(tree.get_changed_ranges(new_tree), "")
-
     def test_walk(self) -> None:
         pass
 

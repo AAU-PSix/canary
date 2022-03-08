@@ -1,4 +1,5 @@
 from ast import Tuple
+from cgitb import text
 from collections import namedtuple
 from typing import List, Optional
 from tree_sitter import Language as _Language
@@ -173,6 +174,10 @@ class Tree:
             old_end_point,
             new_end_point,
         )
+
+    def replace(self, node: Node, new: str):
+        source: str = self.text
+        return str(source[0 : node.start_byte : 1] + bytes(new, 'utf8') + source[node.end_byte : : 1])
 
     def walk(self) -> TreeCursor:
         return TreeCursor(self._tree.walk())
