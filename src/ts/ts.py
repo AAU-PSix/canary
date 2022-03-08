@@ -1,7 +1,9 @@
-from ast import Tuple
-from cgitb import text
+from operator import truediv
+from os import linesep
 from collections import namedtuple
+from platform import node
 from typing import List, Optional
+from typing import List
 from tree_sitter import Language as _Language
 from tree_sitter.binding import (
     Parser as _Parser,
@@ -145,6 +147,24 @@ class TreeCursor:
     def goto_next_sibling(self) -> bool:
         return self._cursor.goto_next_sibling()
 
+    def reset(self):
+        while self.goto_parent(): pass
+
+    def pre_order_traverse(self) -> Node:
+        reached_root: bool = False
+        while not reached_root:
+            yield self.node
+            if self.goto_first_child(): continue
+            if self.goto_next_sibling(): continue
+
+            retracng: bool = True
+            while retracng:
+                if not self.goto_parent():
+                    retracng = False
+                    reached_root = True
+                if self.goto_next_sibling():
+                    retracng = False
+
 class Tree:
     def __init__(self, tree: _Tree) -> None:
         self._tree = tree
@@ -155,7 +175,11 @@ class Tree:
 
     @property
     def text(self) -> str:
-        return self._tree.text
+        return self._tree.text.decode("utf-8")
+
+    @property
+    def lines(self) -> List[str]:
+        return self.text.splitlines()
 
     def edit(
         self,
@@ -175,9 +199,24 @@ class Tree:
             new_end_point,
         )
 
-    def replace(self, node: Node, new: str):
+    def replace(self, parser: "Parser", node: Node, new: str, encoding: str = "utf8") -> "Tree":
         source: str = self.text
-        return str(source[0 : node.start_byte : 1] + bytes(new, 'utf8') + source[node.end_byte : : 1])
+        new_source: str = str(source[0 : node.start_byte : 1] + 
+                            new + 
+                            source[node.end_byte : : 1])
+        return parser.parse(new_source, self, encoding)
+
+    def contents_of(self, node: Node) -> str:
+        return str(self.text[node.start_byte : node.end_byte : 1])
+
+    def insert_line(self, parser: "Parser", index: int, line: str, encoding: str = "utf8") -> "Tree":
+        lines: List[str] = self.lines.copy()
+        lines.insert(index, line)
+        source: str = linesep.join(lines)
+        return parser.parse(source)
+
+    def append_line(self, parser: "Parser", index: int, line: str, encoding: str = "utf8") -> List[str]:
+        return self.insert_line(parser, index + 1, line, encoding)
 
     def walk(self) -> TreeCursor:
         return TreeCursor(self._tree.walk())
@@ -199,6 +238,9 @@ class Parser:
 
     def set_language(self, language: "Language") -> None:
         self._parser.set_language(language._language)
+
+    def parse_lines(self, lines: List[str], old_tree: Tree = None, encoding: str = "utf8") -> Tree:
+        return self.parse(linesep.join(lines), old_tree, encoding)
 
     def parse(self, source: str, old_tree: Tree = None, encoding: str = "utf8") -> Tree:
         if old_tree is None:

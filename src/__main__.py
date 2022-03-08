@@ -3,48 +3,31 @@ from ts import *
 LanguageLibrary.build()
 parser: Parser = Parser.create_with_language(LanguageLibrary.js())
 
-
 tree: Tree = parser.parse("1>=3")
+print("\n" + tree.text) # '1>=3'
+
 cursor: TreeCursor = tree.walk()
 cursor.goto_first_child() # expression_statement
 cursor.goto_first_child() # binary_expression
 cursor.goto_first_child() # number: 1
 node_1: Node = cursor.node
-print(node_1.has_changes) # False
-tree.edit(
-  start_byte=node_1.start_byte,
-  old_end_byte=node_1.end_byte,
-  new_end_byte=node_1.start_byte + 1,
-  start_point=node_1.start_point,
-  old_end_point=node_1.start_point,
-  new_end_point=FilePoint(node_1.start_point.line, node_1.start_byte)
-)
-print(node_1.has_changes) # True
 
-new_tree: Tree = parser.parse("1>=3\n1>0", tree)
-print(dir(new_tree))
-print(dir(node_1))
-print(new_tree.text)
+print("\n" + tree.contents_of(node_1)) # '1'
 
+tree_str_replaced: Tree = tree.replace(parser, node_1, "asd")
+print("\n" + tree_str_replaced.text) # 'asd>=3'
 
-traversal_cursor: TreeCursor = tree.walk()
-reached_root = False
-while not reached_root:
-  curr = traversal_cursor.node
-  print(curr.type)
+tree_line_inserted: Tree = tree.insert_line(parser, 0, "canary()")
+print("\n" + tree_line_inserted.text) # 'canary() \n 1>=3'
 
-  if traversal_cursor.goto_first_child():
-    continue
+tree_line_inserted: Tree = tree.append_line(parser, 0, "canary()")
+print("\n" + tree_line_inserted.text) # '1>=3 \n canary()'
 
-  if traversal_cursor.goto_next_sibling():
-    continue
+cursor: TreeCursor = tree.walk()
+curr: Node
+print("\n")
+for curr in cursor.pre_order_traverse():
+  print(curr.type) # 'program', 'expression_statement', ...
 
-  retracing = True
-  while retracing:
-    if not traversal_cursor.goto_parent():
-      retracing = False
-      reached_root = True
-    
-    if traversal_cursor.goto_next_sibling():
-      retracing = False
-
+tree_from_lines: Tree = parser.parse_lines([ "a>b", "b<c" ])
+print("\n" + tree_from_lines.text) # 'a>b \n b<c'
