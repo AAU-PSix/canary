@@ -152,6 +152,10 @@ class Tree:
     def root_node(self) -> Node:
         return Node(self._tree.root_node)
 
+    @property
+    def text(self) -> str:
+        return self._tree.text
+
     def edit(
         self,
         start_byte: int,
