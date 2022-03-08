@@ -208,8 +208,8 @@ class Query:
         """
         self._query(node._node)
 
-    def captures(self, node: Node) -> List[Tuple[Node, str]]:
-        return self._query.captures(node)
+#    def captures(self, node: Node) -> List[Tuple[Node, str]]:
+#        return self._query.captures(node)
 
 class Language:
     def __init__(self, language: _Language) -> None:
