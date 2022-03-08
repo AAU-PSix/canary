@@ -1,5 +1,5 @@
 run:
-	python3 ./
+	python3 ./src/
 
 test:
 	python3 -m unittest discover -v src
