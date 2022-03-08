@@ -14,26 +14,24 @@ JS_LANGUAGE = Language('build/my-languages.so', 'javascript')
 parser = Parser()
 parser.set_language(JS_LANGUAGE)
 
-tree = parser.parse(bytes("console.log(\"Hello, World\");\n 1+2", "utf8"))
+tree = parser.parse(bytes("1+2\n3", "utf8"))
 print(tree)
 cursor = tree.walk()
-print(cursor)
+print("cursor")
+print(dir(cursor))
 
+print("sexp")
 print(tree.root_node.sexp())
 
 new_tree = parser.parse(bytes("1+2", "utf8"))
+print("text")
 print(new_tree.text)
 print(dir(new_tree))
 
 reached_root = False
 while not reached_root:
   curr = cursor.node
-  #print(curr)
-  #print(curr.type)
-  #print(curr.start_point)
-  #print(curr.start_byte)
-  #print(curr.end_point)
-  #print(curr.end_byte)
+  print(curr.type)
 
   if cursor.goto_first_child():
     continue
@@ -49,6 +47,4 @@ while not reached_root:
     
     if cursor.goto_next_sibling():
       retracing = False
-
-print("Hello, World!")
 
