@@ -1,5 +1,6 @@
+from ast import Tuple
 from collections import namedtuple
-from typing import List
+from typing import List, Optional
 from tree_sitter import Language as _Language
 from tree_sitter.binding import (
     Parser as _Parser,
@@ -28,6 +29,22 @@ class Node:
         return self._node.type
 
     @property
+    def is_named(self) -> bool:
+        return self._node.is_named
+
+    @property
+    def is_missing(self) -> bool:
+        return self._node.is_missing
+
+    @property
+    def has_changes(self) -> bool:
+        return self._node.has_changes
+
+    @property
+    def has_error(self) -> bool:
+        return self._node.has_error
+
+    @property
     def start_point(self) -> FilePoint:
         point = self._node.start_point
         return FilePoint(point[0], point[1])
@@ -48,6 +65,88 @@ class Node:
     @property
     def sexp(self) -> str:
         return self._node.sexp()
+    
+    @property
+    def children(self) -> List["Node"]:
+        children: List[Node] = list()
+        for child in self._node.children:
+            children.append(Node(child))
+        return children
+
+    @property
+    def child_count(self) -> int:
+        return self._node.child_count
+
+    @property
+    def named_child_count(self) -> int:
+        return self._node.named_child_count
+    
+    @property
+    def next_sibling(self) -> Optional["Node"]:
+        result = self._node.next_sibling
+        if result is None:
+            return None
+        return Node(result)
+    
+    @property
+    def prev_sibling(self) -> Optional["Node"]:
+        result = self._node.prev_sibling
+        if result is None:
+            return None
+        return Node(result)
+    
+    @property
+    def next_named_sibling(self) -> Optional["Node"]:
+        result = self._node.next_named_sibling
+        if result is None:
+            return None
+        return Node(result)
+    
+    @property
+    def prev_named_sibling(self) -> Optional["Node"]:
+        result = self._node.prev_named_sibling
+        if result is None:
+            return None
+        return Node(result)
+    
+    @property
+    def parent(self) -> Optional["Node"]:
+        result = self._node.parent
+        if result is None:
+            return None
+        return Node(result)
+
+    def child_by_field_id(self, id: int) -> Optional["Node"]:
+        result = self._node.child_by_field_id(id)
+        if result is None:
+            return None
+        return Node(result)
+
+    def child_by_field_name(self, name: str) -> Optional["Node"]:
+        result = self._node.child_by_field_name(name)
+        if result is None:
+            return None
+        return Node(result)
+
+class TreeCursor:
+    def __init__(self, cursor: _TreeCursor) -> None:
+        self._cursor = cursor
+
+    @property
+    def node(self) -> Node:
+        return Node(self._cursor.node)
+
+    def current_field_name(self) -> Optional[str]:
+        return self._cursor.current_field_name()
+
+    def goto_parent(self) -> bool:
+        return self._cursor.goto_parent()
+
+    def goto_first_child(self) -> bool:
+        return self._cursor.goto_first_child()
+
+    def goto_next_sibling(self) -> bool:
+        return self._cursor.goto_next_sibling()
 
 class Tree:
     def __init__(self, tree: _Tree) -> None:
@@ -76,13 +175,7 @@ class Tree:
         )
 
     def walk(self) -> Cursor:
-        return _TreeCursor(self._tree.walk())
-
-    def get_changed_ranges(self, new_tree: "Tree") -> any:
-        return self._tree.get_changed_ranges(new_tree._tree)
-        ranges: List[Range] = list()
-        for changed_range in self._tree.get_changed_ranges(new_tree._tree):
-            pass
+        return TreeCursor(self._tree.walk())
 
 class Parser:
     def __init__(self, parser: _Parser, language: "Language" = None):
@@ -119,8 +212,7 @@ class Query:
         """
         self._query(node._node)
 
-    def captures(self, node: Node):
-        # TODO: Not tested, since the parser isnt wrapped yet.
+    def captures(self, node: Node) -> List[Tuple[Node, str]]:
         return self._query.captures(node)
 
 class Language:
