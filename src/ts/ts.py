@@ -259,8 +259,8 @@ class Query:
         """
         self._query.macthes(node._node)
 
-    # def captures(self, node: Node) -> List[Tuple[Node, str]]:
-    #     return self._query.captures(node)
+    def captures(self, node: Node) -> any:
+        return self._query.captures(node._node)
 
 class Language:
     def __init__(self, language: _Language) -> None:
