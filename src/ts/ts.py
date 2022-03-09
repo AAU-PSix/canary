@@ -2,7 +2,7 @@ from operator import truediv
 from os import linesep
 from collections import namedtuple
 from platform import node
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Optional, Tuple
 from typing import List
 from tree_sitter import Language as _Language
 from tree_sitter.binding import (
@@ -259,8 +259,18 @@ class Query:
         """
         self._query.macthes(node._node)
 
-    def captures(self, node: Node) -> any:
-        return self._query.captures(node._node)
+    def captures(self, node: Node, start_point: FilePoint = None, end_point: FilePoint = None, encoding: str = "utf-8") -> any:
+        if start_point is None or end_point is None:
+            native_captures = self._query.captures(node._node)
+        else: native_captures = self._query.captures(node._node, start_point, end_point)
+
+        captures: List[Tuple[Node, str]] = list()
+        for capture in native_captures:
+            capture_node: Node = Node(capture[0])
+            capture_field: str = capture[1]
+            capture_tuple: Tuple[Node, str] = (capture_node, capture_field)
+            captures.append(capture_tuple)
+        return captures
 
 class Language:
     def __init__(self, language: _Language) -> None:
