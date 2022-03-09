@@ -257,10 +257,10 @@ class Query:
         Args:
             node (Node): The root node to query from
         """
-        self._query(node._node)
+        self._query.macthes(node._node)
 
-    def captures(self, node: Node) -> List[Tuple[Node, str]]:
-        return self._query.captures(node)
+    # def captures(self, node: Node) -> List[Tuple[Node, str]]:
+    #     return self._query.captures(node)
 
 class Language:
     def __init__(self, language: _Language) -> None:
@@ -314,7 +314,7 @@ class LanguageLibrary:
         return f'{LanguageLibrary.build_path()}/{LanguageLibrary.build_file()}'
 
     @staticmethod
-    def build() -> str:
+    def build() -> None:
         _Language.build_library(
             LanguageLibrary.full_build_path(),
             [ f'{LanguageLibrary.vendor_path()}/tree-sitter-javascript' ]
