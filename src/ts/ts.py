@@ -2,7 +2,7 @@ from operator import truediv
 from os import linesep
 from collections import namedtuple
 from platform import node
-from typing import List, Optional
+from typing import Iterable, List, Optional
 from typing import List
 from tree_sitter import Language as _Language
 from tree_sitter.binding import (
@@ -150,7 +150,7 @@ class TreeCursor:
     def reset(self):
         while self.goto_parent(): pass
 
-    def pre_order_traverse(self) -> Node:
+    def pre_order_traverse(self) -> Iterable[Node]:
         reached_root: bool = False
         while not reached_root:
             yield self.node
@@ -215,7 +215,7 @@ class Tree:
         source: str = linesep.join(lines)
         return parser.parse(source)
 
-    def append_line(self, parser: "Parser", index: int, line: str, encoding: str = "utf8") -> List[str]:
+    def append_line(self, parser: "Parser", index: int, line: str, encoding: str = "utf8") -> "Tree":
         return self.insert_line(parser, index + 1, line, encoding)
 
     def walk(self) -> TreeCursor:
@@ -259,8 +259,8 @@ class Query:
         """
         self._query(node._node)
 
-#    def captures(self, node: Node) -> List[Tuple[Node, str]]:
-#        return self._query.captures(node)
+    def captures(self, node: Node) -> List[Tuple[Node, str]]:
+        return self._query.captures(node)
 
 class Language:
     def __init__(self, language: _Language) -> None:
