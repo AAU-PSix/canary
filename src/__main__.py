@@ -31,3 +31,9 @@ for curr in cursor.pre_order_traverse():
 
 tree_from_lines: Tree = parser.parse_lines([ "a>b", "b<c" ])
 print("\n" + tree_from_lines.text) # 'a>b \n b<c'
+
+simple_tree: Tree = parser.parse("")
+print(simple_tree.root_node.sexp)
+query: Query = LanguageLibrary.js().query("(program)")
+captures: any = query.captures(simple_tree.root_node)
+print(captures)
