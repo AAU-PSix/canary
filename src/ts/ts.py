@@ -327,11 +327,36 @@ class LanguageLibrary:
     def build() -> None:
         _Language.build_library(
             LanguageLibrary.full_build_path(),
-            [ f'{LanguageLibrary.vendor_path()}/tree-sitter-javascript' ]
+            [
+                f'{LanguageLibrary.vendor_path()}/tree-sitter-c',
+                f'{LanguageLibrary.vendor_path()}/tree-sitter-cpp',
+                f'{LanguageLibrary.vendor_path()}/tree-sitter-go',
+                f'{LanguageLibrary.vendor_path()}/tree-sitter-javascript',
+                f'{LanguageLibrary.vendor_path()}/tree-sitter-python',
+                f'{LanguageLibrary.vendor_path()}/tree-sitter-rust',
+            ]
         )
 
     @staticmethod
+    def c() -> Language:
+        return Language(_Language(LanguageLibrary.full_build_path(), 'c'))
+
+    @staticmethod
+    def cpp() -> Language:
+        return Language(_Language(LanguageLibrary.full_build_path(), 'cpp'))
+
+    @staticmethod
+    def go() -> Language:
+        return Language(_Language(LanguageLibrary.full_build_path(), 'go'))
+
+    @staticmethod
     def js() -> Language:
-        return Language(
-            _Language(LanguageLibrary.full_build_path(), 'javascript')
-        )
+        return Language(_Language(LanguageLibrary.full_build_path(), 'javascript'))
+
+    @staticmethod
+    def python() -> Language:
+        return Language(_Language(LanguageLibrary.full_build_path(), 'python'))
+
+    @staticmethod
+    def rust() -> Language:
+        return Language(_Language(LanguageLibrary.full_build_path(), 'rust'))
