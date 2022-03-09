@@ -259,7 +259,7 @@ class Query:
         """
         self._query.macthes(node._node)
 
-    def captures(self, node: Node, start_point: FilePoint = None, end_point: FilePoint = None, encoding: str = "utf-8") -> any:
+    def captures(self, node: Node, start_point: FilePoint = None, end_point: FilePoint = None) -> List[Tuple[Node, str]]:
         if start_point is None or end_point is None:
             native_captures = self._query.captures(node._node)
         else: native_captures = self._query.captures(node._node, start_point, end_point)
