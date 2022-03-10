@@ -86,9 +86,8 @@ class QueryApiTest(unittest.TestCase):
         self.assertEqual(len(result), 1)
 
     def test_can_find_multiple_mixed_type_functions_with_parameters(self):
-        tree: Tree = self._parser.parse("void a() {return;} int b(int c, double d) {return 2;} float e(char f) {"
-                                        "return g}")
+        tree: Tree = self._parser.parse("void a() {return;} int b(int c, double d) {return 2;} float e(char f) {return g;}")
         root: Node = tree.root_node
         result = QueryApi.findFunctionDeclarations(root)
         self.assertIsNotNone(result)
-        self.assertEqual(len(result), 1)
+        self.assertEqual(len(result), 3)
