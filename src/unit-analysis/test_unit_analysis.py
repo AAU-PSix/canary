@@ -21,7 +21,7 @@ class QueryApiTest(unittest.TestCase):
         self.assertIsNotNone(QueryApi.findFunctionDeclarations(root))
         self.assertIs(len(QueryApi.findFunctionDeclarations(root)), 0)
 
-    def test_can_find_single_int_typed_function(self):
+    def test_single_int_typed_function_gives_single_result(self):
         tree: Tree = self._parser.parse("int myfunction() {}")
         root: Node = tree.root_node
         result = QueryApi.findFunctionDeclarations(root)
