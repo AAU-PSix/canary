@@ -93,10 +93,25 @@ class QueryApiTest(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 3)
 
-
     def test_can_find_point_return_type(self):
         tree: Tree = self._parser.parse("int* main(){}")
         root: Node = tree.root_node
         result = QueryApi.findFunctionDeclarations(root)
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 1)
+
+    def test_single_struct_dcl_without_identifier(self):
+        tree: Tree = self._parser.parse("struct Books {char title[50]; char author[50]; char subject[100];"
+                                        "int book_id;}")
+        root: Node = tree.root_node
+        result = QueryApi.findStructDeclaration(root)
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 1)
+
+    def test_single_struct_dcl_with_identifier(self):
+        tree: Tree = self._parser.parse("struct Books {char title[50]; char author[50]; char subject[100];"
+                                        "int book_id;} myStruct;")
+        root: Node = tree.root_node
+        result = QueryApi.findStructDeclaration(root)
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 1)
