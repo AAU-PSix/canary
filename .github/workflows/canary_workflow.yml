@@ -28,5 +28,4 @@ jobs:
         rm -rf ./build/
 
     - name: Test with unittest
-      run: |
-        	python3 -m unittest discover -v src
+      run: python3 -m unittest discover -v src
