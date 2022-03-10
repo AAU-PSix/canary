@@ -1,3 +1,4 @@
+from mutation_analyser import *
 from ts import *
 
 LanguageLibrary.build()
@@ -37,3 +38,26 @@ print(simple_tree.root_node.sexp) # '(program (...'
 query: Query = LanguageLibrary.js().query("(binary_expression) @left @right")
 captures: any = query.captures(simple_tree.root_node)
 print(captures)
+
+print("\n")
+mutation_tree: Tree = parser.parse_lines(
+  [
+    "console.log(1+2)",
+    "1+'asd'"
+  ]
+)
+mutation_analyser: MutationAnalyser = MutationAnalyser(parser)
+mutated_tree: Tree = mutation_analyser.mutate(mutation_tree, mutation_tree.root_node)
+print(mutated_tree.text)
+
+# mutation_cursor: TreeCursor = mutation_tree.walk()
+# mutation_cursor.goto_first_child() # expression_statement
+# mutation_cursor.goto_first_child() # binary_expression
+# mutation_cursor.goto_first_child() # number
+# mutation_cursor.goto_next_sibling() # +
+# plus_node: Node = mutation_cursor.node
+# print(plus_node.type)
+# 
+# mutation_analyser: MutationAnalyser = MutationAnalyser(parser)
+# mutated_tree: Tree = mutation_analyser.mutate(mutation_tree, plus_node)
+# print(mutated_tree.text)
