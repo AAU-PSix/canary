@@ -5,7 +5,8 @@ from src.ts.ts import LanguageLibrary, Node, Query
 class QueryApi:
     @staticmethod
     def findFunctionDeclarations(node: Node):
-        query: Query = LanguageLibrary.c().query("(function_definition (function_declarator)) @dec")
+        query: Query = LanguageLibrary.c().query("(function_definition (function_declarator)) @dec "
+                                                 "(function_definition (pointer_declarator)) @voidDec")
         declarations = query.captures(node)
         result = []
         for node_string_tuple in declarations:
