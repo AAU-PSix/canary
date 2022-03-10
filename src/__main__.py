@@ -46,8 +46,11 @@ mutation_tree: Tree = parser.parse_lines(
     "1+'asd'"
   ]
 )
+
+query: Query = LanguageLibrary.js().query("(binary_expression (number) @left (number))")
+
 mutation_analyser: MutationAnalyser = MutationAnalyser(parser)
-mutated_tree: Tree = mutation_analyser.mutate(mutation_tree, mutation_tree.root_node)
+mutated_tree: Tree = mutation_analyser.mutate(mutation_tree, mutation_tree.root_node, query)
 print(mutated_tree.text)
 
 # mutation_cursor: TreeCursor = mutation_tree.walk()
