@@ -4,8 +4,6 @@ from src.Utilities.setupCommandLine import setupCommandLine
 from src.Utilities.setupCommandLine import setupIOHandler
 
 
-
-
 def main():
     commandLineParser = setupCommandLine()
     ioHandler = setupIOHandler(commandLineParser)
