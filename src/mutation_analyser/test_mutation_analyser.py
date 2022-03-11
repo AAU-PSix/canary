@@ -80,7 +80,7 @@ class TestMutationAnalyser(unittest.TestCase):
                 result.append((range_operator, range_upper, range_operator_upper))
         return result
 
-    def assert_domain_and_ranges(self, domain, range_checks):
+    def assert_domain_and_ranges(self, domain: List[str], range_checks: List[tuple(str, float, float)]):
         for domain_operator in domain:
             operator: Node = self.parse_first_augmented_assignment_expression_operator(f'a{domain_operator}b')
 
