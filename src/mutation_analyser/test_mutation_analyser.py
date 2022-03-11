@@ -13,6 +13,7 @@ class TestMutationAnalyser(unittest.TestCase):
         self._mutator: MutationAnalyser = MutationAnalyser(self._parser, self._language)
         
         self._compound_assignment_query: Query = self._language.query("((augmented_assignment_expression) @exp)")
+        self._assignment_query: Query = self._language.query("((assignment_expression) @exp)")
         self._binary_expression_query: Query = self._language.query("((binary_expression) @exp)")
         return super().setUp()
 
@@ -142,3 +143,17 @@ class TestMutationAnalyser(unittest.TestCase):
             ]
         )
         self.assert_domain_and_ranges(self._compound_assignment_query, domain, range_checks)
+
+    def test_obom_oeaa_oeba_oesa(self) -> None:
+        domain: List[str] = [ self._language.plain_assignment ]
+        range_checks = self.create_range_checks(
+            [
+                # OEAA
+                self._language.arithmetic_compound_assignment,
+                # OEBA
+                self._language.bitwise_compound_assignment,
+                # OESA
+                self._language.shift_compound_assignment,
+            ]
+        )
+        self.assert_domain_and_ranges(self._assignment_query, domain, range_checks)
