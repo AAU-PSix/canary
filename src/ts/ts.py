@@ -276,6 +276,52 @@ class Language:
     def __init__(self, language: _Language) -> None:
         self._language = language
 
+        self._plain_assignment: str = '='
+        self._arithmetic_operators: List[str] = ['+', '-', '*', '/', '%']
+        self._bitwise_operators: List[str] = ['|', '&', '^']
+        self._shift_operators: List[str] = ['<<', '>>']
+        self._logical_operators: List[str] = ['&&', '||']
+        self._relational_opearators: List[str] = ['>', '>=', '<', '<=', '==', '!=']
+        self._arithmetic_compound_assignment: List[str] = [operator + self._plain_assignment for operator in self._arithmetic_operators]
+        self._bitwise_compound_assignment: List[str] = [operator + self._plain_assignment for operator in self._bitwise_operators]
+        self._shift_compound_assignment: List[str] = [operator + self._plain_assignment for operator in self._shift_operators]
+
+    @property
+    def plain_assignment(self) -> str:
+        return self._plain_assignment
+
+    @property
+    def arithmetic_operators(self) -> List[str]:
+        return self._arithmetic_operators
+
+    @property
+    def bitwise_operators(self) -> List[str]:
+        return self._bitwise_operators
+
+    @property
+    def shift_operators(self) -> List[str]:
+        return self._shift_operators
+
+    @property
+    def logical_operators(self) -> List[str]:
+        return self._logical_operators
+
+    @property
+    def relational_opearators(self) -> List[str]:
+        return self._relational_opearators
+
+    @property
+    def arithmetic_compound_assignment(self) -> List[str]:
+        return self._arithmetic_compound_assignment
+
+    @property
+    def bitwise_compound_assignment(self) -> List[str]:
+        return self._bitwise_compound_assignment
+
+    @property
+    def shift_compound_assignment(self) -> List[str]:
+        return self._shift_compound_assignment
+
     @property
     def id(self) -> int:
         return self._language.language_id

@@ -1,43 +1,192 @@
+import math
 import random
 from ts import *
 
 class MutationAnalyser:
-    def __init__(self, parser: Parser) -> None:
+    def __init__(self, parser: Parser, language: Language) -> None:
         self._parser = parser
+        self._language = language
 
-    def mutate(self, tree: Tree, unit: Node, query: Query, encoding: str = "utf8") -> Tree:
-
-        if query is None:
-            raise Exception(f'{query} is an invalid query')
+    def mutate(self, tree: Tree, encoding: str = "utf8") -> Tree:
         if tree is None:
             raise Exception('Could not find tree')
-        if unit is None:
-            raise Exception(f'{unit} is an invalid unit')
 
-        captures: List[Tuple[Node, str]] = query.captures(unit)
+        query: Query = LanguageLibrary.js().query("(binary_expression (number) @left (number))")
+        captures: List[Tuple[Node, str]] = query.captures(query)
         return self.mutate_binary_operator(tree, captures[0][0].next_sibling, encoding)
 
     def mutate_binary_operator(self, tree: Tree, node: Node, encoding: str = "utf8") -> Tree:
-
         if node.type is None:
             raise Exception(f'{Node.type} is null')
         if tree is None:
             raise Exception('Could not find tree')
 
-        return tree.replace(self._parser, node, self.random_binary_operator(node), encoding)
+        return tree.replace(self._parser, node, self.obom(node), encoding)
 
-    def random_binary_operator(self, node: Node) -> str:
+    def choose(self, collection: list, rnd: float = None) -> any:
+        if rnd is None: rnd = random.random()
+        else: rnd = max(min(rnd, 1), 0)
+        index: int = int(rnd * len(collection))
+        return collection[index]
 
-        binary_operators = ["+", "-", "*", "/", "%", "||", "&&", "|", "^",
-                            "&", "==", "!=", ">", ">=", "<=", "<", "<<", ">>"]
+    def random_operator_range(
+        self,
+        range: List[List[str]],
+        rnd_range: float = None,
+        rnd_operator: float = None
+    ) -> str:
+        range: List[str] = self.choose(range, rnd_range)
+        return self.choose(range, rnd_operator)
 
-        if node.type is None:
-            raise Exception(f'{node.type} is null')
-       
-        if node.type not in binary_operators:
-            raise Exception(f'{node.type}is not in the set of binary operators')
+    def obom(
+        self,
+        node: Node,
+        rnd_range: float = None,
+        rnd_operator: float = None
+    ) -> str:
+        """Obom is a mutant operator category
 
-        binary_operators.remove(node.type)
+        Args:
+            node (Node): the operator node
+            rnd_range (float, optional): A [0,1) value denoting the desired range category. Defaults to None, then random.
+            rnd_operator (float, optional): A [0,1) value denoting the desired operator in the range category. Defaults to None, then random.
 
-        return random.choice(binary_operators)
+        Returns:
+            str: the replacement of the operator node
+        """
+        
+        # Domain: Arithmetic assignment
+        if node.type in self._language.arithmetic_compound_assignment:
+            return self.random_operator_range(
+                [
+                    # OABA: a {+,-,*,/,%}= b -> a {|,&,^}= b
+                    self._language.bitwise_compound_assignment,
+                    # OAEA: a {+,-,*,/,%}= b -> a = b
+                    [ self._language.plain_assignment ],
+                    # OASA: a {+,-,*,/,%}= b -> a {<<,>>}= b
+                    self._language.shift_compound_assignment,
+                ],
+                rnd_range, rnd_operator
+            )
 
+        # Domain: Aritmetic operator
+        if node.type in self._language.arithmetic_operators:
+            return self.random_operator_range(
+                [
+                    # OABN: a {+,-,*,/,%} b -> a {|,&,^} b
+                    self._language.bitwise_operators,
+                    # OALN: a {+,-,*,/,%} b -> a {&&,||} b
+                    self._language.logical_operators,
+                    # OARN: a {+,-,*,/,%} b -> a {>,>=,<,<=,==,!=} b
+                    self._language.relational_opearators,
+                    # OASN: a {+,-,*,/,%} b -> a {<<,>>} b
+                    self._language.shift_operators,
+                ],
+                rnd_range, rnd_operator
+            )
+
+        # Domain: Bitwise operator
+        if node.type in self._language.bitwise_operators:
+            return self.random_operator_range(
+                [
+                    # OBAN: a {|,&,^} b -> a {+,-,*,/,%} b
+                    self._language.arithmetic_operators,
+                    # OBLN: a {|,&,^} b -> a {&&,||} b
+                    self._language.logical_operators,
+                    # OBRN: a {|,&,^} b -> a {>,>=,<,<=,==,!=} b
+                    self._language.relational_opearators,
+                    # OBSN: a {|,&,^} b -> a {<<,>>} b
+                    self._language.shift_operators,
+                ],
+                rnd_range, rnd_operator
+            )
+
+        # Domain: Bitwise assignment
+        if node.type in self._language.bitwise_compound_assignment:
+            return self.random_operator_range(
+                [
+                    # OBAA: a {|,&,^}= b -> a {+,-,*,/,%}= b
+                    self._language.arithmetic_compound_assignment,
+                    # OBEA: a {|,&,^}= b -> a = b
+                    [ self._language.plain_assignment ],
+                    # OBSA: a {|,&,^}= b -> a {<<,>>}= b
+                    self._language.shift_compound_assignment,
+                ],
+                rnd_range, rnd_operator
+            )
+
+        # Domain: Plain assignment
+        if node.type is self._language.plain_assignment:
+            return self.random_operator_range(
+                [
+                    # OEAA: a = b -> a {+,-,*,/,%}= b
+                    self._language.arithmetic_compound_assignment,
+                    # OEBA: a = b -> a {|,&,^}= b
+                    self._language.bitwise_compound_assignment,
+                    # OESA: a = b -> a {<<,>>}= b
+                    self._language.shift_compound_assignment,
+                ],
+                rnd_range, rnd_operator
+            )
+
+        # Domain: Logical operator
+        if node.type in self._language.logical_operators:
+            return self.random_operator_range(
+                [
+                    # OLAN: a {&&,||} b -> a {+,-,*,/,%} b
+                    self._language.arithmetic_operators,
+                    # OLBN: a {&&,||} b -> a {|,&,^} b
+                    self._language.bitwise_operators,
+                    # OLRN: a {&&,||} b -> a {>,>=,<,<=,==,!=} b
+                    self._language.relational_opearators,
+                    # OLSN: a {&&,||} b -> a {<<,>>} b
+                    self._language.shift_operators,
+                    # OSLN: a {<<,>>}= b -> a {&&,||} b
+                    self._language.logical_operators,
+                ],
+                rnd_range, rnd_operator
+            )
+
+        # Domain: Relational operator
+        if node.type in self._language.relational_opearators:
+            return self.random_operator_range(
+                [
+                    # ORAN: a {>,>=,<,<=,==,!=} b -> a {+,-,*,/,%} b
+                    self._language.arithmetic_operators,
+                    # ORBN: a {>,>=,<,<=,==,!=} b -> a {|,&,^} b
+                    self._language.bitwise_operators,
+                    # ORLN: a {>,>=,<,<=,==,!=} b -> a {&&,||} b
+                    self._language.logical_operators,
+                    # ORSN: a {>,>=,<,<=,==,!=} b -> a {<<,>>} b
+                    self._language.shift_operators,
+                ],
+                rnd_range, rnd_operator
+            )
+
+        # Domain: Shift assignment
+        if node.type in self._language.shift_compound_assignment:
+            return self.random_operator_range(
+                [
+                    # OSAA: a {<<,>>}= b -> a {+,-,*,/,%}= b
+                    self._language.arithmetic_compound_assignment,
+                    # OSBA: a {<<,>>}= b -> a {|,&,^}= b
+                    self._language.bitwise_compound_assignment,
+                    # OSEA: a {<<,>>}= b -> a = b
+                    [ self._language.plain_assignment ],
+                ],
+                rnd_range, rnd_operator
+            )
+
+        # Domain: Shift operator
+        if node.type in self._language.shift_operators:
+            return self.random_operator_range(
+                [
+                    # OSAN: a {<<,>>} b -> a {+,-,*,/,%} b
+                    self._language.arithmetic_operators,
+                    # OSBN: a {<<,>>} b -> a {|,&,^} b
+                    self._language.bitwise_operators,
+                    # OSRN: a {<<,>>} b -> a {>,>=,<,<=,==,!=} b
+                    self._language.relational_opearators,
+                ],
+                rnd_range, rnd_operator
+            )
