@@ -29,9 +29,9 @@ jobs:
       run: python3 -m unittest discover -v src
     # - name: Pylint for unused imports # TODO maybe use pylint for another purpose? 
     #   run: pylint --disable=all --enable=unused-import $(git ls-files '*.py')
-    - name: Mypy type checking 
-      run: mypy --strict $(git ls-files '*.py')
-    - name: Black code formatting
+    # - name: Mypy type checking 
+    #   run: mypy $(git ls-files '*.py')
+    - name: Black code formatting 
       run: black --diff --check $(git ls-files '*.py')
     # - uses: snyk/actions/setup@master
     # - name: Test dependencies with Snyk
