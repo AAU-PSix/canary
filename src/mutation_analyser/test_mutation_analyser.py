@@ -16,15 +16,9 @@ class TestMutationAnalyser(unittest.TestCase):
         self._binary_expression_query: Query = self._language.query("((binary_expression) @exp)")
         return super().setUp()
 
-    def parse_first_augmented_assignment_expression_operator(self, expression: str) -> Node:
+    def parse_first_binary_expression_operator(self, binary_infix_expression: Query, expression: str) -> Node:
             root: Node = self._parser.parse(expression).root_node
-            captures: List[Tuple[Node, str]] = self._compound_assignment_query.captures(root)
-            operator: Node = captures[0][0].children[1]
-            return operator
-
-    def parse_first_binary_expression_operator(self, expression: str) -> Node:
-            root: Node = self._parser.parse(expression).root_node
-            captures: List[Tuple[Node, str]] = self._binary_expression_query.captures(root)
+            captures: List[Tuple[Node, str]] = binary_infix_expression.captures(root)
             operator: Node = captures[0][0].children[1]
             return operator
 
@@ -80,9 +74,9 @@ class TestMutationAnalyser(unittest.TestCase):
                 result.append((range_operator, range_upper, range_operator_upper))
         return result
 
-    def assert_domain_and_ranges(self, domain: List[str], range_checks: List[tuple(str, float, float)]):
+    def assert_domain_and_ranges(self, binary_infix_expression: Query, domain: List[str], range_checks: "List[tuple(str, float, float)]"):
         for domain_operator in domain:
-            operator: Node = self.parse_first_augmented_assignment_expression_operator(f'a{domain_operator}b')
+            operator: Node = self.parse_first_binary_expression_operator(binary_infix_expression, f'a{domain_operator}b')
 
             for range_section in range_checks:
                 actual: str = self._mutator.obom(operator, range_section[1], range_section[2])
@@ -101,4 +95,20 @@ class TestMutationAnalyser(unittest.TestCase):
                 self._language.shift_compound_assignment,
             ]
         )
-        self.assert_domain_and_ranges(domain, range_checks)
+        self.assert_domain_and_ranges(self._compound_assignment_query, domain, range_checks)
+
+    def test_obom_oabn_oaln_oarn_oasn(self) -> None:
+        domain: List[str] = self._language.arithmetic_operators
+        range_checks = self.create_range_checks(
+            [
+                # OABN
+                self._language.bitwise_operators,
+                # OALN
+                self._language.logical_operators,
+                # OARN
+                self._language.relational_opearators,
+                # OASN
+                self._language.shift_operators,
+            ]
+        )
+        self.assert_domain_and_ranges(self._binary_expression_query, domain, range_checks)
