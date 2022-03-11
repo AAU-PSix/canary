@@ -4,11 +4,7 @@
 name: Canary Workflow
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
+  push: # On every push, no matter the repository
 jobs:
   build:
 
@@ -26,6 +22,23 @@ jobs:
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         rm -rf ./build/
-
+        pip install black
+        pip install pylint
+        pip install mypy
     - name: Test with unittest
       run: python3 -m unittest discover -v src
+    - name: Pylint for unused imports # TODO maybe use pylint for another purpose? 
+      run: pylint --disable=all --enable=unused-import $(git ls-files '*.py')
+    - name: Mypy type checking 
+      run: mypy $(git ls-files '*.py')
+    - name: Black code formatting 
+      run: black --diff --check $(git ls-files '*.py')
+    # - uses: snyk/actions/setup@master
+    # - name: Test dependencies with Snyk
+    #   run: snyk test
+    #   env:
+    #     SNYK_TOKEN: ${{secrets.SNYK_TOKEN}}
+    # - name: Monitor dependencies for security issues with Snyk
+    #   run: snyk monitor
+    #   env:
+    #     SNYK_TOKEN: ${{secrets.SNYK_TOKEN}}
