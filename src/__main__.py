@@ -2,18 +2,18 @@ import argparse
 
 from src.Utilities.setupCommandLine import setupCommandLine
 from src.Utilities.setupCommandLine import setupIOHandler
+from src.ts import LanguageLibrary, Parser
+from src.unit_analysis.QueryApi import QueryApi
+from src.unit_analysis.TreeConstructor import constructCTree
 
 
 def main():
-    commandLineParser = setupCommandLine()
+    commandLineParser: argparse.ArgumentParser = setupCommandLine()
     ioHandler = setupIOHandler(commandLineParser)
-
-    # Do the pipeline stuff
-    # TODO Create a pipeline program using a common pipeline pattern
-    mutatedProgram: any = 2
-
-    # Write the file
-    ioHandler.write_file(mutatedProgram)
+    tree = constructCTree(ioHandler.input_file_text)
+    functions = QueryApi.findFunctionDeclarations(tree.root_node)
+    structs = QueryApi.findStructDeclaration(tree.root_node)
+    languageConstructs = functions.__add__(structs)
 
 
 if __name__ == "__main__":

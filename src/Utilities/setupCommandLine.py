@@ -2,6 +2,7 @@ import argparse
 
 from src.Utilities.Utilities import FileHandler, CanaryIOHandler
 
+
 def setupCommandLine() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("--o", "--output", help="specifies the name of the output file", action="store_true")
