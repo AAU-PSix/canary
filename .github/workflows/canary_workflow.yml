@@ -22,6 +22,14 @@ jobs:
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         rm -rf ./build/
-
     - name: Test with unittest
       run: python3 -m unittest discover -v src
+    - uses: snyk/actions/setup@master
+    - name: Test dependencies with Snyk
+      run: snyk test
+      env:
+        SNYK_TOKEN: ${{secrets.SNYK_TOKEN}}
+    - name: Monitor dependencies for security issues with Snyk
+      run: snyk monitor
+      env:
+        SNYK_TOKEN: ${{secrets.SNYK_TOKEN}}
