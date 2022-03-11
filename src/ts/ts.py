@@ -15,9 +15,11 @@ from tree_sitter.binding import (
 
 FilePoint = namedtuple('Point', ['line', 'char'])
 
+
 class Range:
     def __init__(self) -> None:
         pass
+
 
 class Node:
     def __init__(self, node: _Node) -> None:
@@ -64,7 +66,7 @@ class Node:
     @property
     def sexp(self) -> str:
         return self._node.sexp()
-    
+
     @property
     def children(self) -> List["Node"]:
         children: List[Node] = list()
@@ -79,35 +81,35 @@ class Node:
     @property
     def named_child_count(self) -> int:
         return self._node.named_child_count
-    
+
     @property
     def next_sibling(self) -> Optional["Node"]:
         result = self._node.next_sibling
         if result is None:
             return None
         return Node(result)
-    
+
     @property
     def prev_sibling(self) -> Optional["Node"]:
         result = self._node.prev_sibling
         if result is None:
             return None
         return Node(result)
-    
+
     @property
     def next_named_sibling(self) -> Optional["Node"]:
         result = self._node.next_named_sibling
         if result is None:
             return None
         return Node(result)
-    
+
     @property
     def prev_named_sibling(self) -> Optional["Node"]:
         result = self._node.prev_named_sibling
         if result is None:
             return None
         return Node(result)
-    
+
     @property
     def parent(self) -> Optional["Node"]:
         result = self._node.parent
@@ -126,6 +128,7 @@ class Node:
         if result is None:
             return None
         return Node(result)
+
 
 class TreeCursor:
     def __init__(self, cursor: _TreeCursor) -> None:
@@ -165,6 +168,7 @@ class TreeCursor:
                 if self.goto_next_sibling():
                     retracng = False
 
+
 class Tree:
     def __init__(self, tree: _Tree) -> None:
         self._tree = tree
@@ -182,13 +186,13 @@ class Tree:
         return self.text.splitlines()
 
     def edit(
-        self,
-        start_byte: int,
-        old_end_byte: int,
-        new_end_byte: int,
-        start_point: FilePoint,
-        old_end_point: FilePoint,
-        new_end_point: FilePoint,
+            self,
+            start_byte: int,
+            old_end_byte: int,
+            new_end_byte: int,
+            start_point: FilePoint,
+            old_end_point: FilePoint,
+            new_end_point: FilePoint,
     ) -> None:
         self._tree.edit(
             start_byte,
@@ -201,13 +205,13 @@ class Tree:
 
     def replace(self, parser: "Parser", node: Node, new: str, encoding: str = "utf8") -> "Tree":
         source: str = self.text
-        new_source: str = str(source[0 : node.start_byte : 1] + 
-                            new + 
-                            source[node.end_byte : : 1])
+        new_source: str = str(source[0: node.start_byte: 1] +
+                              new +
+                              source[node.end_byte:: 1])
         return parser.parse(new_source, self, encoding)
 
     def contents_of(self, node: Node) -> str:
-        return str(self.text[node.start_byte : node.end_byte : 1])
+        return str(self.text[node.start_byte: node.end_byte: 1])
 
     def insert_line(self, parser: "Parser", index: int, line: str, encoding: str = "utf8") -> "Tree":
         lines: List[str] = self.lines.copy()
@@ -220,6 +224,7 @@ class Tree:
 
     def walk(self) -> TreeCursor:
         return TreeCursor(self._tree.walk())
+
 
 class Parser:
     def __init__(self, parser: _Parser, language: "Language" = None):
@@ -247,6 +252,7 @@ class Parser:
             return Tree(self._parser.parse(bytes(source, encoding)))
         return Tree(self._parser.parse(bytes(source, encoding), old_tree._tree))
 
+
 class Query:
     def __init__(self, query: _Query) -> None:
         self._query = query
@@ -259,10 +265,12 @@ class Query:
         """
         self._query.macthes(node._node)
 
-    def captures(self, node: Node, start_point: FilePoint = None, end_point: FilePoint = None) -> List[Tuple[Node, str]]:
+    def captures(self, node: Node, start_point: FilePoint = None, end_point: FilePoint = None) -> List[
+        Tuple[Node, str]]:
         if start_point is None or end_point is None:
             native_captures = self._query.captures(node._node)
-        else: native_captures = self._query.captures(node._node, start_point, end_point)
+        else:
+            native_captures = self._query.captures(node._node, start_point, end_point)
 
         captures: List[Tuple[Node, str]] = list()
         for capture in native_captures:
@@ -271,6 +279,7 @@ class Query:
             capture_tuple: Tuple[Node, str] = (capture_node, capture_field)
             captures.append(capture_tuple)
         return captures
+
 
 class Language:
     def __init__(self, language: _Language) -> None:
@@ -282,9 +291,12 @@ class Language:
         self._shift_operators: List[str] = ['<<', '>>']
         self._logical_operators: List[str] = ['&&', '||']
         self._relational_opearators: List[str] = ['>', '>=', '<', '<=', '==', '!=']
-        self._arithmetic_compound_assignment: List[str] = [operator + self._plain_assignment for operator in self._arithmetic_operators]
-        self._bitwise_compound_assignment: List[str] = [operator + self._plain_assignment for operator in self._bitwise_operators]
-        self._shift_compound_assignment: List[str] = [operator + self._plain_assignment for operator in self._shift_operators]
+        self._arithmetic_compound_assignment: List[str] = [operator + self._plain_assignment for operator in
+                                                           self._arithmetic_operators]
+        self._bitwise_compound_assignment: List[str] = [operator + self._plain_assignment for operator in
+                                                        self._bitwise_operators]
+        self._shift_compound_assignment: List[str] = [operator + self._plain_assignment for operator in
+                                                      self._shift_operators]
 
     @property
     def plain_assignment(self) -> str:
@@ -325,7 +337,7 @@ class Language:
     @property
     def id(self) -> int:
         return self._language.language_id
-    
+
     @property
     def name(self):
         return self._language.name
@@ -351,6 +363,7 @@ class Language:
             Query: A query for the given language
         """
         return Query(self._language.query(source))
+
 
 class LanguageLibrary:
     @staticmethod
