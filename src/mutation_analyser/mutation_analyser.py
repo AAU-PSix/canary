@@ -15,9 +15,9 @@ class MutationAnalyser:
             raise Exception(f'{unit} is an invalid unit')
 
         captures: List[Tuple[Node, str]] = query.captures(unit)
-        return self.mutate_operator(tree, captures[0][0].next_sibling, encoding)
+        return self.mutate_binary_operator(tree, captures[0][0].next_sibling, encoding)
 
-    def mutate_operator(self, tree: Tree, node: Node, encoding: str = "utf8") -> Tree:
+    def mutate_binary_operator(self, tree: Tree, node: Node, encoding: str = "utf8") -> Tree:
 
         if node.type is None:
             raise Exception(f'{Node.type} is null')
@@ -33,8 +33,9 @@ class MutationAnalyser:
 
         if node.type is None:
             raise Exception(f'{node.type} is null')
+       
         if node.type not in binary_operators:
-            raise Exception(f'{node.type}is not a binary operator')
+            raise Exception(f'{node.type}is not in the set of binary operators')
 
         binary_operators.remove(node.type)
 
