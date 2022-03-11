@@ -1,3 +1,4 @@
+from cgitb import reset
 from sys import float_info
 from typing import Dict
 from . import *
@@ -27,27 +28,77 @@ class TestMutationAnalyser(unittest.TestCase):
             operator: Node = captures[0][0].children[1]
             return operator
 
-    def test_obom_ranges_oaba_oaea_oasa(self) -> None:
-        domain: List[str] = self._language.arithmetic_compound_assignment
-        range: List[tuple(str, float, float)] = [
+    def create_range_checks(self, ranges: List[List[str]]) -> "List[tuple(str, float, float)]":
+        """Generates the bounds to check for expected ranges
+
+        Returns:
+            List[tuple(str, float, float)]: First element is the expected range operator, 
+            the range value, and then lastly the range operator value. 
+            Theses values are clamped between [0,1)
+
+        Example for Domain: Arithmetic assignment for OABA, OAEA, OASA:
+        return List[tuple(str, float, float)] = [
             # OABA
-            ("|=", 0, 0),
-            ("|=", 0, 1/3 - float_info.epsilon),
-            ("&=", 0, 1/3),
-            ("&=", 0, 2/3 - float_info.epsilon),
-            ("^=", 0, 2/3),
-            ("^=", 0, 1 - float_info.epsilon),
+            ('|=', 0.0, 0.0),
+            ('|=', 0.0, 1/3 - epsilon),
+            ('|=', 1/3 - epsilon, 0.0),
+            ('|=', 1/3 - epsilon, 1/3 - epsilon),
+            ('&=', 0.0, 1/3),
+            ('&=', 0.0, 2/3 - epsilon),
+            ('&=', 1/3 - epsilon, 1/3),
+            ('&=', 1/3 - epsilon, 2/3 - epsilon),
+            ('^=', 0.0, 2/3),
+            ('^=', 0.0, 3/3 - epsilon),
+            ('^=', 1/3 - epsilon, 2/3),
+            ('^=', 1/3 - epsilon, 3/3 - epsilon),
             # OAEA
-            ("=", 1/3, 0),
-            ("=", 1/3, 1 - float_info.epsilon),
+            ('=', 1/3, 0.0),
+            ('=', 1/3, 3/3 - epsilon),
+            ('=', 2/3 - epsilon, 0.0),
+            ('=', 2/3 - epsilon, 3/3 - epsilon),
             # OASA
-            ("<<=", 2/3, 0),
-            (">>=", 2/3, 1 - float_info.epsilon),
+            ('<<=', 2/3, 0.0),
+            ('<<=', 2/3, 1/2 - epsilon),
+            ('<<=', 3/3 - epsilon, 0.0),
+            ('<<=', 3/3 - epsilon, 1/2 - epsilon),
+            ('>>=', 2/3, 1/2),
+            ('>>=', 2/3, 3/3 - epsilon),
+            ('>>=', 3/3 - epsilon, 1/2),
+            ('>>=', 3/3 - epsilon, 3/3 - epsilon)
         ]
+        """
+        result: List[tuple(str, float, float)] = []
+        for range_idx, range in enumerate(ranges):
+            for operator_idx, range_operator in enumerate(range):
+                range_lower: float = range_idx / len(ranges)
+                range_upper: float = (range_idx + 1) / len(ranges) - float_info.epsilon
+                range_operator_lower: float = operator_idx / len(range)
+                range_operator_upper: float = (operator_idx + 1) / len(range) - float_info.epsilon
+                result.append((range_operator, range_lower, range_operator_lower))
+                result.append((range_operator, range_lower, range_operator_upper))
+                result.append((range_operator, range_upper, range_operator_lower))
+                result.append((range_operator, range_upper, range_operator_upper))
+        return result
+
+    def assert_domain_and_ranges(self, domain, range_checks):
         for domain_operator in domain:
             operator: Node = self.parse_first_augmented_assignment_expression_operator(f'a{domain_operator}b')
 
-            for range_section in range:
+            for range_section in range_checks:
                 actual: str = self._mutator.obom(operator, range_section[1], range_section[2])
                 self.assertEqual(operator.type, domain_operator)
                 self.assertEqual(actual, range_section[0])
+
+    def test_obom_ranges_oaba_oaea_oasa(self) -> None:
+        domain: List[str] = self._language.arithmetic_compound_assignment
+        range_checks = self.create_range_checks(
+            [
+                # OABA
+                self._language._bitwise_compound_assignment,
+                # OAEA
+                [ self._language.plain_assignment ],
+                # OASA
+                self._language.shift_compound_assignment,
+            ]
+        )
+        self.assert_domain_and_ranges(domain, range_checks)
