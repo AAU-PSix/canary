@@ -112,3 +112,19 @@ class TestMutationAnalyser(unittest.TestCase):
             ]
         )
         self.assert_domain_and_ranges(self._binary_expression_query, domain, range_checks)
+
+    def test_obom_oban_obln_obrn_obsn(self) -> None:
+        domain: List[str] = self._language.bitwise_operators
+        range_checks = self.create_range_checks(
+            [
+                # OBAN
+                self._language.arithmetic_operators,
+                # OBLN
+                self._language.logical_operators,
+                # OBRN
+                self._language.relational_opearators,
+                # OBSN
+                self._language.shift_operators,
+            ]
+        )
+        self.assert_domain_and_ranges(self._binary_expression_query, domain, range_checks)
