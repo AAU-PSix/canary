@@ -4,11 +4,7 @@
 name: Canary Workflow
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
+  push: # On every push, no matter the repository
 jobs:
   build:
 
