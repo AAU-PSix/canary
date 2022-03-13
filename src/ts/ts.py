@@ -222,6 +222,39 @@ class Tree:
         return TreeCursor(self._tree.walk())
 
 
+class Capture:
+    def __init__(self, capture: List[Tuple[Node, str]]) -> None:
+        self._capture = capture
+
+    def __iter__(self) -> any:
+        return self._capture.__iter__()
+
+    def __next__(self) -> Tuple[Node, str]:
+        return self._capture.__next__()
+
+    def __getitem__(self, idx: int) -> Tuple[Node, str]:
+        return self._capture[idx]
+
+    def __len__(self) -> int:
+        return len(self._capture)
+
+    def first(self) -> Tuple[Node, str]:
+        return self._capture[0]
+
+    def last(self) -> Tuple[Node, str]:
+        return self._capture[-1]
+
+    @staticmethod
+    def create_from_native_capture(capture: Tuple[any, str]) -> "Capture":
+        result: List[Tuple[Node, str]] = list()
+        for capture in capture:
+            capture_node: Node = Node(capture[0])
+            capture_field: str = capture[1]
+            capture_tuple: Tuple[Node, str] = (capture_node, capture_field)
+            result.append(capture_tuple)
+        return Capture(result)
+
+
 class Parser:
     def __init__(self, parser: _Parser, language: "Language" = None):
         self._parser: _Parser = parser
@@ -260,20 +293,13 @@ class Query:
         """
         self._query.macthes(node._node)
 
-    def captures(self, node: Node, start_point: FilePoint = None, end_point: FilePoint = None) -> List[
-        Tuple[Node, str]]:
+    def captures(self, node: Node, start_point: FilePoint = None, end_point: FilePoint = None) -> Capture:
         if start_point is None or end_point is None:
-            native_captures = self._query.captures(node._node)
+            native_capture = self._query.captures(node._node)
         else:
-            native_captures = self._query.captures(node._node, start_point, end_point)
+            native_capture = self._query.captures(node._node, start_point, end_point)
+        return Capture.create_from_native_capture(native_capture)
 
-        captures: List[Tuple[Node, str]] = list()
-        for capture in native_captures:
-            capture_node: Node = Node(capture[0])
-            capture_field: str = capture[1]
-            capture_tuple: Tuple[Node, str] = (capture_node, capture_field)
-            captures.append(capture_tuple)
-        return captures
 
 class Syntax:
     def __init__(
@@ -292,6 +318,8 @@ class Syntax:
         assignment_query: str = None,
         compound_assignment_query: str = None,
         binary_expression_query: str = None,
+        function_declaration_query: str = None,
+        struct_declaration_query: str = None,
         # Query result processors
         binary_expression_operator: Callable[[Node], Node] = None,
     ) -> None:
@@ -309,6 +337,8 @@ class Syntax:
         self._assignment_query = assignment_query
         self._compound_assignment_query = compound_assignment_query
         self._binary_expression_query = binary_expression_query
+        self._function_declaration_query = function_declaration_query
+        self._struct_declaration_query = struct_declaration_query
         # Query result processors
         self._binary_expression_operator = binary_expression_operator
 
@@ -360,6 +390,14 @@ class Syntax:
     def query_binary_expression(self) -> str:
         return self._binary_expression_query
 
+    @property
+    def query_function_declaration(self) -> str:
+        return self._function_declaration_query
+
+    @property
+    def query_struct_declaration(self) -> str:
+        return self._struct_declaration_query
+
     def get_binary_expression_operator(self, node: Node) -> Node:
         return self._binary_expression_operator(node)
 
@@ -383,6 +421,9 @@ class Syntax:
         assignment_query = '((assignment_expression) @exp)'
         compound_assignment_query = '((assignment_expression) @exp)'
         binary_expression_query = '((binary_expression) @exp)'
+        function_declaration_query = "(function_definition (function_declarator)) @dec \
+                                      (function_definition (pointer_declarator)) @voidDec"
+        struct_declaration_query = '(struct_specifier ) @struct'
 
         # Query result processors (Infix)
         binary_expression_operator: Callable[[Node], Node] = lambda node: node.children[1]
@@ -400,6 +441,8 @@ class Syntax:
             assignment_query,
             compound_assignment_query,
             binary_expression_query,
+            function_declaration_query,
+            struct_declaration_query,
             binary_expression_operator,
         )
 

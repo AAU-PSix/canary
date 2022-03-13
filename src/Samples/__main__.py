@@ -36,7 +36,7 @@ print("\n" + tree_from_lines.text) # 'a>b \n b<c'
 simple_tree: Tree = parser.parse_lines(["1+2", "2+3"])
 print(simple_tree.root_node.sexp) # '(program (...'
 query: Query = LanguageLibrary.js().query("(binary_expression) @left @right")
-captures: any = query.captures(simple_tree.root_node)
+captures: Capture = query.captures(simple_tree.root_node)
 print(captures)
 
 print("\n")

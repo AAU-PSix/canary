@@ -137,3 +137,42 @@ class TestParser(unittest.TestCase):
 
     def test_get_changed_ranges(self) -> None:
         pass
+
+class TestCapture(unittest.TestCase):
+    def test_iterator(self) -> None:
+        node_1: Tuple[Node, str] = (None, '0')
+        node_2: Tuple[Node, str] = (None, '1')
+        node_3: Tuple[Node, str] = (None, '2')
+        capture = Capture([ node_1, node_2, node_3 ])
+        for idx, elem in enumerate(capture):
+            self.assertEqual(elem[1], str(idx))
+
+    def test_len(self) -> None:
+        node_1: Tuple[Node, str] = (None, '0')
+        node_2: Tuple[Node, str] = (None, '1')
+        node_3: Tuple[Node, str] = (None, '2')
+        capture = Capture([ node_1, node_2, node_3 ])
+        self.assertEqual(len(capture), 3)
+
+    def test_get(self) -> None:
+        node_1: Tuple[Node, str] = (None, '0')
+        node_2: Tuple[Node, str] = (None, '1')
+        node_3: Tuple[Node, str] = (None, '2')
+        capture = Capture([ node_1, node_2, node_3 ])
+        self.assertEqual(capture[0][1], '0')
+        self.assertEqual(capture[1][1], '1')
+        self.assertEqual(capture[2][1], '2')
+
+    def test_first(self) -> None:
+        node_1: Tuple[Node, str] = (None, '0')
+        node_2: Tuple[Node, str] = (None, '1')
+        node_3: Tuple[Node, str] = (None, '2')
+        capture = Capture([ node_1, node_2, node_3 ])
+        self.assertEqual(capture.first()[1], '0')
+
+    def test_last(self) -> None:
+        node_1: Tuple[Node, str] = (None, '0')
+        node_2: Tuple[Node, str] = (None, '1')
+        node_3: Tuple[Node, str] = (None, '2')
+        capture = Capture([ node_1, node_2, node_3 ])
+        self.assertEqual(capture.last()[1], '2')

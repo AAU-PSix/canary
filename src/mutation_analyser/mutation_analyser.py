@@ -12,8 +12,8 @@ class MutationAnalyser:
             raise Exception('Could not find tree')
 
         query: Query = LanguageLibrary.js().query("(binary_expression (number) @left (number))")
-        captures: List[Tuple[Node, str]] = query.captures(query)
-        return self.mutate_binary_operator(tree, captures[0][0].next_sibling, encoding)
+        captures: Capture = query.captures(query)
+        return self.mutate_binary_operator(tree, captures.first()[0].next_sibling, encoding)
 
     def mutate_binary_operator(self, tree: Tree, node: Node, encoding: str = "utf8") -> Tree:
         if node.type is None:

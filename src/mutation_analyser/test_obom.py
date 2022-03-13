@@ -19,8 +19,8 @@ class TestMutationAnalyser(unittest.TestCase):
 
     def parse_first_binary_expression_operator(self, binary_infix_expression: Query, expression: str) -> Node:
             root: Node = self._parser.parse(expression).root_node
-            captures: List[Tuple[Node, str]] = binary_infix_expression.captures(root)
-            operator_node: Node = captures[0][0]
+            captures: Capture = binary_infix_expression.captures(root)
+            operator_node: Node = captures.first()[0]
             operator: Node = self._language.syntax.get_binary_expression_operator(operator_node)
             return operator
 
