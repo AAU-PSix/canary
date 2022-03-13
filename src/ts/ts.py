@@ -1,6 +1,6 @@
 from os import linesep
 from collections import namedtuple
-from typing import Iterable, List, Optional, Tuple
+from typing import Callable, Iterable, List, Optional, Tuple
 from typing import List
 from tree_sitter import Language as _Language
 from tree_sitter.binding import (
@@ -13,11 +13,9 @@ from tree_sitter.binding import (
 
 FilePoint = namedtuple('Point', ['line', 'char'])
 
-
 class Range:
     def __init__(self) -> None:
         pass
-
 
 class Node:
     def __init__(self, node: _Node) -> None:
@@ -250,7 +248,6 @@ class Parser:
             return Tree(self._parser.parse(bytes(source, encoding)))
         return Tree(self._parser.parse(bytes(source, encoding), old_tree._tree))
 
-
 class Query:
     def __init__(self, query: _Query) -> None:
         self._query = query
@@ -281,6 +278,7 @@ class Query:
 class Syntax:
     def __init__(
         self,
+        # Binary expression operators
         plain_assignment: List[str] = None,
         arithmetic_operators: List[str] = None,
         bitwise_operators: List[str] = None,
@@ -290,7 +288,14 @@ class Syntax:
         arithmetic_compound_assignment: List[str] = None,
         bitwise_compound_assignment: List[str] = None,
         shift_compound_assignment: List[str] = None,
+        # Predefined queries
+        assignment_query: str = None,
+        compound_assignment_query: str = None,
+        binary_expression_query: str = None,
+        # Query result processors
+        binary_expression_operator: Callable[[Node], Node] = None,
     ) -> None:
+        # Binary expression operators
         self._plain_assignment = plain_assignment
         self._arithmetic_operators = arithmetic_operators
         self._bitwise_operators = bitwise_operators
@@ -300,6 +305,12 @@ class Syntax:
         self._arithmetic_compound_assignment = arithmetic_compound_assignment
         self._bitwise_compound_assignment = bitwise_compound_assignment
         self._shift_compound_assignment = shift_compound_assignment
+        # Predefined queries
+        self._assignment_query = assignment_query
+        self._compound_assignment_query = compound_assignment_query
+        self._binary_expression_query = binary_expression_query
+        # Query result processors
+        self._binary_expression_operator = binary_expression_operator
 
     @property
     def plain_assignment(self) -> str:
@@ -337,8 +348,24 @@ class Syntax:
     def shift_compound_assignment(self) -> List[str]:
         return self._shift_compound_assignment
 
+    @property
+    def query_assignment(self) -> str:
+        return self._assignment_query
+
+    @property
+    def query_compound_assignment(self) -> str:
+        return self._compound_assignment_query
+
+    @property
+    def query_binary_expression(self) -> str:
+        return self._binary_expression_query
+
+    def get_binary_expression_operator(self, node: Node) -> Node:
+        return self._binary_expression_operator(node)
+
     @staticmethod
     def c() -> "Syntax":
+        # Binary expression operators
         plain_assignment: List[str] = ['=']
         arithmetic_operators: List[str] = ['+', '-', '*', '/', '%']
         bitwise_operators: List[str] = ['|', '&', '^']
@@ -351,6 +378,15 @@ class Syntax:
                                                   for operator in bitwise_operators]
         shift_compound_assignment: List[str] = [operator + plain_assignment[0]
                                                 for operator in shift_operators]
+
+        # Predefined queries
+        assignment_query = '((assignment_expression) @exp)'
+        compound_assignment_query = '((assignment_expression) @exp)'
+        binary_expression_query = '((binary_expression) @exp)'
+
+        # Query result processors (Infix)
+        binary_expression_operator: Callable[[Node], Node] = lambda node: node.children[1]
+
         return Syntax(
             plain_assignment,
             arithmetic_operators,
@@ -361,6 +397,10 @@ class Syntax:
             arithmetic_compound_assignment,
             bitwise_compound_assignment,
             shift_compound_assignment,
+            assignment_query,
+            compound_assignment_query,
+            binary_expression_query,
+            binary_expression_operator,
         )
 
 

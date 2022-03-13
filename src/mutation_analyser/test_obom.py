@@ -11,16 +11,17 @@ class TestMutationAnalyser(unittest.TestCase):
         self._language = LanguageLibrary.c()
         self._parser = Parser.create_with_language(self._language)
         self._mutator: MutationAnalyser = MutationAnalyser(self._parser, self._language)
-        
-        self._compound_assignment_query: Query = self._language.query("((assignment_expression) @exp)")
-        self._assignment_query: Query = self._language.query("((assignment_expression) @exp)")
-        self._binary_expression_query: Query = self._language.query("((binary_expression) @exp)")
+
+        self._compound_assignment_query: Query = self._language.query(self._language.syntax.query_compound_assignment)
+        self._assignment_query: Query = self._language.query(self._language.syntax.query_assignment)
+        self._binary_expression_query: Query = self._language.query(self._language.syntax.query_binary_expression)
         return super().setUp()
 
     def parse_first_binary_expression_operator(self, binary_infix_expression: Query, expression: str) -> Node:
             root: Node = self._parser.parse(expression).root_node
             captures: List[Tuple[Node, str]] = binary_infix_expression.captures(root)
-            operator: Node = captures[0][0].children[1]
+            operator_node: Node = captures[0][0]
+            operator: Node = self._language.syntax.get_binary_expression_operator(operator_node)
             return operator
 
     def create_range_checks(self, ranges: List[List[str]]) -> "List[tuple(str, float, float)]":
