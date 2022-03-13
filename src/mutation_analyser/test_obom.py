@@ -175,3 +175,47 @@ class TestMutationAnalyser(unittest.TestCase):
             ]
         )
         self.assert_domain_and_ranges(self._binary_expression_query, domain, range_checks)
+
+    def test_obom_oran_orbn_orln_orsn(self) -> None:
+        domain: List[str] = self._language.relational_opearators
+        range_checks = self.create_range_checks(
+            [
+                # ORAN
+                self._language.arithmetic_operators,
+                # ORBN
+                self._language.bitwise_operators,
+                # ORLN
+                self._language.logical_operators,
+                # ORSN
+                self._language.shift_operators,
+            ]
+        )
+        self.assert_domain_and_ranges(self._binary_expression_query, domain, range_checks)
+
+    def test_obom_osaa_osba_osea(self) -> None:
+        domain: List[str] = self._language.shift_compound_assignment
+        range_checks = self.create_range_checks(
+            [
+                # OSAA
+                self._language.arithmetic_compound_assignment,
+                # OSBA
+                self._language.bitwise_compound_assignment,
+                # OSEA
+                [ self._language.plain_assignment ],
+            ]
+        )
+        self.assert_domain_and_ranges(self._compound_assignment_query, domain, range_checks)
+
+    def test_obom_osan_osbn_osrn(self) -> None:
+        domain: List[str] = self._language.shift_operators
+        range_checks = self.create_range_checks(
+            [
+                # OSAN
+                self._language.arithmetic_operators,
+                # OSBN
+                self._language.bitwise_operators,
+                # OSRN
+                self._language.relational_opearators,
+            ]
+        )
+        self.assert_domain_and_ranges(self._binary_expression_query, domain, range_checks)
