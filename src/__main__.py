@@ -1,8 +1,8 @@
 import argparse
 from typing import List
 from ts import Parser, Tree, Node, Language, Syntax
-from Utilities.setupCommandLine import setupCommandLine
-from Utilities.setupCommandLine import setupIOHandler
+from utilities.setupCommandLine import setupCommandLine
+from utilities.setupCommandLine import setupIOHandler
 
 
 def main():

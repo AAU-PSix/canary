@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
 
-from src.Utilities.Utilities import FileHandler
+from src.utilities.Utilities import FileHandler
 
 
 class Test_CanaryIOHandler(unittest.TestCase):
