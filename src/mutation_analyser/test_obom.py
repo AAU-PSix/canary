@@ -33,32 +33,59 @@ class TestMutationAnalyser(unittest.TestCase):
 
         Example for Domain: Arithmetic assignment for OABA, OAEA, OASA:
         return List[tuple(str, float, float)] = [
-            # OABA
+            
+            OABA
+            
             ('|=', 0.0, 0.0),
+            
             ('|=', 0.0, 1/3 - epsilon),
+            
             ('|=', 1/3 - epsilon, 0.0),
+            
             ('|=', 1/3 - epsilon, 1/3 - epsilon),
+            
             ('&=', 0.0, 1/3),
+            
             ('&=', 0.0, 2/3 - epsilon),
+            
             ('&=', 1/3 - epsilon, 1/3),
+            
             ('&=', 1/3 - epsilon, 2/3 - epsilon),
+            
             ('^=', 0.0, 2/3),
+            
             ('^=', 0.0, 3/3 - epsilon),
+            
             ('^=', 1/3 - epsilon, 2/3),
+            
             ('^=', 1/3 - epsilon, 3/3 - epsilon),
-            # OAEA
+            
+            OAEA
+            
             ('=', 1/3, 0.0),
+            
             ('=', 1/3, 3/3 - epsilon),
+            
             ('=', 2/3 - epsilon, 0.0),
+            
             ('=', 2/3 - epsilon, 3/3 - epsilon),
-            # OASA
+            
+            OASA
+            
             ('<<=', 2/3, 0.0),
+            
             ('<<=', 2/3, 1/2 - epsilon),
+            
             ('<<=', 3/3 - epsilon, 0.0),
+            
             ('<<=', 3/3 - epsilon, 1/2 - epsilon),
+            
             ('>>=', 2/3, 1/2),
+            
             ('>>=', 2/3, 3/3 - epsilon),
+            
             ('>>=', 3/3 - epsilon, 1/2),
+            
             ('>>=', 3/3 - epsilon, 3/3 - epsilon)
         ]
         """
