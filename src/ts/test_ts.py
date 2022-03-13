@@ -176,3 +176,197 @@ class TestCapture(unittest.TestCase):
         node_3: Tuple[Node, str] = (None, '2')
         capture = Capture([ node_1, node_2, node_3 ])
         self.assertEqual(capture.last()[1], '2')
+
+class TestSyntaxForC(unittest.TestCase):
+    def setUp(self) -> None:
+        LanguageLibrary.build()
+        self._parser = Parser.c()
+        self._language = self._parser.language
+        self._query_function_declaration = self._language.query(
+            self._language.syntax.query_function_declaration
+        )
+        self._query_struct_declaration = self._language.query(
+            self._language.syntax.query_struct_declaration
+        )
+        return super().setUp()
+
+    def test_no_function_return_empty_list(self):
+        root: Node = self._parser.parse(
+            "int a = 2"
+        ).root_node
+        capture: Capture = self._query_function_declaration.captures(root)
+        result: List[Node] = capture.nodes(
+            self._language.syntax.get_function_declaration
+        )
+        self.assertIsNotNone(result)
+        self.assertIs(len(result), 0)
+        self.assertTrue(None not in result)
+
+    def test_single_int_typed_function_gives_single_result(self):
+        root: Node = self._parser.parse(
+            "int myfunction() {}"
+        ).root_node
+        capture: Capture = self._query_function_declaration.captures(root)
+        result: List[Node] = capture.nodes(
+            self._language.syntax.get_function_declaration
+        )
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 1)
+        self.assertTrue(None not in result)
+
+    def test_can_find_four_int_typed_function(self):
+        root: Node = self._parser.parse(
+            "int myfunction1() {} \
+             int myfunction2() {} \
+             int myfunction3() {} \
+             int myfunction4() {}"
+        ).root_node
+        capture: Capture = self._query_function_declaration.captures(root)
+        result: List[Node] = capture.nodes(
+            self._language.syntax.get_function_declaration
+        )
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 4)
+        self.assertTrue(None not in result)
+
+    def test_can_find_int_function_with_single_byte_parameter(self):
+        root: Node = self._parser.parse(
+            "int myfunction(byte a) { return 0; }"
+        ).root_node
+        capture: Capture = self._query_function_declaration.captures(root)
+        result: List[Node] = capture.nodes(
+            self._language.syntax.get_function_declaration
+        )
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 1)
+        self.assertTrue(None not in result)
+
+    def test_can_find_int_function_with_multiple_byte_parameter(self):
+        root: Node = self._parser.parse(
+            "int myfunction(byte a, byte b, byte c) { return 1; }"
+        ).root_node
+        capture: Capture = self._query_function_declaration.captures(root)
+        result: List[Node] = capture.nodes(
+            self._language.syntax.get_function_declaration
+        )
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 1)
+        self.assertTrue(None not in result)
+
+    def test_can_find_int_function_with_single_char_parameter(self):
+        root: Node = self._parser.parse(
+            "int myfunction(char a) { return 0;}"
+        ).root_node
+        capture: Capture = self._query_function_declaration.captures(root)
+        result: List[Node] = capture.nodes(
+            self._language.syntax.get_function_declaration
+        )
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 1)
+        self.assertTrue(None not in result)
+
+    def test_can_find_int_function_with_multiple_char_parameter(self):
+        root: Node = self._parser.parse(
+            "int myfunction(char a, char b, char c) { return 1; }"
+        ).root_node
+        capture: Capture = self._query_function_declaration.captures(root)
+        result: List[Node] = capture.nodes(
+            self._language.syntax.get_function_declaration
+        )
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 1)
+        self.assertTrue(None not in result)
+
+    def test_can_find_void_function_no_parameter(self):
+        root: Node = self._parser.parse(
+            "void myfunction() { return; }"
+        ).root_node
+        capture: Capture = self._query_function_declaration.captures(root)
+        result: List[Node] = capture.nodes(
+            self._language.syntax.get_function_declaration
+        )
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 1)
+        self.assertTrue(None not in result)
+
+    def test_can_find_void_function_with_parameters(self):
+        root: Node = self._parser.parse(
+            "void myfunction(int a, char b, byte c) { return; }"
+        ).root_node
+        capture: Capture = self._query_function_declaration.captures(root)
+        result: List[Node] = capture.nodes(
+            self._language.syntax.get_function_declaration
+        )
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 1)
+        self.assertTrue(None not in result)
+
+    def test_can_find_void_function_with_no_parameters(self):
+        root: Node = self._parser.parse(
+            "void myfunction() { return; }"
+        ).root_node
+        capture: Capture = self._query_function_declaration.captures(root)
+        result: List[Node] = capture.nodes(
+            self._language.syntax.get_function_declaration
+        )
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 1)
+        self.assertTrue(None not in result)
+
+    def test_can_find_multiple_mixed_type_functions_with_parameters(self):
+        root: Node = self._parser.parse(
+            "void a() { return; } \
+             int b(int c, double d) { return 2; } \
+             float e(char f) { return g; }"
+        ).root_node
+        capture: Capture = self._query_function_declaration.captures(root)
+        result: List[Node] = capture.nodes(
+            self._language.syntax.get_function_declaration
+        )
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 3)
+        self.assertTrue(None not in result)
+
+    def test_can_find_point_return_type(self):
+        root: Node = self._parser.parse(
+            "int* main() {}"
+        ).root_node
+        capture: Capture = self._query_function_declaration.captures(root)
+        result: List[Node] = capture.nodes(
+            self._language.syntax.get_function_declaration
+        )
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 1)
+        self.assertTrue(None not in result)
+
+    def test_single_struct_dcl_without_identifier(self):
+        root: Node = self._parser.parse(
+        "struct Books { \
+            char title[50]; \
+            char author[50]; \
+            char subject[100]; \
+            int book_id; \
+        }").root_node
+        capture: Capture = self._query_struct_declaration.captures(root)
+        result: List[Node] = capture.nodes(
+            self._language.syntax.get_struct_declaration
+        )
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 1)
+        self.assertTrue(None not in result)
+
+    def test_single_struct_dcl_with_identifier(self):
+        root: Node = self._parser.parse(
+        "struct Books { \
+            char title[50]; \
+            char author[50]; \
+            char subject[100]; \
+            int book_id; \
+        } myStruct").root_node
+        capture: Capture = self._query_struct_declaration.captures(root)
+        result: List[Node] = capture.nodes(
+            self._language.syntax.get_struct_declaration
+        )
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 1)
+        self.assertTrue(None not in result)
