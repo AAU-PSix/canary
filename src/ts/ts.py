@@ -278,23 +278,28 @@ class Query:
             captures.append(capture_tuple)
         return captures
 
-
-class Language:
-    def __init__(self, language: _Language) -> None:
-        self._language = language
-
-        self._plain_assignment: str = '='
-        self._arithmetic_operators: List[str] = ['+', '-', '*', '/', '%']
-        self._bitwise_operators: List[str] = ['|', '&', '^']
-        self._shift_operators: List[str] = ['<<', '>>']
-        self._logical_operators: List[str] = ['&&', '||']
-        self._relational_opearators: List[str] = ['>', '>=', '<', '<=', '==', '!=']
-        self._arithmetic_compound_assignment: List[str] = [operator + self._plain_assignment for operator in
-                                                           self._arithmetic_operators]
-        self._bitwise_compound_assignment: List[str] = [operator + self._plain_assignment for operator in
-                                                        self._bitwise_operators]
-        self._shift_compound_assignment: List[str] = [operator + self._plain_assignment for operator in
-                                                      self._shift_operators]
+class Syntax:
+    def __init__(
+        self,
+        plain_assignment: List[str] = None,
+        arithmetic_operators: List[str] = None,
+        bitwise_operators: List[str] = None,
+        shift_operators: List[str] = None,
+        logical_operators: List[str] = None,
+        relational_opearators: List[str] = None,
+        arithmetic_compound_assignment: List[str] = None,
+        bitwise_compound_assignment: List[str] = None,
+        shift_compound_assignment: List[str] = None,
+    ) -> None:
+        self._plain_assignment = plain_assignment
+        self._arithmetic_operators = arithmetic_operators
+        self._bitwise_operators = bitwise_operators
+        self._shift_operators = shift_operators
+        self._logical_operators = logical_operators
+        self._relational_opearators = relational_opearators
+        self._arithmetic_compound_assignment = arithmetic_compound_assignment
+        self._bitwise_compound_assignment = bitwise_compound_assignment
+        self._shift_compound_assignment = shift_compound_assignment
 
     @property
     def plain_assignment(self) -> str:
@@ -331,6 +336,42 @@ class Language:
     @property
     def shift_compound_assignment(self) -> List[str]:
         return self._shift_compound_assignment
+
+    @staticmethod
+    def c() -> "Syntax":
+        plain_assignment: List[str] = ['=']
+        arithmetic_operators: List[str] = ['+', '-', '*', '/', '%']
+        bitwise_operators: List[str] = ['|', '&', '^']
+        shift_operators: List[str] = ['<<', '>>']
+        logical_operators: List[str] = ['&&', '||']
+        relational_opearators: List[str] = ['>', '>=', '<', '<=', '==', '!=']
+        arithmetic_compound_assignment: List[str] = [operator + plain_assignment[0]
+                                                     for operator in arithmetic_operators]
+        bitwise_compound_assignment: List[str] = [operator + plain_assignment[0]
+                                                  for operator in bitwise_operators]
+        shift_compound_assignment: List[str] = [operator + plain_assignment[0]
+                                                for operator in shift_operators]
+        return Syntax(
+            plain_assignment,
+            arithmetic_operators,
+            bitwise_operators,
+            shift_operators,
+            logical_operators,
+            relational_opearators,
+            arithmetic_compound_assignment,
+            bitwise_compound_assignment,
+            shift_compound_assignment,
+        )
+
+
+class Language:
+    def __init__(self, syntax: Syntax, language: _Language) -> None:
+        self._language = language
+        self._syntax = syntax
+
+    @property
+    def syntax(self) -> Syntax:
+        return self._syntax
 
     @property
     def id(self) -> int:
@@ -396,24 +437,42 @@ class LanguageLibrary:
 
     @staticmethod
     def c() -> Language:
-        return Language(_Language(LanguageLibrary.full_build_path(), 'c'))
+        return Language(
+            Syntax.c(),
+            _Language(LanguageLibrary.full_build_path(), 'c')
+        )
 
     @staticmethod
     def cpp() -> Language:
-        return Language(_Language(LanguageLibrary.full_build_path(), 'cpp'))
+        return Language(
+            None,
+            _Language(LanguageLibrary.full_build_path(), 'cpp')
+        )
 
     @staticmethod
     def go() -> Language:
-        return Language(_Language(LanguageLibrary.full_build_path(), 'go'))
+        return Language(
+            None,
+            _Language(LanguageLibrary.full_build_path(), 'go')
+        )
 
     @staticmethod
     def js() -> Language:
-        return Language(_Language(LanguageLibrary.full_build_path(), 'javascript'))
+        return Language(
+            None,
+            _Language(LanguageLibrary.full_build_path(), 'javascript')
+        )
 
     @staticmethod
     def python() -> Language:
-        return Language(_Language(LanguageLibrary.full_build_path(), 'python'))
+        return Language(
+            None,
+            _Language(LanguageLibrary.full_build_path(), 'python')
+        )
 
     @staticmethod
     def rust() -> Language:
-        return Language(_Language(LanguageLibrary.full_build_path(), 'rust'))
+        return Language(
+            None,
+            _Language(LanguageLibrary.full_build_path(), 'rust')
+        )

@@ -56,137 +56,137 @@ class MutationAnalyser:
         """
         
         # Domain: Arithmetic assignment
-        if node.type in self._language.arithmetic_compound_assignment:
+        if node.type in self._language.syntax.arithmetic_compound_assignment:
             return self.random_operator_range(
                 [
                     # OABA: a {+,-,*,/,%}= b -> a {|,&,^}= b
-                    self._language.bitwise_compound_assignment,
+                    self._language.syntax.bitwise_compound_assignment,
                     # OAEA: a {+,-,*,/,%}= b -> a = b
-                    [ self._language.plain_assignment ],
+                    self._language.syntax.plain_assignment,
                     # OASA: a {+,-,*,/,%}= b -> a {<<,>>}= b
-                    self._language.shift_compound_assignment,
+                    self._language.syntax.shift_compound_assignment,
                 ],
                 rnd_range, rnd_operator
             )
 
         # Domain: Aritmetic operator
-        if node.type in self._language.arithmetic_operators:
+        if node.type in self._language.syntax.arithmetic_operators:
             return self.random_operator_range(
                 [
                     # OABN: a {+,-,*,/,%} b -> a {|,&,^} b
-                    self._language.bitwise_operators,
+                    self._language.syntax.bitwise_operators,
                     # OALN: a {+,-,*,/,%} b -> a {&&,||} b
-                    self._language.logical_operators,
+                    self._language.syntax.logical_operators,
                     # OARN: a {+,-,*,/,%} b -> a {>,>=,<,<=,==,!=} b
-                    self._language.relational_opearators,
+                    self._language.syntax.relational_opearators,
                     # OASN: a {+,-,*,/,%} b -> a {<<,>>} b
-                    self._language.shift_operators,
+                    self._language.syntax.shift_operators,
                 ],
                 rnd_range, rnd_operator
             )
 
         # Domain: Bitwise operator
-        if node.type in self._language.bitwise_operators:
+        if node.type in self._language.syntax.bitwise_operators:
             return self.random_operator_range(
                 [
                     # OBAN: a {|,&,^} b -> a {+,-,*,/,%} b
-                    self._language.arithmetic_operators,
+                    self._language.syntax.arithmetic_operators,
                     # OBLN: a {|,&,^} b -> a {&&,||} b
-                    self._language.logical_operators,
+                    self._language.syntax.logical_operators,
                     # OBRN: a {|,&,^} b -> a {>,>=,<,<=,==,!=} b
-                    self._language.relational_opearators,
+                    self._language.syntax.relational_opearators,
                     # OBSN: a {|,&,^} b -> a {<<,>>} b
-                    self._language.shift_operators,
+                    self._language.syntax.shift_operators,
                 ],
                 rnd_range, rnd_operator
             )
 
         # Domain: Bitwise assignment
-        if node.type in self._language.bitwise_compound_assignment:
+        if node.type in self._language.syntax.bitwise_compound_assignment:
             return self.random_operator_range(
                 [
                     # OBAA: a {|,&,^}= b -> a {+,-,*,/,%}= b
-                    self._language.arithmetic_compound_assignment,
+                    self._language.syntax.arithmetic_compound_assignment,
                     # OBEA: a {|,&,^}= b -> a = b
-                    [ self._language.plain_assignment ],
+                    self._language.syntax.plain_assignment,
                     # OBSA: a {|,&,^}= b -> a {<<,>>}= b
-                    self._language.shift_compound_assignment,
+                    self._language.syntax.shift_compound_assignment,
                 ],
                 rnd_range, rnd_operator
             )
 
         # Domain: Plain assignment
-        if node.type is self._language.plain_assignment:
+        if node.type is self._language.syntax.plain_assignment:
             return self.random_operator_range(
                 [
                     # OEAA: a = b -> a {+,-,*,/,%}= b
-                    self._language.arithmetic_compound_assignment,
+                    self._language.syntax.arithmetic_compound_assignment,
                     # OEBA: a = b -> a {|,&,^}= b
-                    self._language.bitwise_compound_assignment,
+                    self._language.syntax.bitwise_compound_assignment,
                     # OESA: a = b -> a {<<,>>}= b
-                    self._language.shift_compound_assignment,
+                    self._language.syntax.shift_compound_assignment,
                 ],
                 rnd_range, rnd_operator
             )
 
         # Domain: Logical operator
-        if node.type in self._language.logical_operators:
+        if node.type in self._language.syntax.logical_operators:
             return self.random_operator_range(
                 [
                     # OLAN: a {&&,||} b -> a {+,-,*,/,%} b
-                    self._language.arithmetic_operators,
+                    self._language.syntax.arithmetic_operators,
                     # OLBN: a {&&,||} b -> a {|,&,^} b
-                    self._language.bitwise_operators,
+                    self._language.syntax.bitwise_operators,
                     # OLRN: a {&&,||} b -> a {>,>=,<,<=,==,!=} b
-                    self._language.relational_opearators,
+                    self._language.syntax.relational_opearators,
                     # OLSN: a {&&,||} b -> a {<<,>>} b
-                    self._language.shift_operators,
+                    self._language.syntax.shift_operators,
                     # OSLN: a {<<,>>}= b -> a {&&,||} b
-                    self._language.logical_operators,
+                    self._language.syntax.logical_operators,
                 ],
                 rnd_range, rnd_operator
             )
 
         # Domain: Relational operator
-        if node.type in self._language.relational_opearators:
+        if node.type in self._language.syntax.relational_opearators:
             return self.random_operator_range(
                 [
                     # ORAN: a {>,>=,<,<=,==,!=} b -> a {+,-,*,/,%} b
-                    self._language.arithmetic_operators,
+                    self._language.syntax.arithmetic_operators,
                     # ORBN: a {>,>=,<,<=,==,!=} b -> a {|,&,^} b
-                    self._language.bitwise_operators,
+                    self._language.syntax.bitwise_operators,
                     # ORLN: a {>,>=,<,<=,==,!=} b -> a {&&,||} b
-                    self._language.logical_operators,
+                    self._language.syntax.logical_operators,
                     # ORSN: a {>,>=,<,<=,==,!=} b -> a {<<,>>} b
-                    self._language.shift_operators,
+                    self._language.syntax.shift_operators,
                 ],
                 rnd_range, rnd_operator
             )
 
         # Domain: Shift assignment
-        if node.type in self._language.shift_compound_assignment:
+        if node.type in self._language.syntax.shift_compound_assignment:
             return self.random_operator_range(
                 [
                     # OSAA: a {<<,>>}= b -> a {+,-,*,/,%}= b
-                    self._language.arithmetic_compound_assignment,
+                    self._language.syntax.arithmetic_compound_assignment,
                     # OSBA: a {<<,>>}= b -> a {|,&,^}= b
-                    self._language.bitwise_compound_assignment,
+                    self._language.syntax.bitwise_compound_assignment,
                     # OSEA: a {<<,>>}= b -> a = b
-                    [ self._language.plain_assignment ],
+                    self._language.syntax.plain_assignment,
                 ],
                 rnd_range, rnd_operator
             )
 
         # Domain: Shift operator
-        if node.type in self._language.shift_operators:
+        if node.type in self._language.syntax.shift_operators:
             return self.random_operator_range(
                 [
                     # OSAN: a {<<,>>} b -> a {+,-,*,/,%} b
-                    self._language.arithmetic_operators,
+                    self._language.syntax.arithmetic_operators,
                     # OSBN: a {<<,>>} b -> a {|,&,^} b
-                    self._language.bitwise_operators,
+                    self._language.syntax.bitwise_operators,
                     # OSRN: a {<<,>>} b -> a {>,>=,<,<=,==,!=} b
-                    self._language.relational_opearators,
+                    self._language.syntax.relational_opearators,
                 ],
                 rnd_range, rnd_operator
             )

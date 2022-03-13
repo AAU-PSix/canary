@@ -8,11 +8,11 @@ import unittest
 class TestMutationAnalyser(unittest.TestCase):
     def setUp(self) -> None:
         LanguageLibrary.build()
-        self._language = LanguageLibrary.js()
+        self._language = LanguageLibrary.c()
         self._parser = Parser.create_with_language(self._language)
         self._mutator: MutationAnalyser = MutationAnalyser(self._parser, self._language)
         
-        self._compound_assignment_query: Query = self._language.query("((augmented_assignment_expression) @exp)")
+        self._compound_assignment_query: Query = self._language.query("((assignment_expression) @exp)")
         self._assignment_query: Query = self._language.query("((assignment_expression) @exp)")
         self._binary_expression_query: Query = self._language.query("((binary_expression) @exp)")
         return super().setUp()
@@ -85,137 +85,137 @@ class TestMutationAnalyser(unittest.TestCase):
                 self.assertEqual(actual, range_section[0])
 
     def test_obom_ranges_oaba_oaea_oasa(self) -> None:
-        domain: List[str] = self._language.arithmetic_compound_assignment
+        domain: List[str] = self._language.syntax.arithmetic_compound_assignment
         range_checks = self.create_range_checks(
             [
                 # OABA
-                self._language._bitwise_compound_assignment,
+                self._language.syntax.bitwise_compound_assignment,
                 # OAEA
-                [ self._language.plain_assignment ],
+                self._language.syntax.plain_assignment,
                 # OASA
-                self._language.shift_compound_assignment,
+                self._language.syntax.shift_compound_assignment,
             ]
         )
         self.assert_domain_and_ranges(self._compound_assignment_query, domain, range_checks)
 
     def test_obom_oabn_oaln_oarn_oasn(self) -> None:
-        domain: List[str] = self._language.arithmetic_operators
+        domain: List[str] = self._language.syntax.arithmetic_operators
         range_checks = self.create_range_checks(
             [
                 # OABN
-                self._language.bitwise_operators,
+                self._language.syntax.bitwise_operators,
                 # OALN
-                self._language.logical_operators,
+                self._language.syntax.logical_operators,
                 # OARN
-                self._language.relational_opearators,
+                self._language.syntax.relational_opearators,
                 # OASN
-                self._language.shift_operators,
+                self._language.syntax.shift_operators,
             ]
         )
         self.assert_domain_and_ranges(self._binary_expression_query, domain, range_checks)
 
     def test_obom_oban_obln_obrn_obsn(self) -> None:
-        domain: List[str] = self._language.bitwise_operators
+        domain: List[str] = self._language.syntax.bitwise_operators
         range_checks = self.create_range_checks(
             [
                 # OBAN
-                self._language.arithmetic_operators,
+                self._language.syntax.arithmetic_operators,
                 # OBLN
-                self._language.logical_operators,
+                self._language.syntax.logical_operators,
                 # OBRN
-                self._language.relational_opearators,
+                self._language.syntax.relational_opearators,
                 # OBSN
-                self._language.shift_operators,
+                self._language.syntax.shift_operators,
             ]
         )
         self.assert_domain_and_ranges(self._binary_expression_query, domain, range_checks)
 
     def test_obom_obaa_obea_obsa(self) -> None:
-        domain: List[str] = self._language.bitwise_compound_assignment
+        domain: List[str] = self._language.syntax.bitwise_compound_assignment
         range_checks = self.create_range_checks(
             [
                 # OBAA
-                self._language.arithmetic_compound_assignment,
+                self._language.syntax.arithmetic_compound_assignment,
                 # OBEA
-                [ self._language.plain_assignment ],
+                self._language.syntax.plain_assignment,
                 # OBSA
-                self._language.shift_compound_assignment,
+                self._language.syntax.shift_compound_assignment,
             ]
         )
         self.assert_domain_and_ranges(self._compound_assignment_query, domain, range_checks)
 
     def test_obom_oeaa_oeba_oesa(self) -> None:
-        domain: List[str] = [ self._language.plain_assignment ]
+        domain: List[str] = self._language.syntax.plain_assignment
         range_checks = self.create_range_checks(
             [
                 # OEAA
-                self._language.arithmetic_compound_assignment,
+                self._language.syntax.arithmetic_compound_assignment,
                 # OEBA
-                self._language.bitwise_compound_assignment,
+                self._language.syntax.bitwise_compound_assignment,
                 # OESA
-                self._language.shift_compound_assignment,
+                self._language.syntax.shift_compound_assignment,
             ]
         )
         self.assert_domain_and_ranges(self._assignment_query, domain, range_checks)
 
     def test_obom_oeaa_oeba_oesa(self) -> None:
-        domain: List[str] = self._language.logical_operators
+        domain: List[str] = self._language.syntax.logical_operators
         range_checks = self.create_range_checks(
             [
                 # OLAN
-                self._language.arithmetic_operators,
+                self._language.syntax.arithmetic_operators,
                 # OLBN
-                self._language.bitwise_operators,
+                self._language.syntax.bitwise_operators,
                 # OLRN
-                self._language.relational_opearators,
+                self._language.syntax.relational_opearators,
                 # OLSN
-                self._language.shift_operators,
+                self._language.syntax.shift_operators,
                 # OSLN
-                self._language.logical_operators,
+                self._language.syntax.logical_operators,
             ]
         )
         self.assert_domain_and_ranges(self._binary_expression_query, domain, range_checks)
 
     def test_obom_oran_orbn_orln_orsn(self) -> None:
-        domain: List[str] = self._language.relational_opearators
+        domain: List[str] = self._language.syntax.relational_opearators
         range_checks = self.create_range_checks(
             [
                 # ORAN
-                self._language.arithmetic_operators,
+                self._language.syntax.arithmetic_operators,
                 # ORBN
-                self._language.bitwise_operators,
+                self._language.syntax.bitwise_operators,
                 # ORLN
-                self._language.logical_operators,
+                self._language.syntax.logical_operators,
                 # ORSN
-                self._language.shift_operators,
+                self._language.syntax.shift_operators,
             ]
         )
         self.assert_domain_and_ranges(self._binary_expression_query, domain, range_checks)
 
     def test_obom_osaa_osba_osea(self) -> None:
-        domain: List[str] = self._language.shift_compound_assignment
+        domain: List[str] = self._language.syntax.shift_compound_assignment
         range_checks = self.create_range_checks(
             [
                 # OSAA
-                self._language.arithmetic_compound_assignment,
+                self._language.syntax.arithmetic_compound_assignment,
                 # OSBA
-                self._language.bitwise_compound_assignment,
+                self._language.syntax.bitwise_compound_assignment,
                 # OSEA
-                [ self._language.plain_assignment ],
+                self._language.syntax.plain_assignment,
             ]
         )
         self.assert_domain_and_ranges(self._compound_assignment_query, domain, range_checks)
 
     def test_obom_osan_osbn_osrn(self) -> None:
-        domain: List[str] = self._language.shift_operators
+        domain: List[str] = self._language.syntax.shift_operators
         range_checks = self.create_range_checks(
             [
                 # OSAN
-                self._language.arithmetic_operators,
+                self._language.syntax.arithmetic_operators,
                 # OSBN
-                self._language.bitwise_operators,
+                self._language.syntax.bitwise_operators,
                 # OSRN
-                self._language.relational_opearators,
+                self._language.syntax.relational_opearators,
             ]
         )
         self.assert_domain_and_ranges(self._binary_expression_query, domain, range_checks)
