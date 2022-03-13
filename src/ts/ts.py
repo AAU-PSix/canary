@@ -1,7 +1,5 @@
-from operator import truediv
 from os import linesep
 from collections import namedtuple
-from platform import node
 from typing import Iterable, List, Optional, Tuple
 from typing import List
 from tree_sitter import Language as _Language
