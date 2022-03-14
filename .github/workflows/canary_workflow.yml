@@ -32,7 +32,7 @@ jobs:
     - name: Mypy type checking 
       run: mypy $(git ls-files '*.py')
     - name: Black code formatting 
-      run: black --diff --check $(git ls-files '*.py')
+      run: rickstaa/action-black@latest
     # - uses: snyk/actions/setup@master
     # - name: Test dependencies with Snyk
     #   run: snyk test
