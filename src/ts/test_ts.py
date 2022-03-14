@@ -6,6 +6,14 @@ from tree_sitter.binding import Query as _Query
 from tree_sitter import Language as _Language
 from os import path
 
+from .capture import Capture
+from .language_library import Language, LanguageLibrary
+from .node import Node
+from .parser import Parser
+from .query import Query
+from .tree import Tree
+
+
 class TestLanguageLibrary(unittest.TestCase):
     def test_vendor_path(self) -> None:
         self.assertEqual(LanguageLibrary.vendor_path(), './vendor')
