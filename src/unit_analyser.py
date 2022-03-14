@@ -1,6 +1,6 @@
 from typing import List
 
-from .ts import Language, Node
+from ts import Language, Node
 
 
 class UnitAnalyser:

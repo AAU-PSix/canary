@@ -8,6 +8,6 @@ RUN python3 -m pip install -r /tmp/requirements.txt
 
 # One that we have all the dependencies we
 # then copy the entire app into /app/ in the container
-COPY . /app/
+COPY . .
 # this command runs the "__main__.py"
-ENTRYPOINT [ "python3", "/app/src/" ]
+ENTRYPOINT [ "python3", "/src/" ]
