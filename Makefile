@@ -1,7 +1,7 @@
 run:
 	python3 ./src/
 
-test:
+test: lint
 	python3 -m unittest discover -v src
 
 install:
@@ -20,6 +20,7 @@ build:
 dev: build
 	docker run canary-dev
 
+.PHONY: lint
 lint:
 	pylint --disable=all \
 		--enable=unused-argument \
