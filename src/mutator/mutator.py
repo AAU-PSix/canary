@@ -136,7 +136,7 @@ class Mutator:
             )
 
         # Domain: Plain assignment
-        if node.type is self._language.syntax.plain_assignment:
+        if node.type in self._language.syntax.plain_assignment:
             return self.random_operator_range(
                 [
                     # OEAA: a = b -> a {+,-,*,/,%}= b

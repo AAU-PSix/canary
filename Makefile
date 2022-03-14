@@ -14,7 +14,7 @@ clean:
 
 .PHONY: build
 build:
-	docker build -t canary-dev .
+	docker build -t canary:dev .
 
 dev: build
 	docker run canary-dev

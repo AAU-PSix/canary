@@ -14,16 +14,12 @@ class FileHandler:
 
 class CanaryIOHandler:
     def __init__(self, args, fileHandler: FileHandler):
-        if not re.match("^[^\n ]*\.c$", args.inputfile):
-            raise IOError("Input is not a c file.")
-        self.input_file_name: str = args.inputfile
+        self.input_file_name: str = args.input
         self.input_file = fileHandler.open(self.input_file_name, "r")
         self.input_file_text = self.input_file.read()
         self.input_file.close()
 
-        if not re.match("^[^\n ]*\.c$", args.outputfile):
-            raise IOError("Output is not a c file.")
-        self.output_file_name: str = args.inputfile
+        self.output_file_name: str = args.output
 
     def write_file(self, program: any):
         file = open(self.output_file_name, "w+")
