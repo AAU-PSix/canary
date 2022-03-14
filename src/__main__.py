@@ -1,7 +1,7 @@
 import argparse
 from typing import List
 from ts import *
-from utilities import *
+from Utilities import *
 from unit_analyser import UnitAnalyser
 
 

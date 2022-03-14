@@ -1,5 +1,6 @@
 import random
-from ts import *
+from src.ts import *
+
 
 class Mutator:
     def __init__(self, parser: Parser) -> None:
