@@ -5,16 +5,16 @@ from tree_sitter import Parser as _Parser
 
 from .tree import Tree
 from .language_library import LanguageLibrary
-
+from .language_library import Language
 
 class Parser:
-    def __init__(self, parser: _Parser, language: "Language" = None):
+    def __init__(self, parser: _Parser, language: Language = None):
         self._parser: _Parser = parser
         if language is not None:
             self.set_language(language)
 
     @property
-    def language(self) -> "Language":
+    def language(self) -> Language:
         return self._language
 
     @classmethod
