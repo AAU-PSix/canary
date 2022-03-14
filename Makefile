@@ -1,15 +1,19 @@
+.PHONY: run
 run:
 	python3 ./src/
 
+.PHONY: test
 test: lint
 	python3 -m unittest discover -v src
 
+.PHONY: install
 install:
 	git submodule update --init --recursive
 	python3 -m pip install -r requirements.txt
 	python3 -m pip install pylint
 	rm -rf ./build/
 
+.PHONY: clean
 clean:
 	rm -rf ./build/
 
@@ -17,6 +21,7 @@ clean:
 build:
 	docker build -t canary:dev .
 
+.PHONY: build
 dev: build
 	docker run canary-dev
 
