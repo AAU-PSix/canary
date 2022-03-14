@@ -47,7 +47,9 @@ class Mutator:
         if tree is None:
             raise Exception('Could not find tree')
 
-        return tree.replace(self._parser, node, self.obom(node), encoding)
+        return self._parser.replace(
+            tree, node, self.obom(node), encoding
+        )
 
     def choose(self, collection: list, rnd: float = None) -> any:
         if rnd is None: rnd = random.random()

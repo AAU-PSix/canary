@@ -3,6 +3,7 @@ from typing import List
 
 from tree_sitter import Parser as _Parser
 
+from .node import Node
 from .tree import Tree
 from .language_library import LanguageLibrary
 from .language_library import Language
@@ -25,6 +26,24 @@ class Parser:
         parser.set_language(language)
         return parser
 
+    def replace(self, tree: Tree, node: Node, new: str, encoding: str = "utf8") -> Tree:
+        source: str = tree.text
+        new_source: str = str(source[0: node.start_byte: 1] +
+                              new +
+                              source[node.end_byte:: 1])
+        return self.parse(new_source, tree, encoding)
+
+    def contents_of(self, tree: Tree, node: Node) -> str:
+        return str(tree.text[node.start_byte: node.end_byte: 1])
+
+    def insert_line(self, tree: Tree, index: int, line: str) -> Tree:
+        lines: List[str] = tree.lines.copy()
+        lines.insert(index, line)
+        source: str = linesep.join(lines)
+        return self.parse(source)
+
+    def append_line(self, tree: Tree, index: int, line: str, encoding: str = "utf8") -> Tree:
+        return self.insert_line(self, tree, index + 1, line, encoding)
 
     def set_language(self, language: "Language") -> None:
         self._parser.set_language(language._language)

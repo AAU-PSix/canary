@@ -1,4 +1,5 @@
 from typing import Optional, Iterable
+from queue import Queue
 
 from tree_sitter import TreeCursor as _TreeCursor
 from .node import Node
@@ -41,3 +42,14 @@ class TreeCursor:
                     reached_root = True
                 if self.goto_next_sibling():
                     retracng = False
+
+    def breadth_first_traverse(self, named_only: bool = False) -> Iterable[Node]:
+        # Since the tree is a DAG, then we dont
+        # need tokeep track of the visited nodes.
+        queue = Queue()
+        queue.put(self.node)
+        while (not queue.empty()):
+            current: Node = queue.get()
+            yield current
+            for neighbour in current.children:
+                if named_only and neighbour.is_named: queue.put(neighbour)

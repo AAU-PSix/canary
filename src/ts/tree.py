@@ -1,10 +1,9 @@
 from os import linesep
-from typing import List
+from typing import Iterable, List
 from tree_sitter import Tree as _Tree
 from .node import Node
 from .tree_cursor import TreeCursor
 from .file_point import FilePoint
-from .parser import Parser
 
 
 class Tree:
@@ -41,24 +40,10 @@ class Tree:
             new_end_point,
         )
 
-    def replace(self, parser: Parser, node: Node, new: str, encoding: str = "utf8") -> "Tree":
-        source: str = self.text
-        new_source: str = str(source[0: node.start_byte: 1] +
-                              new +
-                              source[node.end_byte:: 1])
-        return parser.parse(new_source, self, encoding)
-
-    def contents_of(self, node: Node) -> str:
-        return str(self.text[node.start_byte: node.end_byte: 1])
-
-    def insert_line(self, parser: Parser, index: int, line: str) -> "Tree":
-        lines: List[str] = self.lines.copy()
-        lines.insert(index, line)
-        source: str = linesep.join(lines)
-        return parser.parse(source)
-
-    def append_line(self, parser: Parser, index: int, line: str, encoding: str = "utf8") -> "Tree":
-        return self.insert_line(parser, index + 1, line, encoding)
-
     def walk(self) -> TreeCursor:
         return TreeCursor(self._tree.walk())
+
+    def line_traverse(self) -> Iterable[str]:
+        lines: List[str] = self.lines
+        for line in lines:
+            yield line
