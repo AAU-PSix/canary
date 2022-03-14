@@ -29,24 +29,3 @@ jobs:
       run: python3 -m unittest discover -v src
     - name: Pylint for unused imports # TODO maybe use pylint for another purpose? 
       run: pylint --disable=all --enable=unused-argument --enable=global-statement --enable=global-variable-not-assigned --enable=used-before-assignment --enable=function-redefined --enable=abstract-class-instantiated --enable=invalid-unary-operand-type --enable=no-member --enable=undefined-variable --enable=undefined-loop-variable $(git ls-files '*.py')
-    - name: Black code formatting 
-      run: black --diff --check $(git ls-files '*.py')
-    - name: If needed, commit black changes to the pull request
-      if: failure()
-      run: |
-        black .
-        git config --global user.name 'autoblack'
-        git config --global user.email 'akbr18@student.aau.dk'
-        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
-        git checkout $GITHUB_HEAD_REF
-        git commit -am "fixup: Format Python code with Black"
-        git push
-    # - uses: snyk/actions/setup@master
-    # - name: Test dependencies with Snyk
-    #   run: snyk test
-    #   env:
-    #     SNYK_TOKEN: ${{secrets.SNYK_TOKEN}}
-    # - name: Monitor dependencies for security issues with Snyk
-    #   run: snyk monitor
-    #   env:
-    #     SNYK_TOKEN: ${{secrets.SNYK_TOKEN}}
