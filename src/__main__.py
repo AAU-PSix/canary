@@ -1,6 +1,14 @@
 from mutator import Mutator
-from ts import *
-from utilities import *
+from ts import (
+    LanguageLibrary,
+    Parser,
+    Tree,
+)
+from utilities import (
+    ArgumentParser,
+    setupCommandLine,
+    FileHandler
+)
 
 
 def main():

@@ -1,5 +1,11 @@
 import random
-from ts import *
+from ts import (
+    Parser,
+    Tree,
+    Capture,
+    Node,
+)
+from typing import List
 
 
 class Mutator:
