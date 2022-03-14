@@ -344,8 +344,8 @@ class Syntax:
         struct_declaration_query: str = None,
         # Query result processors
         get_binary_expression_operator: Callable[[Node], Node] = None,
-        get_get_function_declaration: Callable[[Node], Node] = None,
-        get_get_struct_declaration: Callable[[Node], Node] = None,
+        get_function_declaration: Callable[[Node], Node] = None,
+        get_struct_declaration: Callable[[Node], Node] = None,
     ) -> None:
         # Binary expression operators
         self._plain_assignment = plain_assignment
@@ -365,8 +365,8 @@ class Syntax:
         self._struct_declaration_query = struct_declaration_query
         # Query result processors
         self._get_binary_expression_operator = get_binary_expression_operator
-        self._get_function_declaration = get_get_function_declaration
-        self._get_struct_declaration = get_get_struct_declaration
+        self._get_function_declaration = get_function_declaration
+        self._get_struct_declaration = get_struct_declaration
 
     @property
     def plain_assignment(self) -> str:
@@ -462,23 +462,25 @@ class Syntax:
         get_struct_declaration: Callable[[Node], Node] = lambda node: node
 
         return Syntax(
-            plain_assignment,
-            arithmetic_operators,
-            bitwise_operators,
-            shift_operators,
-            logical_operators,
-            relational_opearators,
-            arithmetic_compound_assignment,
-            bitwise_compound_assignment,
-            shift_compound_assignment,
-            assignment_query,
-            compound_assignment_query,
-            binary_expression_query,
-            function_declaration_query,
-            struct_declaration_query,
-            get_binary_expression_operator,
-            get_function_declaration,
-            get_struct_declaration,
+            plain_assignment = plain_assignment,
+            arithmetic_operators = arithmetic_operators,
+            bitwise_operators = bitwise_operators,
+            shift_operators = shift_operators,
+            logical_operators = logical_operators,
+            relational_opearators = relational_opearators,
+            arithmetic_compound_assignment = arithmetic_compound_assignment,
+            bitwise_compound_assignment = bitwise_compound_assignment,
+            shift_compound_assignment = shift_compound_assignment,
+
+            assignment_query = assignment_query,
+            compound_assignment_query = compound_assignment_query,
+            binary_expression_query = binary_expression_query,
+            function_declaration_query = function_declaration_query,
+            struct_declaration_query = struct_declaration_query,
+
+            get_binary_expression_operator = get_binary_expression_operator,
+            get_function_declaration = get_function_declaration,
+            get_struct_declaration = get_struct_declaration,
         )
 
 

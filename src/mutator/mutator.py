@@ -2,14 +2,25 @@ import math
 import random
 from ts import *
 
-class MutationAnalyser:
-    def __init__(self, parser: Parser, language: Language) -> None:
+class Mutator:
+    def __init__(self, parser: Parser) -> None:
         self._parser = parser
-        self._language = language
+        self._language = parser.language
 
     def mutate(self, tree: Tree, encoding: str = "utf8") -> Tree:
         if tree is None:
             raise Exception('Could not find tree')
+
+        binary_expression_capture: Capture = self._language.query(
+            self._language.syntax.query_binary_expression
+        ).captures(tree.root_node)
+        binary_expression_nodes: List[Node] = binary_expression_capture.nodes(
+            self._language.syntax.get_binary_expression_operator
+        )
+
+        return self.mutate_binary_operator(
+            tree, binary_expression_nodes[0], encoding
+        )
 
         query: Query = LanguageLibrary.js().query("(binary_expression (number) @left (number))")
         captures: Capture = query.captures(query)
