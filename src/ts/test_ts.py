@@ -12,7 +12,6 @@ from .parser import Parser
 from .query import Query
 from .tree import Tree
 
-
 class TestLanguageLibrary(unittest.TestCase):
     def test_vendor_path(self) -> None:
         self.assertEqual(LanguageLibrary.vendor_path(), './vendor')

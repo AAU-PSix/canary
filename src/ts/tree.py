@@ -47,6 +47,7 @@ class Tree:
                               source[node.end_byte:: 1])
         return parser.parse(new_source, self, encoding)
 
+
     def contents_of(self, node: Node) -> str:
         return str(self.text[node.start_byte: node.end_byte: 1])
 
