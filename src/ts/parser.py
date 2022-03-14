@@ -3,8 +3,8 @@ from typing import List
 
 from tree_sitter import Parser as _Parser
 
-from tree import Tree
-from src.ts.language_library import LanguageLibrary
+from .tree import Tree
+from .language_library import LanguageLibrary
 
 
 class Parser:

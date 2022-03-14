@@ -1,6 +1,6 @@
 import argparse
 
-from .Utilities import FileHandler, CanaryIOHandler
+from .utilities import FileHandler, CanaryIOHandler
 
 
 def setupCommandLine() -> argparse.ArgumentParser:

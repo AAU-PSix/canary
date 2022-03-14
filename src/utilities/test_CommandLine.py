@@ -1,6 +1,6 @@
 import unittest
 
-from src.utilities.setupCommandLine import setupCommandLine
+from .setupCommandLine import *
 
 
 class Test_CommandLine(unittest.TestCase):

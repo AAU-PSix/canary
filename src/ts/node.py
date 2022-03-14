@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from tree_sitter import Node as _Node
 
-from src.ts import FilePoint
+from .file_point import FilePoint
 
 
 class Node:

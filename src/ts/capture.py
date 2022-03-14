@@ -1,6 +1,6 @@
 from typing import List, Tuple, Callable
 
-from node import Node
+from .node import Node
 
 
 class Capture:

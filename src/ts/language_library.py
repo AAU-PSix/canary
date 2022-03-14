@@ -1,6 +1,6 @@
 from tree_sitter import Language as _Language
-from query import Query
-from syntax import Syntax
+from .query import Query
+from .syntax import Syntax
 
 
 class Language:

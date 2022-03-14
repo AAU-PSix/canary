@@ -1,7 +1,7 @@
 from typing import Optional, Iterable
 
 from tree_sitter import TreeCursor as _TreeCursor
-from node import Node
+from .node import Node
 
 
 class TreeCursor:

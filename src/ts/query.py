@@ -1,7 +1,8 @@
 from tree_sitter.binding import Query as _Query
 
-from node import Node
-from file_point import FilePoint
+from .capture import Capture
+from .node import Node
+from .file_point import FilePoint
 
 
 class Query:
