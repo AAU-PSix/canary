@@ -1,6 +1,8 @@
-from ts import *
-from utilities import *
+from ts import LanguageLibrary, Parser, Language, Tree, Node
+from typing import List
+from utilities import setupCommandLine
 from unit_analyser import UnitAnalyser
+from argparse import ArgumentParser
 
 
 def main():
