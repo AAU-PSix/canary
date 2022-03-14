@@ -1,29 +1,32 @@
+from mutator import Mutator
 from ts import *
 from utilities import *
-from unit_analyser import UnitAnalyser
 
 
 def main():
     LanguageLibrary.build()
     commandLineParser: ArgumentParser = setupCommandLine()
     args = commandLineParser.parse_args()
+    input: str = args.input
+    output: str = args.output
 
-    print(args.input)
-    print(args.output)
+    print(input)
+    print(output)
 
+    input_file: FileHandler = open(input, "r")
+    input_contents: str = input_file.read()
+    input_file.close()
 
-
-    # ioHandler = setupIOHandler(commandLineParser)
     parser: Parser = Parser.c()
-    language: Language = parser.language
-    tree: Tree = parser.parse("asd+=1;")
-    unitAnalyser: UnitAnalyser = UnitAnalyser(language, tree.root_node)
+    tree: Tree = parser.parse(input_contents)
     print(tree.text)
 
-    structs = unitAnalyser.get_struct_declarations()
-    functions = unitAnalyser.get_function_declarations()
-    languageConstructs: List[Node] = functions.__add__(structs)
-    print(languageConstructs)
+    mutator = Mutator(parser)
+    mutated_tree: Tree = mutator.mutate(tree)
+    print(mutated_tree.text)
+
+    output_file: str = open(output, "w+")
+    output_file.write(mutated_tree.text)
 
 if __name__ == "__main__":
     main()

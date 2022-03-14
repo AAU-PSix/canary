@@ -1,0 +1,10 @@
+version: '3.3'
+
+services:
+  canary:
+    image: canary:dev
+    volumes:
+      - ./src/:/input/
+    command:
+      - /input/original.c
+      - /input/mutated.c

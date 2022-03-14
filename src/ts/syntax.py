@@ -132,7 +132,7 @@ class Syntax:
         # Predefined queries
         assignment_query = '((assignment_expression) @exp)'
         compound_assignment_query = '((assignment_expression) @exp)'
-        binary_expression_query = '((binary_expression) @exp)'
+        binary_expression_query = '((binary_expression) @exp)' + assignment_query
         function_declaration_query = "((function_definition) @def)"
         struct_declaration_query = '((struct_specifier) @spec)'
 

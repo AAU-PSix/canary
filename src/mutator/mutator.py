@@ -1,5 +1,5 @@
 import random
-from src.ts import *
+from ts import *
 
 
 class Mutator:
