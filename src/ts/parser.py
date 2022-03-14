@@ -12,6 +12,8 @@ class Parser:
         self._parser: _Parser = parser
         if language is not None:
             self.set_language(language)
+        else:
+            self._language = None
 
     @property
     def language(self) -> Language:
@@ -23,8 +25,6 @@ class Parser:
         parser.set_language(language)
         return parser
 
-    def __init__(self, parser: _Parser) -> None:
-        self._parser = parser
 
     def set_language(self, language: "Language") -> None:
         self._parser.set_language(language._language)

@@ -1,15 +1,16 @@
-from ts import *
-from utilities import *
+from typing import List
+from ts import Parser, Tree, Node
+from utilities import setupCommandLine, setupIOHandler
 from unit_analyser import UnitAnalyser
-
+from argparse import ArgumentParser
 
 def main():
-    commandLineParser: argparse.ArgumentParser = setupCommandLine()
+    commandLineParser: ArgumentParser = setupCommandLine()
     ioHandler = setupIOHandler(commandLineParser)
-    parser: Parser = Parser.c()
-    language: Language = parser.language
-    tree: Tree = parser.parse(ioHandler.input_file_text)
-    unitAnalyser: UnitAnalyser = UnitAnalyser(language, tree.root_node)
+    c_parser = Parser.c()
+    c_language = c_parser.language
+    programtree: Tree = c_parser.parse(ioHandler.input_file_text)
+    unitAnalyser: UnitAnalyser = UnitAnalyser(c_language, programtree.root_node)
 
     structs = unitAnalyser.get_struct_declarations()
     functions = unitAnalyser.get_function_declarations()
