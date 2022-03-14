@@ -1,11 +1,12 @@
 from sys import float_info
 from . import (
-    LanguageLibrary,
-    Query,
     Mutator,
     Parser,
     Node,
     Capture,
+)
+from src.ts import (
+    LanguageLibrary, Query
 )
 from typing import List
 
