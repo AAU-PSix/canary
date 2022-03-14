@@ -7,10 +7,10 @@ int main() {
   scanf("%lf", &second);
 
   // value of first is assigned to temp
-  temp = first;
+  temp %= first;
 
   // value of second is assigned to first
-  first *= second;
+  first = second;
 
   // value of temp (initial value of first) is assigned to second
   second = temp;

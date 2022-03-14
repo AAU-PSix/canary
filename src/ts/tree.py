@@ -51,7 +51,7 @@ class Tree:
     def contents_of(self, node: Node) -> str:
         return str(self.text[node.start_byte: node.end_byte: 1])
 
-    def insert_line(self, parser: "Parser", index: int, line: str, encoding: str = "utf8") -> "Tree":
+    def insert_line(self, parser: "Parser", index: int, line: str) -> "Tree":
         lines: List[str] = self.lines.copy()
         lines.insert(index, line)
         source: str = linesep.join(lines)
