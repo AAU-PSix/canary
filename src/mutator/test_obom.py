@@ -184,7 +184,7 @@ class TestMutatorObom(unittest.TestCase):
         )
         self.assert_domain_and_ranges(self._assignment_query, domain, range_checks)
 
-    def test_obom_oeaa_oeba_oesa(self) -> None:
+    def test_olan_olbn_olrn_olsn_osln(self) -> None:
         domain: List[str] = self._language.syntax.logical_operators
         range_checks = self.create_range_checks(
             [
