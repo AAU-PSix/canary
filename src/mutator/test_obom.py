@@ -1,11 +1,9 @@
-from cgitb import reset
 from sys import float_info
-from typing import Dict
 from . import *
 
 import unittest
 
-class TestMutationAnalyser(unittest.TestCase):
+class TestMutatorObom(unittest.TestCase):
     def setUp(self) -> None:
         LanguageLibrary.build()
         self._language = LanguageLibrary.c()

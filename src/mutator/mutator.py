@@ -1,4 +1,3 @@
-import math
 import random
 from ts import *
 
@@ -7,7 +6,12 @@ class Mutator:
         self._parser = parser
         self._language = parser.language
 
-    def mutate(self, tree: Tree, encoding: str = "utf8") -> Tree:
+    def mutate(
+        self,
+        tree: Tree,
+        choose_randomly: bool = True,
+        encoding: str = "utf8"
+    ) -> Tree:
         if tree is None:
             raise Exception('Could not find tree')
 
@@ -18,13 +22,17 @@ class Mutator:
             self._language.syntax.get_binary_expression_operator
         )
 
-        return self.mutate_binary_operator(
-            tree, binary_expression_nodes[0], encoding
-        )
+        mutated_tree: Tree = tree
 
-        query: Query = LanguageLibrary.js().query("(binary_expression (number) @left (number))")
-        captures: Capture = query.captures(query)
-        return self.mutate_binary_operator(tree, captures.first()[0].next_sibling, encoding)
+        node: Node = None
+        if (choose_randomly): node = random.choice(binary_expression_nodes)
+        else: node = binary_expression_nodes[0]
+        mutated_tree = self.mutate_binary_operator(
+            mutated_tree, node, encoding
+        )
+        binary_expression_nodes.remove(node)
+
+        return mutated_tree
 
     def mutate_binary_operator(self, tree: Tree, node: Node, encoding: str = "utf8") -> Tree:
         if node.type is None:
