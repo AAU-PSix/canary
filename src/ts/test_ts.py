@@ -1,11 +1,10 @@
-from . import *
-
 import unittest
-from importlib.resources import path
+from typing import Tuple, List
 from tree_sitter.binding import Query as _Query
 from tree_sitter import Language as _Language
 from os import path
 
+from . import FilePoint
 from .capture import Capture
 from .language_library import Language, LanguageLibrary
 from .node import Node
