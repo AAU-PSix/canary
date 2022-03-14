@@ -24,13 +24,10 @@ jobs:
         rm -rf ./build/
         pip install black
         pip install pylint
-        pip install mypy
     - name: Test with unittest
       run: python3 -m unittest discover -v src
     - name: Pylint for unused imports # TODO maybe use pylint for another purpose? 
       run: pylint --disable=all --enable=unused-argument --enable=global-statement --enable=global-variable-not-assigned --enable=used-before-assignment --enable=function-redefined --enable=abstract-class-instantiated --enable=invalid-unary-operand-type --enable=no-member --enable=undefined-variable --enable=undefined-loop-variable $(git ls-files '*.py')
-    - name: Mypy type checking 
-      run: mypy $(git ls-files '*.py')
     - name: Black code formatting 
       run: rickstaa/action-black@latest
     # - uses: snyk/actions/setup@master
