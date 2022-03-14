@@ -11,3 +11,10 @@ install:
 
 clean:
 	rm -rf ./build/
+
+.PHONY: build
+build:
+	docker build -t canary-dev .
+
+dev: build
+	docker run canary-dev

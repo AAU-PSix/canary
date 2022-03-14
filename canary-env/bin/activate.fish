@@ -29,7 +29,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/home/andreas/Desktop/Git/canary-py/canary-env"
+set -gx VIRTUAL_ENV "/home/andreas/Desktop/Git/canary/canary-env"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH

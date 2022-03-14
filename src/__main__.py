@@ -1,12 +1,7 @@
 import argparse
 from typing import List
-from src.ts.language_library import Language
-from src.ts.syntax import Syntax
-from src.ts.parser import Parser
-from src.ts.tree import Tree
-from src.ts.node import Node
-from utilities.setupCommandLine import setupCommandLine
-from utilities.setupCommandLine import setupIOHandler
+from ts import *
+from utilities import *
 
 
 def main():

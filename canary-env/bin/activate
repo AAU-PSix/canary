@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/home/andreas/Desktop/Git/canary-py/canary-env"
+VIRTUAL_ENV="/home/andreas/Desktop/Git/canary/canary-env"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
