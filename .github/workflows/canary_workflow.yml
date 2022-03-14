@@ -29,7 +29,7 @@ jobs:
     - name: Pylint for unused imports # TODO maybe use pylint for another purpose? 
       run: pylint --disable=all --enable=unused-argument --enable=global-statement --enable=global-variable-not-assigned --enable=used-before-assignment --enable=function-redefined --enable=abstract-class-instantiated --enable=invalid-unary-operand-type --enable=no-member --enable=undefined-variable --enable=undefined-loop-variable $(git ls-files '*.py')
     - name: Black code formatting 
-      run: psf/black@stable
+      uses: psf/black@stable
     # - uses: snyk/actions/setup@master
     # - name: Test dependencies with Snyk
     #   run: snyk test
