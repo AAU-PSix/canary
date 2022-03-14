@@ -1,5 +1,5 @@
 from ts import *
-from Utilities import *
+from utilities import *
 from unit_analyser import UnitAnalyser
 
 
