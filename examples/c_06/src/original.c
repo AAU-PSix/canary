@@ -1,8 +1,6 @@
 #include <stdio.h>
 
-int add(int a, int b) {
-    return a + b;
-}
+#include "original.h"
 
 int main() {
   printf("%i\n", add(1, 2));

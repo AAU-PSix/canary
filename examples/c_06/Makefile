@@ -10,3 +10,7 @@ build: clean
 .PHONY: run
 run: build
 	./build/c_06
+
+.PHONY: test
+test: build
+	./build/c_06_test
