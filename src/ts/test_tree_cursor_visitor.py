@@ -119,7 +119,7 @@ class TreeCursorTest(unittest.TestCase):
         visitor: TreeCFAVisitor = TreeCFAVisitor()
         cfa: CFA = visitor.accept(tree.root_node)
 
-        self.assertEqual(cfa.node_len, 5)
+        self.assertEqual(cfa.node_len, 6)
         self.assertEqual(len(visitor._order), 4)
         self.assertEqual(visitor._order[0].type, "translation_unit")
         self.assertEqual(visitor._order[1].type, "if_statement")
@@ -132,8 +132,10 @@ class TreeCursorTest(unittest.TestCase):
         branches: List[CFANode] = cfa.outgoing(if_node)
         self.assertEqual(len(branches), 2)
         # True branch
-        self.assertEqual(branches[0].node.type, "expression_statement")
-        self.assertEqual(tree.contents_of(branches[0].node), "a = 1;")
+        self.assertIsNone(branches[0].node)
+        next_true: CFANode = cfa.outgoing(branches[0])[0]
+        self.assertEqual(next_true.node.type, "expression_statement")
+        self.assertEqual(tree.contents_of(next_true.node), "a = 1;")
         # False branch
         self.assertIsNone(branches[1].node)
 
@@ -185,7 +187,7 @@ class TreeCursorTest(unittest.TestCase):
         visitor: TreeCFAVisitor = TreeCFAVisitor()
         cfa: CFA = visitor.accept(tree.root_node)
 
-        self.assertEqual(cfa.node_len, 7)
+        self.assertEqual(cfa.node_len, 8)
         self.assertEqual(len(visitor._order), 5)
         self.assertEqual(visitor._order[0].type, "translation_unit")
         self.assertEqual(visitor._order[1].type, "if_statement")
@@ -199,8 +201,10 @@ class TreeCursorTest(unittest.TestCase):
         branches: List[CFANode] = cfa.outgoing(if_node)
         self.assertEqual(len(branches), 2)
         # True branch
-        self.assertEqual(branches[0].node.type, "expression_statement")
-        self.assertEqual(tree.contents_of(branches[0].node), "a = 2;")
+        self.assertIsNone(branches[0].node)
+        next_true: CFANode = cfa.outgoing(branches[0])[0]
+        self.assertEqual(next_true.node.type, "expression_statement")
+        self.assertEqual(tree.contents_of(next_true.node), "a = 2;")
         # False branch
         self.assertIsNone(branches[1].node)
         next_false: CFANode = cfa.outgoing(branches[1])[0]
@@ -208,8 +212,8 @@ class TreeCursorTest(unittest.TestCase):
         self.assertEqual(tree.contents_of(next_false.node), "a = 3;")
 
         # The merge
-        next_true: CFANode = cfa.outgoing(branches[0])[0]
-        next_false: CFANode = cfa.outgoing(next_false)[0]
+        next_true = cfa.outgoing(next_true)[0]
+        next_false = cfa.outgoing(next_false)[0]
         self.assertIsNone(next_false.node)
         self.assertIsNone(next_true.node)
         self.assertEqual(next_true.node, next_false.node)

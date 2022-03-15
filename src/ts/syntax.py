@@ -26,6 +26,8 @@ class Syntax:
         get_binary_expression_operator: Callable[[Node], Node] = None,
         get_get_function_declaration: Callable[[Node], Node] = None,
         get_get_struct_declaration: Callable[[Node], Node] = None,
+        get_get_if_declaration: Callable[[Node], Node] = None,
+        if_declaration_query: str = None
     ) -> None:
         # Binary expression operators
         self._plain_assignment = plain_assignment
@@ -47,6 +49,8 @@ class Syntax:
         self._get_binary_expression_operator = get_binary_expression_operator
         self._get_function_declaration = get_get_function_declaration
         self._get_struct_declaration = get_get_struct_declaration
+        self._get_get_if_declaration = get_get_if_declaration
+        self._get_if_query = if_declaration_query
 
     @property
     def plain_assignment(self) -> List[str]:
@@ -93,6 +97,11 @@ class Syntax:
         return self._compound_assignment_query
 
     @property
+    def query_if_statement(self) -> str:
+        return self._get_if_query
+
+
+    @property
     def query_binary_expression(self) -> str:
         return self._binary_expression_query
 
@@ -135,11 +144,13 @@ class Syntax:
         binary_expression_query = '((binary_expression) @exp)' + assignment_query
         function_declaration_query = "((function_definition) @def)"
         struct_declaration_query = '((struct_specifier) @spec)'
+        if_declaration_query = '(if_statement) @if'
 
         # Query result processors (Infix)
         get_binary_expression_operator: Callable[[Node], Node] = lambda node: node.children[1]
         get_function_declaration: Callable[[Node], Node] = lambda node: node
         get_struct_declaration: Callable[[Node], Node] = lambda node: node
+        get_if_declaration: Callable[[Node], Node] = lambda node: node
 
         return Syntax(
             plain_assignment,
@@ -159,4 +170,10 @@ class Syntax:
             get_binary_expression_operator,
             get_function_declaration,
             get_struct_declaration,
+            get_if_declaration,
+            if_declaration_query
         )
+
+    @property
+    def get_if_query(self):
+        return self._get_if_query
