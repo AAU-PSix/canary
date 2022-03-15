@@ -12,6 +12,7 @@ from .parser import Parser
 from .query import Query
 from .tree import Tree
 
+
 class TestLanguageLibrary(unittest.TestCase):
     def test_vendor_path(self) -> None:
         self.assertEqual(LanguageLibrary.vendor_path(), './vendor')
@@ -36,6 +37,7 @@ class TestLanguageLibrary(unittest.TestCase):
         self.assertIsNotNone(js)
         self.assertIsInstance(js, Language)
         self.assertIsInstance(js._language, _Language)
+
 
 class TestLanguage(unittest.TestCase):
     _js_language: Language = None
@@ -72,6 +74,7 @@ class TestLanguage(unittest.TestCase):
         query = self._js_language.query('(binary_expression (number) (number))')
         self.assertIsInstance(query, Query)
         self.assertIsInstance(query._query, _Query)
+
 
 class TestNode(unittest.TestCase):
     def setUp(self) -> None:
@@ -128,6 +131,7 @@ class TestTree(unittest.TestCase):
         root: Node = tree.root_node
         self.assertIsInstance(root, Node)
 
+
 class TestParser(unittest.TestCase):
     def setUp(self) -> None:
         LanguageLibrary.build()
@@ -144,12 +148,14 @@ class TestParser(unittest.TestCase):
     def test_get_changed_ranges(self) -> None:
         pass
 
+
+# noinspection DuplicatedCode
 class TestCapture(unittest.TestCase):
     def test_iterator(self) -> None:
         node_1: Tuple[Node, str] = (None, '0')
         node_2: Tuple[Node, str] = (None, '1')
         node_3: Tuple[Node, str] = (None, '2')
-        capture = Capture([ node_1, node_2, node_3 ])
+        capture = Capture([node_1, node_2, node_3])
         for idx, elem in enumerate(capture):
             self.assertEqual(elem[1], str(idx))
 
@@ -157,14 +163,14 @@ class TestCapture(unittest.TestCase):
         node_1: Tuple[Node, str] = (None, '0')
         node_2: Tuple[Node, str] = (None, '1')
         node_3: Tuple[Node, str] = (None, '2')
-        capture = Capture([ node_1, node_2, node_3 ])
+        capture = Capture([node_1, node_2, node_3])
         self.assertEqual(len(capture), 3)
 
     def test_get(self) -> None:
         node_1: Tuple[Node, str] = (None, '0')
         node_2: Tuple[Node, str] = (None, '1')
         node_3: Tuple[Node, str] = (None, '2')
-        capture = Capture([ node_1, node_2, node_3 ])
+        capture = Capture([node_1, node_2, node_3])
         self.assertEqual(capture[0][1], '0')
         self.assertEqual(capture[1][1], '1')
         self.assertEqual(capture[2][1], '2')
@@ -173,16 +179,18 @@ class TestCapture(unittest.TestCase):
         node_1: Tuple[Node, str] = (None, '0')
         node_2: Tuple[Node, str] = (None, '1')
         node_3: Tuple[Node, str] = (None, '2')
-        capture = Capture([ node_1, node_2, node_3 ])
+        capture = Capture([node_1, node_2, node_3])
         self.assertEqual(capture.first()[1], '0')
 
     def test_last(self) -> None:
         node_1: Tuple[Node, str] = (None, '0')
         node_2: Tuple[Node, str] = (None, '1')
         node_3: Tuple[Node, str] = (None, '2')
-        capture = Capture([ node_1, node_2, node_3 ])
+        capture = Capture([node_1, node_2, node_3])
         self.assertEqual(capture.last()[1], '2')
 
+
+# noinspection DuplicatedCode
 class TestSyntaxForC(unittest.TestCase):
     def setUp(self) -> None:
         LanguageLibrary.build()
@@ -194,6 +202,11 @@ class TestSyntaxForC(unittest.TestCase):
         self._query_struct_declaration = self._language.query(
             self._language.syntax.query_struct_declaration
         )
+
+        self._query_if_declaration = self._language.query(
+            self._language.syntax.query_if_statement
+        )
+
         return super().setUp()
 
     def test_no_function_return_empty_list(self):
@@ -246,6 +259,59 @@ class TestSyntaxForC(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 1)
         self.assertTrue(None not in result)
+
+    def test_can_find_if_statement(self):
+        root: Node = self._parser.parse("void iff(){if (a == 2){} return;}").root_node
+        capture: Capture = self._query_if_declaration.captures(root)
+        results: List[Node] = capture.nodes(self._language.syntax._get_get_if_declaration)
+
+        self.assertIsNotNone(results)
+        self.assertEqual(len(results), 1)
+        self.assertTrue(None not in results)
+
+    def test_can_find_two_if_statement(self):
+        root: Node = self._parser.parse("void iff(){if (a == 2){} if (a == 2){} return;}").root_node
+        capture: Capture = self._query_if_declaration.captures(root)
+        results: List[Node] = capture.nodes(self._language.syntax._get_get_if_declaration)
+
+        self.assertIsNotNone(results)
+        self.assertEqual(len(results), 2)
+        self.assertTrue(None not in results)
+
+    def test_can_find_if_with_else(self):
+        root: Node = self._parser.parse("void iff(){if (a == 2 ) {} else {} return;}").root_node
+        capture: Capture = self._query_if_declaration.captures(root)
+        results: List[Node] = capture.nodes(self._language.syntax._get_get_if_declaration)
+
+        self.assertIsNotNone(results)
+        self.assertEqual(len(results), 1)
+        self.assertTrue(None not in results)
+
+    def test_can_find_if_without_brackets(self):
+        root: Node = self._parser.parse("void iff(){if (a == 2 ) return; return;}").root_node
+        capture: Capture = self._query_if_declaration.captures(root)
+        results: List[Node] = capture.nodes(self._language.syntax._get_get_if_declaration)
+
+        self.assertIsNotNone(results)
+        self.assertEqual(len(results), 1)
+        self.assertTrue(None not in results)
+
+    def test_can_find_if_with_else_without_brackets(self):
+        root: Node = self._parser.parse("void iff(){if (a == 2 ) return; else return;}").root_node
+        capture: Capture = self._query_if_declaration.captures(root)
+        results: List[Node] = capture.nodes(self._language.syntax._get_get_if_declaration)
+
+        self.assertIsNotNone(results)
+        self.assertEqual(len(results), 1)
+        self.assertTrue(None not in results)
+
+    def test_can_find_no_if_statement(self):
+        root: Node = self._parser.parse("void iff(){return;}").root_node
+        capture: Capture = self._query_if_declaration.captures(root)
+        results: List[Node] = capture.nodes(self._language.syntax._get_get_if_declaration)
+
+        self.assertIsNotNone(results)
+        self.assertEqual(len(results), 0)
 
     def test_can_find_int_function_with_multiple_byte_parameter(self):
         root: Node = self._parser.parse(
@@ -347,7 +413,7 @@ class TestSyntaxForC(unittest.TestCase):
 
     def test_single_struct_dcl_without_identifier(self):
         root: Node = self._parser.parse(
-        "struct Books { \
+            "struct Books { \
             char title[50]; \
             char author[50]; \
             char subject[100]; \
@@ -363,7 +429,7 @@ class TestSyntaxForC(unittest.TestCase):
 
     def test_single_struct_dcl_with_identifier(self):
         root: Node = self._parser.parse(
-        "struct Books { \
+            "struct Books { \
             char title[50]; \
             char author[50]; \
             char subject[100]; \

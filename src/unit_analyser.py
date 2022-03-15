@@ -16,3 +16,7 @@ class UnitAnalyser:
         return self.language.query(
             self.language.syntax.query_struct_declaration
         ).captures(self.node).nodes(self.language.syntax.get_function_declaration)
+
+    def get_if_statements(self) -> List[Node]:
+        return self.language.query(
+            self.language.syntax.query_if_statement).captures(self.node).nodes(self.language.syntax.get_function_declaration)
