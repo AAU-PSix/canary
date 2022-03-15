@@ -4,7 +4,7 @@
 #include "original.h"
 
 void addTest(CuTest *ct) {
-	int expected = 0;
+	int expected = 1;
 	int actual = add(0, 0);
 	CuAssertIntEquals(ct, expected, actual);
 }
@@ -15,8 +15,7 @@ CuSuite *AddSuite() {
 	return suite;
 }
 
-void RunAllTests(void)
-{
+void RunAllTests(void) {
 	CuString *output = CuStringNew();
 	CuSuite* suite = CuSuiteNew();
 
@@ -28,7 +27,6 @@ void RunAllTests(void)
 	printf("%s\n", output->buffer);
 }
 
-int main(void)
-{
+int main(void) {
 	RunAllTests();
 }
