@@ -4,7 +4,7 @@
 #include "original.h"
 
 void addTest(CuTest *ct) {
-	int expected = 1;
+	int expected = 0;
 	int actual = add(0, 0);
 	CuAssertIntEquals(ct, expected, actual);
 }
