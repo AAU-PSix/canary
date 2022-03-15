@@ -6,5 +6,5 @@ services:
     volumes:
       - ./src/:/input/
     command:
-      - /input/original.c
-      - /input/mutated.c
+      - /input/original.h
+      - /input/mutated.h
