@@ -33,9 +33,6 @@ class Parser:
                               source[node.end_byte:: 1])
         return self.parse(new_source, tree, encoding)
 
-    def contents_of(self, tree: Tree, node: Node) -> str:
-        return str(tree.text[node.start_byte: node.end_byte: 1])
-
     def insert_line(self, tree: Tree, index: int, line: str) -> Tree:
         lines: List[str] = tree.lines.copy()
         lines.insert(index, line)

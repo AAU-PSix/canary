@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Iterable
 
 from tree_sitter import Node as _Node
 
@@ -67,48 +67,77 @@ class Node:
         return self._node.named_child_count
 
     @property
-    def next_sibling(self) -> Optional["Node"]:
+    def next_sibling(self) -> "Node":
         result = self._node.next_sibling
-        if result is None:
-            return None
+        if result is None: return None
         return Node(result)
 
     @property
-    def prev_sibling(self) -> Optional["Node"]:
+    def first_child(self) -> "Node":
+        if self.child_count is 0: return None
+        return self.children[0]
+
+    @property
+    def prev_sibling(self) -> "Node":
         result = self._node.prev_sibling
         if result is None:
             return None
         return Node(result)
 
     @property
-    def next_named_sibling(self) -> Optional["Node"]:
+    def next_named_sibling(self) -> "Node":
         result = self._node.next_named_sibling
         if result is None:
             return None
         return Node(result)
 
     @property
-    def prev_named_sibling(self) -> Optional["Node"]:
+    def prev_named_sibling(self) -> "Node":
         result = self._node.prev_named_sibling
         if result is None:
             return None
         return Node(result)
 
     @property
-    def parent(self) -> Optional["Node"]:
+    def parent(self) -> "Node":
         result = self._node.parent
         if result is None:
             return None
         return Node(result)
 
-    def child_by_field_id(self, id: int) -> Optional["Node"]:
+    def child_by_field_id(self, id: int) -> "Node":
         result = self._node.child_by_field_id(id)
         if result is None:
             return None
         return Node(result)
 
-    def child_by_field_name(self, name: str) -> Optional["Node"]:
+    def child_by_field_name(self, name: str) -> "Node":
         result = self._node.child_by_field_name(name)
         if result is None:
             return None
         return Node(result)
+
+    def pre_order_traverse(self, named_only: bool = False) -> Iterable["Node"]:
+        reached_root: bool = False
+        curr: Node = self
+        while not reached_root:
+            if named_only and curr.is_named: yield curr
+            elif not named_only: yield curr
+            
+            child: Node = curr.first_child
+            if child is not None:
+                curr = child
+                continue
+            
+            sibling: Node = curr.next_sibling
+            if sibling is not None:
+                curr = sibling
+                continue
+
+            retracng: bool = True
+            while retracng:
+                if curr.parent is None:
+                    retracng = False
+                    reached_root = True
+                if curr.next_sibling is not None:
+                    retracng = False

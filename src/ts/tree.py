@@ -40,6 +40,9 @@ class Tree:
             new_end_point,
         )
 
+    def contents_of(self, node: Node) -> str:
+        return str(self.text[node.start_byte: node.end_byte: 1])
+
     def walk(self) -> TreeCursor:
         return TreeCursor(self._tree.walk())
 

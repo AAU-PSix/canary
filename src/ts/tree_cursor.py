@@ -4,7 +4,6 @@ from queue import Queue
 from tree_sitter import TreeCursor as _TreeCursor
 from .node import Node
 
-
 class TreeCursor:
     def __init__(self, cursor: _TreeCursor) -> None:
         self._cursor = cursor
@@ -25,13 +24,25 @@ class TreeCursor:
     def goto_next_sibling(self) -> bool:
         return self._cursor.goto_next_sibling()
 
+    def goto_next_named_sibling(self) -> bool:
+        while self.goto_next_sibling():
+            if self.node.is_named: return True
+        return False
+
     def reset(self):
         while self.goto_parent(): pass
 
-    def pre_order_traverse(self) -> Iterable[Node]:
+    def retrace_to(self, node: Node):
+        while True:
+            if self.node._node == node._node:
+                break
+            self.goto_parent()
+
+    def pre_order_traverse(self, named_only: bool = False) -> Iterable[Node]:
         reached_root: bool = False
         while not reached_root:
-            yield self.node
+            if named_only and self.node.is_named: yield self.node
+            elif not named_only: yield self.node
             if self.goto_first_child(): continue
             if self.goto_next_sibling(): continue
 
@@ -50,6 +61,7 @@ class TreeCursor:
         queue.put(self.node)
         while (not queue.empty()):
             current: Node = queue.get()
-            yield current
+            if named_only and current.is_named: yield current
+            elif not named_only: yield current
             for neighbour in current.children:
                 if named_only and neighbour.is_named: queue.put(neighbour)
