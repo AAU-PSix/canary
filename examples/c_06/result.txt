@@ -1,0 +1,50 @@
+rm -rf ./build
+mkdir ./build
+cd ./build && cmake ../src/ && cmake --build .
+-- The C compiler identification is GNU 9.3.0
+-- The CXX compiler identification is GNU 9.3.0
+-- Check for working C compiler: /usr/bin/cc
+-- Check for working C compiler: /usr/bin/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Check for working CXX compiler: /usr/bin/c++
+-- Check for working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/andreas/Desktop/Git/canary/examples/c_06/build
+make[1]: Entering directory '/home/andreas/Desktop/Git/canary/examples/c_06/build'
+make[2]: Entering directory '/home/andreas/Desktop/Git/canary/examples/c_06/build'
+make[3]: Entering directory '/home/andreas/Desktop/Git/canary/examples/c_06/build'
+Scanning dependencies of target c_06
+make[3]: Leaving directory '/home/andreas/Desktop/Git/canary/examples/c_06/build'
+make[3]: Entering directory '/home/andreas/Desktop/Git/canary/examples/c_06/build'
+[ 20%] Building C object CMakeFiles/c_06.dir/original.c.o
+[ 40%] Linking C executable c_06
+make[3]: Leaving directory '/home/andreas/Desktop/Git/canary/examples/c_06/build'
+[ 40%] Built target c_06
+make[3]: Entering directory '/home/andreas/Desktop/Git/canary/examples/c_06/build'
+Scanning dependencies of target c_06_test
+make[3]: Leaving directory '/home/andreas/Desktop/Git/canary/examples/c_06/build'
+make[3]: Entering directory '/home/andreas/Desktop/Git/canary/examples/c_06/build'
+[ 60%] Building C object CMakeFiles/c_06_test.dir/AllTests.c.o
+[ 80%] Building C object CMakeFiles/c_06_test.dir/CuTest.c.o
+[100%] Linking C executable c_06_test
+make[3]: Leaving directory '/home/andreas/Desktop/Git/canary/examples/c_06/build'
+[100%] Built target c_06_test
+make[2]: Leaving directory '/home/andreas/Desktop/Git/canary/examples/c_06/build'
+make[1]: Leaving directory '/home/andreas/Desktop/Git/canary/examples/c_06/build'
+./build/c_06_test
+.F
+
+There was 1 failure:
+1) addTest_1_1: /home/andreas/Desktop/Git/canary/examples/c_06/src/AllTests.c:23: expected <9> but was <1>
+
+!!!FAILURES!!!
+Runs: 2 Passes: 1 Fails: 1
+

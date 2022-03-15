@@ -1,7 +1,9 @@
 
 import unittest
 from typing import Iterable, List
-from src.cfa.cfa import CFA, CFANode
+
+from src.cfa import CFA
+from src.cfa.cfa import CFANode
 
 from . import (
     Node,
@@ -10,7 +12,7 @@ from . import (
     Query,
     Tree,
     TreeCursor,
-    TreeCursorVisitor,
+    TreeCFAVisitor,
 )
 
 class TreeCursorTest(unittest.TestCase):
@@ -32,6 +34,8 @@ class TreeCursorTest(unittest.TestCase):
 
         for node in iterable: order.append(node)
 
+        self.assertEqual(len(order), 13)
+
         self.assertEqual(order[0].type, "translation_unit")
 
         self.assertEqual(order[1].type, "expression_statement")
@@ -39,114 +43,238 @@ class TreeCursorTest(unittest.TestCase):
         self.assertEqual(order[3].type, "identifier")
         self.assertEqual(order[4].type, "number_literal")
 
-    def test_visit_empty(self) -> None:
-        tree: Tree = self._parser.parse("")
-        visitor: TreeCursorVisitor = TreeCursorVisitor()
-        cfa: CFA = visitor.accept(tree.root_node)
+        self.assertEqual(order[5].type, "expression_statement")
+        self.assertEqual(order[6].type, "assignment_expression")
+        self.assertEqual(order[7].type, "identifier")
+        self.assertEqual(order[8].type, "number_literal")
 
-        curr: CFANode = cfa.root
-        self.assertEqual(curr.node.type, "translation_unit")
+        self.assertEqual(order[9].type, "expression_statement")
+        self.assertEqual(order[10].type, "assignment_expression")
+        self.assertEqual(order[11].type, "identifier")
+        self.assertEqual(order[12].type, "number_literal")
 
-    def test_visit_one_expression_statement(self) -> None:
-        tree: Tree = self._parser.parse("a=1;")
-        visitor: TreeCursorVisitor = TreeCursorVisitor()
-        cfa: CFA = visitor.accept(tree.root_node)
-
-        curr: CFANode = cfa.root
-        self.assertEqual(curr.node.type, "translation_unit")
-
-        children: List[CFANode] = cfa.outgoing(curr)
-        self.assertEqual(len(children), 1)
-        curr = children[0]
-        self.assertEqual(curr.node.type, "expression_statement")
-        self.assertEqual(tree.contents_of(curr.node), "a=1;")
-
-    def test_visit_two_expression_statement(self) -> None:
-        tree: Tree = self._parser.parse("a=1; a=2;")
-        visitor: TreeCursorVisitor = TreeCursorVisitor()
-        cfa: CFA = visitor.accept(tree.root_node)
-
-        curr: CFANode = cfa.root
-        self.assertEqual(curr.node.type, "translation_unit")
-
-        children: List[CFANode] = cfa.outgoing(curr)
-        self.assertEqual(len(children), 1)
-        curr = children[0]
-        self.assertEqual(curr.node.type, "expression_statement")
-        self.assertEqual(tree.contents_of(curr.node), "a=1;")
-
-        children: List[CFANode] = cfa.outgoing(curr)
-        self.assertEqual(len(children), 1)
-        curr = children[0]
-        self.assertEqual(curr.node.type, "expression_statement")
-        self.assertEqual(tree.contents_of(curr.node), "a=2;")
-
-    def test_visit_three_expression_statement(self) -> None:
+    def test_tree_visitor_for_cfa_three_expressions(self) -> None:
         tree: Tree = self._parser.parse("a=1; a=2; a=3;")
-        visitor: TreeCursorVisitor = TreeCursorVisitor()
+        visitor: TreeCFAVisitor = TreeCFAVisitor()
+        visitor.accept(tree.root_node)
+        order: List[Node] = visitor._order
+
+        self.assertEqual(len(order), 4)
+        self.assertEqual(order[0].type, "translation_unit")
+        self.assertEqual(order[1].type, "expression_statement")
+        self.assertEqual(order[2].type, "expression_statement")
+        self.assertEqual(order[3].type, "expression_statement")
+
+    def test_tree_cfa_creation_three_expressions(self) -> None:
+        tree: Tree = self._parser.parse("a=1; a=2; a=3;")
+        visitor: TreeCFAVisitor = TreeCFAVisitor()
         cfa: CFA = visitor.accept(tree.root_node)
+
+        self.assertEqual(cfa.node_len, 4)
 
         curr: CFANode = cfa.root
         self.assertEqual(curr.node.type, "translation_unit")
 
-        children: List[CFANode] = cfa.outgoing(curr)
-        self.assertEqual(len(children), 1)
-        curr = children[0]
-        self.assertEqual(curr.node.type, "expression_statement")
-        self.assertEqual(tree.contents_of(curr.node), "a=1;")
+        outgoing: List[CFANode] = cfa.outgoing(curr)
+        self.assertEqual(len(outgoing), 1)
+        self.assertEqual(outgoing[0].node.type, "expression_statement")
+        curr = outgoing[0]
 
-        children: List[CFANode] = cfa.outgoing(curr)
-        self.assertEqual(len(children), 1)
-        curr = children[0]
-        self.assertEqual(curr.node.type, "expression_statement")
-        self.assertEqual(tree.contents_of(curr.node), "a=2;")
+        outgoing = cfa.outgoing(curr)
+        self.assertEqual(len(outgoing), 1)
+        self.assertEqual(outgoing[0].node.type, "expression_statement")
+        curr = outgoing[0]
 
-        children: List[CFANode] = cfa.outgoing(curr)
-        self.assertEqual(len(children), 1)
-        curr = children[0]
-        self.assertEqual(curr.node.type, "expression_statement")
-        self.assertEqual(tree.contents_of(curr.node), "a=3;")
+        outgoing = cfa.outgoing(curr)
+        self.assertEqual(len(outgoing), 1)
+        self.assertEqual(outgoing[0].node.type, "expression_statement")
+        curr = outgoing[0]
 
-#    def test_visit_one_if_statement_1(self) -> None:
-#        tree: Tree = self._parser.parse("if (a == 1) { a = 2; }")
-#        visitor: TreeCursorVisitor = TreeCursorVisitor()
-#        cfa: CFA = visitor.accept(tree.root_node)
-#
-#        curr: CFANode = cfa.root
-#        self.assertEqual(curr.node.type, "translation_unit")
-#
-#        children: List[CFANode] = cfa.outgoing(curr)
-#        self.assertEqual(len(children), 1)
-#        curr = children[0]
-#        self.assertEqual(curr.node.type, "parenthesized_expression")
-#        self.assertEqual(tree.contents_of(curr.node), "(a == 1)")
-#
-#        children: List[CFANode] = cfa.outgoing(curr)
-#        self.assertEqual(len(children), 1)
-#        curr = children[0]
-#        self.assertEqual(curr.node.type, "expression_statement")
-#        self.assertEqual(tree.contents_of(curr.node), "a = 2;")
+    def test_pre_order_one_if_statement(self) -> None:
+        tree: Tree = self._parser.parse("if (a == 1) { a = 2; }")
+        cursor: TreeCursor = tree.walk()
+        iterable: Iterable[Node] = cursor.pre_order_traverse(True)
+        order: List[Node] = list()
 
-#    def test_visit_one_if_statement_2(self) -> None:
-#        tree: Tree = self._parser.parse("if (a == 1) { a = 1; } a = 2;")
-#        cursor: TreeCursor = tree.walk()
-#        visitor: TreeCursorVisitor = TreeCursorVisitor()
-#        cfa: CFA = visitor.accept(cursor)
-#
-#        curr: CFANode = cfa.root
-#        self.assertEqual(curr.node.type, "translation_unit")
-#
-#        children: List[CFANode] = cfa.outgoing(curr)
-#        self.assertEqual(len(children), 1)
-#        curr = children[0]
-#        self.assertEqual(curr.node.type, "parenthesized_expression")
-#        self.assertEqual(tree.contents_of(curr.node), "(a == 1)")
-#
-#        children: List[CFANode] = cfa.outgoing(curr)
-#        self.assertEqual(len(children), 2)
-#        curr = children[0]
-#        self.assertEqual(curr.node.type, "expression_statement")
-#        self.assertEqual(tree.contents_of(curr.node), "a = 1;")
-#        curr = children[1]
-#        self.assertEqual(curr.node.type, "expression_statement")
-#        self.assertEqual(tree.contents_of(curr.node), "a = 2;")
+        for node in iterable: order.append(node)
+
+        self.assertEqual(len(order), 11)
+
+        self.assertEqual(order[0].type, "translation_unit")
+
+        self.assertEqual(order[1].type, "if_statement")
+        self.assertEqual(order[2].type, "parenthesized_expression")
+        self.assertEqual(order[3].type, "binary_expression")
+        self.assertEqual(order[4].type, "identifier")
+        self.assertEqual(order[5].type, "number_literal")
+
+        self.assertEqual(order[6].type, "compound_statement")
+        self.assertEqual(order[7].type, "expression_statement")
+        self.assertEqual(order[8].type, "assignment_expression")
+        self.assertEqual(order[9].type, "identifier")
+        self.assertEqual(order[10].type, "number_literal")
+
+    def test_tree_cfa_creation_one_if_statement(self) -> None:
+        tree: Tree = self._parser.parse("if (a == 1) { a = 1; } a = 2;")
+        visitor: TreeCFAVisitor = TreeCFAVisitor()
+        cfa: CFA = visitor.accept(tree.root_node)
+
+        self.assertEqual(cfa.node_len, 5)
+        self.assertEqual(len(visitor._order), 4)
+        self.assertEqual(visitor._order[0].type, "translation_unit")
+        self.assertEqual(visitor._order[1].type, "if_statement")
+        self.assertEqual(visitor._order[2].type, "expression_statement")
+        self.assertEqual(visitor._order[3].type, "expression_statement")
+
+        if_node: CFANode = cfa.outgoing(cfa.root)[0]
+        self.assertEqual(if_node.node.type, "parenthesized_expression")
+
+        branches: List[CFANode] = cfa.outgoing(if_node)
+        self.assertEqual(len(branches), 2)
+        # True branch
+        self.assertEqual(branches[0].node.type, "expression_statement")
+        self.assertEqual(tree.contents_of(branches[0].node), "a = 1;")
+        # False branch
+        self.assertIsNone(branches[1].node)
+
+    def test_tree_visitor_for_cfa_one_if_statement(self) -> None:
+        tree: Tree = self._parser.parse("if (a == 1) { a = 2; }")
+        visitor: TreeCFAVisitor = TreeCFAVisitor()
+        visitor.accept(tree.root_node)
+        order: List[Node] = visitor._order
+
+        self.assertEqual(len(order), 3)
+        self.assertEqual(order[0].type, "translation_unit")
+        self.assertEqual(order[1].type, "if_statement")
+        self.assertEqual(order[2].type, "expression_statement")
+
+        self.assertEqual(len(order[1].children), 3)
+        self.assertEqual(order[1].children[0].type, "if")
+        self.assertEqual(order[1].children[1].type, "parenthesized_expression")
+        self.assertEqual(order[1].children[2].type, "compound_statement")
+
+        self.assertEqual(order[1].child_by_field_name("condition").type, "parenthesized_expression")
+        self.assertEqual(order[1].child_by_field_name("consequence").type, "compound_statement")
+        self.assertIsNone(order[1].child_by_field_name("alternative"))
+
+    def test_tree_visitor_for_cfa_one_if_else_statement(self) -> None:
+        tree: Tree = self._parser.parse("if (a == 1) { a = 2; } else { a = 3; }")
+        visitor: TreeCFAVisitor = TreeCFAVisitor()
+        visitor.accept(tree.root_node)
+        order: List[Node] = visitor._order
+
+        self.assertEqual(len(order), 4)
+        self.assertEqual(order[0].type, "translation_unit")
+        self.assertEqual(order[1].type, "if_statement")
+        self.assertEqual(order[2].type, "expression_statement")
+        self.assertEqual(order[2].type, "expression_statement")
+
+        self.assertEqual(len(order[1].children), 5)
+        self.assertEqual(order[1].children[0].type, "if")
+        self.assertEqual(order[1].children[1].type, "parenthesized_expression")
+        self.assertEqual(order[1].children[2].type, "compound_statement")
+        self.assertEqual(order[1].children[3].type, "else")
+        self.assertEqual(order[1].children[4].type, "compound_statement")
+
+        self.assertEqual(order[1].child_by_field_name("condition").type, "parenthesized_expression")
+        self.assertEqual(order[1].child_by_field_name("consequence").type, "compound_statement")
+        self.assertEqual(order[1].child_by_field_name("alternative").type, "compound_statement")
+
+    def test_tree_cfa_creation_one_if_else_statement(self) -> None:
+        tree: Tree = self._parser.parse("if (a == 1) { a = 2; } else { a = 3; } a = 4;")
+        visitor: TreeCFAVisitor = TreeCFAVisitor()
+        cfa: CFA = visitor.accept(tree.root_node)
+
+        self.assertEqual(cfa.node_len, 7)
+        self.assertEqual(len(visitor._order), 5)
+        self.assertEqual(visitor._order[0].type, "translation_unit")
+        self.assertEqual(visitor._order[1].type, "if_statement")
+        self.assertEqual(visitor._order[2].type, "expression_statement")
+        self.assertEqual(visitor._order[3].type, "expression_statement")
+        self.assertEqual(visitor._order[4].type, "expression_statement")
+
+        if_node: CFANode = cfa.outgoing(cfa.root)[0]
+        self.assertEqual(if_node.node.type, "parenthesized_expression")
+
+        branches: List[CFANode] = cfa.outgoing(if_node)
+        self.assertEqual(len(branches), 2)
+        # True branch
+        self.assertEqual(branches[0].node.type, "expression_statement")
+        self.assertEqual(tree.contents_of(branches[0].node), "a = 2;")
+        # False branch
+        self.assertIsNone(branches[1].node)
+        next_false: CFANode = cfa.outgoing(branches[1])[0]
+        self.assertEqual(next_false.node.type, "expression_statement")
+        self.assertEqual(tree.contents_of(next_false.node), "a = 3;")
+
+        # The merge
+        next_true: CFANode = cfa.outgoing(branches[0])[0]
+        next_false: CFANode = cfa.outgoing(next_false)[0]
+        self.assertIsNone(next_false.node)
+        self.assertIsNone(next_true.node)
+        self.assertEqual(next_true.node, next_false.node)
+
+        final_exp: CFANode = cfa.outgoing(next_true)[0]
+        self.assertEqual(final_exp.node.type, "expression_statement")
+        self.assertEqual(tree.contents_of(final_exp.node), "a = 4;")
+
+    def test_tree_visitor_for_cfa_one_if_elseif_else_statement(self) -> None:
+        tree: Tree = self._parser.parse(
+            "if (a == 1) { a = 2; } else if (a == 2) { } else { a = 3; }"
+        )
+        visitor: TreeCFAVisitor = TreeCFAVisitor()
+        visitor.accept(tree.root_node)
+        order: List[Node] = visitor._order
+
+        self.assertEqual(len(order), 5)
+        self.assertEqual(order[0].type, "translation_unit")
+        self.assertEqual(order[1].type, "if_statement")
+        self.assertEqual(order[2].type, "expression_statement")
+        self.assertEqual(order[3].type, "if_statement")
+        self.assertEqual(order[4].type, "expression_statement")
+
+        self.assertEqual(len(order[1].children), 5)
+        self.assertEqual(order[1].children[0].type, "if")
+        self.assertEqual(order[1].children[1].type, "parenthesized_expression")
+        self.assertEqual(order[1].children[2].type, "compound_statement")
+        self.assertEqual(order[1].children[3].type, "else")
+        self.assertEqual(order[1].children[4].type, "if_statement")
+
+        self.assertEqual(order[1].child_by_field_name("condition").type, "parenthesized_expression")
+        self.assertEqual(tree.contents_of(
+            order[1].child_by_field_name("condition")),
+            "(a == 1)"
+        )
+        self.assertEqual(order[1].child_by_field_name("consequence").type, "compound_statement")
+        self.assertEqual(tree.contents_of(
+            order[1].child_by_field_name("consequence")),
+            "{ a = 2; }"
+        )
+        self.assertEqual(order[1].child_by_field_name("alternative").type, "if_statement")
+        self.assertEqual(
+            tree.contents_of(order[1].child_by_field_name("alternative")),
+            "if (a == 2) { } else { a = 3; }"
+        )
+
+        self.assertEqual(len(order[1].children), 5)
+        self.assertEqual(order[3].children[0].type, "if")
+        self.assertEqual(order[3].children[1].type, "parenthesized_expression")
+        self.assertEqual(order[3].children[2].type, "compound_statement")
+        self.assertEqual(order[3].children[3].type, "else")
+        self.assertEqual(order[3].children[4].type, "compound_statement")
+
+        self.assertEqual(order[3].child_by_field_name("condition").type, "parenthesized_expression")
+        self.assertEqual(tree.contents_of(
+            order[3].child_by_field_name("condition")),
+            "(a == 2)"
+        )
+        self.assertEqual(order[3].child_by_field_name("consequence").type, "compound_statement")
+        self.assertEqual(tree.contents_of(
+            order[3].child_by_field_name("consequence")),
+            "{ }"
+        )
+        self.assertEqual(order[3].child_by_field_name("alternative").type, "compound_statement")
+        self.assertEqual(
+            tree.contents_of(order[3].child_by_field_name("alternative")),
+            "{ a = 3; }"
+        )

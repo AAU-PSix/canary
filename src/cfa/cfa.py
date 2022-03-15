@@ -37,6 +37,10 @@ class CFA:
         return node in self._nodes
 
     @property
+    def node_len(self) -> int:
+        return len(self._nodes)
+
+    @property
     def root(self) -> CFANode:
         return self._root
 

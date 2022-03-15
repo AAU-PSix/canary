@@ -9,7 +9,7 @@ from . import (
     Query,
     Tree,
     TreeCursor,
-    TreeCursorVisitor,
+    TreeCFAVisitor,
 )
 
 class TreeCursorTest(unittest.TestCase):
