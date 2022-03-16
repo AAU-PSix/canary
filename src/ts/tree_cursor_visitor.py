@@ -7,13 +7,13 @@ from src.cfa import CFA, CFANode
 class TreeCFAVisitor():
     _cfa: CFA
     _current: CFANode
-    _visits: Dict[str, Callable[[TreeCursor], None]]
+    _visits: Dict[str, Callable[[Node], CFANode]]
     _order: List[Node]
     _merges: List[Tuple[Node, Node]]
 
     def __init__(self) -> None:
         # We dont have the "translation_unit" because it will always be the root
-        self._visits: Dict[str, Callable[[TreeCursor], None]] = {
+        self._visits: Dict[str, Callable[[Node], CFANode]] = {
             "expression_statement": self.visit_expression_statement,
             "if_statement": self.visit_if_statement,
         }
@@ -28,6 +28,9 @@ class TreeCFAVisitor():
         # |
         # d
         s: CFANode = self.current()
+        if s.node is None:
+            s.node = d.node
+            return s
         self._current = d
         self._cfa.branch(s, d)
         return d
@@ -43,7 +46,7 @@ class TreeCFAVisitor():
         self._current = d
         return d
 
-    def accept(self, root: Node) -> CFA:
+    def create(self, root: Node) -> CFA:
         self._order = [ root ]
 
         cfa_root: CFANode = CFANode(root)
@@ -57,15 +60,21 @@ class TreeCFAVisitor():
 
         return self._cfa
 
-    def visit(self, node: Node) -> CFANode:
+    def accept(self, node: Node) -> CFANode:
         if node.type in self._visits:
             return self._visits[node.type](node)
+
+    def visit(self, node: Node) -> CFANode:
+        last: CFANode = self.accept(node)
+        last_from_children: CFANode = self.visit_children(node)
+        if last_from_children is not None: last = last_from_children
+        return last
 
     def visit_children(self, node: Node) -> CFANode:
         last: CFANode = None
         for child in node.children:
             if not child.is_named: continue
-            last = self.visit(child)
+            last = self.accept(child)
         return last
 
     def visit_expression_statement(self, d: Node) -> CFANode:
@@ -98,18 +107,22 @@ class TreeCFAVisitor():
         consequence: Node = node.child_by_field_name("consequence")
         if consequence is not None and consequence.child_count > 0:
             j: CFANode = CFANode(None)
+            # By doing this branch the next to be replaced will be "j"
             self.branch(p, j)
 
-            self.visit(consequence)
-            c: CFANode = self.visit_children(consequence)
+            c: CFANode = self.visit(consequence)
+            # By doing this branch the next to be replaced will be "s"
+            #   This is useful in the cases where there are no "alternative"
+            #   s.t. we will just continue from "s" which is essentially 
+            #   then the outgoing endpoint from "p"
             self.branch(c, s)
 
         alternative: Node = node.child_by_field_name("alternative")
         if alternative is not None and alternative.child_count > 0:
             i: CFANode = CFANode(None)
+            # By doing this branch the next to be replaced will be "i"
             self.branch(p, i)
 
-            self.visit(alternative)
-            a: CFANode = self.visit_children(alternative)
+            a: CFANode = self.visit(alternative)
             self.branch(a, s)
         else: self.branch(p, s)
