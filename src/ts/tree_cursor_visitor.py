@@ -30,12 +30,7 @@ class TreeCFAVisitor():
         if s.node is None:
             s.node = d.node
             return s
-        self._current = d
-        self._cfa.branch(s, d)
-        return d
-
-    def next_empty(self) -> CFANode:
-        return self.next(CFANode(None))
+        return self.branch(s, d)
 
     def branch(self, s: CFANode, d: CFANode) -> CFANode:
         # s
@@ -65,8 +60,6 @@ class TreeCFAVisitor():
 
     def visit(self, node: Node) -> CFANode:
         last: CFANode = self.accept(node)
-        last_from_children: CFANode = self.visit_children(node)
-        if last_from_children is not None: last = last_from_children
         return last
 
     def visit_children(self, node: Node) -> CFANode:
@@ -106,22 +99,53 @@ class TreeCFAVisitor():
         consequence: Node = node.child_by_field_name("consequence")
         if consequence is not None and consequence.child_count > 0:
             j: CFANode = CFANode(None)
+            c: CFANode = None
             # By doing this branch the next to be replaced will be "j"
             self.branch(p, j)
-
-            c: CFANode = self.visit(consequence)
+            self.visit(consequence)
+            c = self.visit_children(consequence)
             # By doing this branch the next to be replaced will be "s"
             #   This is useful in the cases where there are no "alternative"
             #   s.t. we will just continue from "s" which is essentially 
             #   then the outgoing endpoint from "p"
             self.branch(c, s)
+            if c is not None and c.node is None: self._cfa.remove(c)
 
         alternative: Node = node.child_by_field_name("alternative")
         if alternative is not None and alternative.child_count > 0:
             i: CFANode = CFANode(None)
+            a: CFANode = None
             # By doing this branch the next to be replaced will be "i"
             self.branch(p, i)
 
-            a: CFANode = self.visit(alternative)
+            # Check if it is an else-if chain, if so then dont check the children
+            #   but allow the accept call to accept the if-stmt visit.
+            if alternative.type == "if_statement":
+                a = self.visit(alternative)
+            else: a = self.visit_children(alternative)
             self.branch(a, s)
+            if a is not None and a.node is None: self._cfa.remove(a)
         else: self.branch(p, s)
+
+        return s
+
+    def visit_switch_statement(self, node: Node) -> CFANode:
+        pass
+
+    def visit_while_statement(self, node: Node) -> CFANode:
+        pass
+
+    def visit_do_statement(self, node: Node) -> CFANode:
+        pass
+
+    def visit_for_statement(self, node: Node) -> CFANode:
+        pass
+
+    def visit_goto_label(self, node: Node) -> CFANode:
+        pass
+
+    def visit_continue_statement(self, node: Node) -> CFANode:
+        pass
+
+    def visit_return_statement(self, node: Node) -> CFANode:
+        pass

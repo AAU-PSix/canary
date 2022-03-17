@@ -1,9 +1,12 @@
 
+from platform import node
 import unittest
 from typing import Iterable, List
+import graphviz
 
 from src.cfa import CFA
-from src.cfa.cfa import CFANode
+from src.cfa.cfa import CFAEdge, CFANode
+from queue import Queue
 
 from . import (
     Node,
@@ -223,6 +226,58 @@ class TreeCursorTest(unittest.TestCase):
         self.assertEqual(next_true.node.type, "expression_statement")
         self.assertEqual(tree.contents_of(next_true.node), "a = 4;")
 
+    def test_tree_cfa_creation_one_if_elseif_else_statement(self) -> None:
+        tree: Tree = self._parser.parse(
+            # "a=1; if(a==1) { a=2; }"
+            # "a=1; if(a==1) { a=2; } a=3;"
+            # "a=1; if(a==1) { a=2; } else { a=3; }"
+            # "a=1; if(a==1) { a=2; } else { a=3; } a=4;"
+            # "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } a=4;"
+            # "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } a=4;"
+            # "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } else if(a==3) { a=4; } a=5;"
+            "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } else if(a==3) { a=4; } else if(a==4) { a=5; } else { a=6; } a=7;"
+        )
+        visitor: TreeCFAVisitor = TreeCFAVisitor()
+        cfa: CFA = visitor.create(tree.root_node)
+
+
+        def name(cfa_node: CFANode) -> str:
+            node: Node = cfa_node.node
+            if node is None: return f'l{cfa_node.location}'
+            return f'{tree.contents_of(node)}'
+
+        dot = graphviz.Digraph('graph')
+        visited: List[CFANode] = list()
+        queue: Queue[CFANode] = Queue()
+        queue.put(cfa.root)
+        while not queue.empty():
+            current: CFANode = queue.get()
+            visited.append(current)
+
+            for edge in cfa.outgoing_edges(current):
+                if edge.destination not in visited:
+                    queue.put(edge.destination)
+                dot.edge(name(edge.source), name(edge.destination))
+        dot.save()
+
+        #bfs: List[CFANode] = [*cfa.breadth_first_traverse()]
+        # self.assertEqual(len(bfs), 8)
+        # self.assertEqual(bfs[0].node.type, "translation_unit")
+        # # The first if-statement
+        # self.assertEqual(bfs[1].node.type, "parenthesized_expression")
+        # self.assertEqual(tree.contents_of(bfs[1].node), "(a == 1)")
+        # self.assertEqual(bfs[2].node.type, "expression_statement")
+        # self.assertEqual(tree.contents_of(bfs[2].node), "a = 2;")
+        # # The else-if-statement
+        # self.assertEqual(bfs[3].node.type, "parenthesized_expression")
+        # self.assertEqual(tree.contents_of(bfs[3].node), "(a == 2)")
+        # self.assertIsNone(bfs[4].node) # The block is empty
+
+        # # self.assertEqual(bfs[5].node.type, "")
+        # self.assertEqual(bfs[6].node.type, "expression_statement")
+        # # self.assertEqual(bfs[7].node.type, "")
+
+
     def test_tree_visitor_for_cfa_one_if_elseif_else_statement(self) -> None:
         tree: Tree = self._parser.parse(
             "if (a == 1) { a = 2; } else if (a == 2) { } else { a = 3; }"
@@ -283,3 +338,15 @@ class TreeCursorTest(unittest.TestCase):
             tree.contents_of(order[3].child_by_field_name("alternative")),
             "{ a = 3; }"
         )
+
+    def test_tree_visitor_for_cfa_switch_one_case(self) -> None:
+        tree: Tree = self._parser.parse(
+            """
+            switch (expression) {
+                case a: a = 2;
+            }
+            """
+        )
+        visitor: TreeCFAVisitor = TreeCFAVisitor()
+        visitor.create(tree.root_node)
+        order: List[Node] = visitor._order

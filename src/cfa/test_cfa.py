@@ -38,6 +38,96 @@ class TestCFA(unittest.TestCase):
         self.assertEqual(len(outgoing), 1)
         self.assertTrue(node_2 in outgoing)
 
+        self.assertFalse(node_1 in cfa._ingoing_edges)
+        self.assertFalse(node_1 in cfa._outgoing_edges)
+        
+        for node in cfa._ingoing_edges:
+            for edge in cfa._ingoing_edges[node]:
+                self.assertFalse(node_1 is edge.source)
+                self.assertFalse(node_1 is edge.destination)
+        
+        for node in cfa._outgoing_edges:
+            for edge in cfa._outgoing_edges[node]:
+                self.assertFalse(node_1 is edge.source)
+                self.assertFalse(node_1 is edge.destination)
+
+    def test_remove_last(self) -> None:
+        root: CFANode = CFANode(None, 1)
+        node_1: CFANode = CFANode(None, 2)
+        node_2: CFANode = CFANode(None, 3)
+        cfa: CFA = CFA(root)
+
+        cfa.branch(root, node_1)
+        cfa.branch(node_1, node_2)
+        cfa.remove(node_2)
+
+        outgoing: List[CFANode] = cfa.outgoing(node_1)
+        self.assertEqual(len(outgoing), 0)
+
+        self.assertFalse(node_2 in cfa._ingoing_edges)
+        self.assertFalse(node_2 in cfa._outgoing_edges)
+        
+        for node in cfa._ingoing_edges:
+            for edge in cfa._ingoing_edges[node]:
+                self.assertFalse(node_2 is edge.source)
+                self.assertFalse(node_2 is edge.destination)
+        
+        for node in cfa._outgoing_edges:
+            for edge in cfa._outgoing_edges[node]:
+                self.assertFalse(node_2 is edge.source)
+                self.assertFalse(node_2 is edge.destination)
+
+    def test_remove_center(self) -> None:
+        node_0: CFANode = CFANode(None, 1)
+        node_1: CFANode = CFANode(None, 2)
+
+        node_2: CFANode = CFANode(None, 3)
+
+        node_3: CFANode = CFANode(None, 4)
+        node_4: CFANode = CFANode(None, 5)
+
+        cfa: CFA = CFA(node_2)
+
+        cfa.branch(node_0, node_2)
+        cfa.branch(node_1, node_2)
+        cfa.branch(node_2, node_3)
+        cfa.branch(node_2, node_4)
+        cfa.remove(node_2)
+
+        node_0_outgoing: List[CFANode] = cfa.outgoing(node_0)
+        self.assertTrue(node_0 not in node_0_outgoing)
+        self.assertTrue(node_1 not in node_0_outgoing)
+        self.assertTrue(node_2 not in node_0_outgoing)
+        self.assertTrue(node_3 in node_0_outgoing)
+        self.assertTrue(node_4 in node_0_outgoing)
+        self.assertEqual(len(node_0_outgoing), 2)
+        node_0_ingoing: List[CFANode] = cfa.ingoing(node_0)
+        self.assertEqual(len(node_0_ingoing), 0)
+
+        node_1_outgoing: List[CFANode] = cfa.outgoing(node_1)
+        self.assertFalse(node_0 in node_1_outgoing)
+        self.assertFalse(node_1 in node_1_outgoing)
+        self.assertFalse(node_2 in node_1_outgoing)
+        self.assertTrue(node_3 in node_1_outgoing)
+        self.assertTrue(node_4 in node_1_outgoing)
+        self.assertEqual(len(node_1_outgoing), 2)
+        node_1_ingoing: List[CFANode] = cfa.ingoing(node_1)
+        self.assertEqual(len(node_1_ingoing), 0)
+
+        node_0_outgoing: List[CFANode] = cfa.outgoing(node_3)
+        self.assertEqual(len(node_0_outgoing), 0)
+        node_0_ingoing: List[CFANode] = cfa.ingoing(node_3)
+        self.assertEqual(len(node_0_ingoing), 2)
+        self.assertTrue(node_0 in node_0_outgoing)
+        self.assertTrue(node_1 in node_0_outgoing)
+
+        node_0_outgoing: List[CFANode] = cfa.outgoing(node_4)
+        self.assertEqual(len(node_0_outgoing), 0)
+        node_0_ingoing: List[CFANode] = cfa.ingoing(node_4)
+        self.assertEqual(len(node_0_ingoing), 2)
+        self.assertTrue(node_0 in node_0_outgoing)
+        self.assertTrue(node_1 in node_0_outgoing)
+
     def test_replace(self) -> None:
         root: CFANode = CFANode(None)
         node_1: CFANode = CFANode(None)

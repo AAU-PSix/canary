@@ -1,9 +1,11 @@
 from ts import Node
-from typing import Dict, List
+from typing import Dict, List, Iterable
+from queue import Queue
 
 class CFANode:
-    def __init__(self, node: Node) -> None:
+    def __init__(self, node: Node, location: int = -1) -> None:
         self.node = node
+        self.location = location
 
 class CFAEdge:
     def __init__(self, source: CFANode, destination: CFANode) -> None:
@@ -43,6 +45,9 @@ class CFA:
             children.append(edge.destination)
         return children
 
+    def outgoing_edges(self, source: CFANode) -> List[CFAEdge]:
+        return self._outgoing_edges[source]
+
     def ingoing(self, destination: CFANode) -> List[CFANode]:
         if destination not in self._ingoing_edges:
             return list()
@@ -50,6 +55,9 @@ class CFA:
         for edge in self._ingoing_edges[destination]:
             children.append(edge.source)
         return children
+
+    def ingoing_edges(self, source: CFANode) -> List[CFAEdge]:
+        return self._ingoing_edges[source]
 
     def branch(self, source: CFANode, destination: CFANode) -> None:
         if source not in self._nodes:
@@ -77,10 +85,17 @@ class CFA:
             for outgoing in self._outgoing_edges[source]:
                 self.branch(ingoing.source, outgoing.destination)
 
-        for ingoing in self._ingoing_edges[source]:
-            self._remove_edge(ingoing)
-        for outgoing in self._outgoing_edges[source]:
-            self._remove_edge(outgoing)
+        
+        for node in self._ingoing_edges:
+            for edge in self._ingoing_edges[node]:
+                if edge.source is source or edge.destination is source:
+                    self._remove_edge(edge)
+        
+        for node in self._outgoing_edges:
+            for edge in self._outgoing_edges[node]:
+                if edge.source is source or edge.destination is source:
+                    self._remove_edge(edge)
+
         self._nodes.remove(source)
         del self._ingoing_edges[source]
         del self._outgoing_edges[source]
@@ -96,3 +111,17 @@ class CFA:
         self._outgoing_edges[after] = self._outgoing_edges[before]
         del self._ingoing_edges[before]
         del self._outgoing_edges[before]
+
+    def breadth_first_traverse(self) -> Iterable[CFANode]:
+        queue: Queue[CFANode] = Queue()
+        visited: List[CFANode] = list()
+        queue.put(self.root)
+        visited.append(self.root)
+
+        while not queue.empty():
+            current: CFANode = queue.get()
+            yield current
+            for outgoing in self._outgoing_edges[current]:
+                if outgoing.destination not in visited:
+                    queue.put(outgoing.destination)
+                    visited.append(outgoing.destination)
