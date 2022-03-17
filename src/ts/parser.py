@@ -33,14 +33,26 @@ class Parser:
                               source[node.end_byte:: 1])
         return self.parse(new_source, tree, encoding)
 
-    def insert_line(self, tree: Tree, index: int, line: str) -> Tree:
-        lines: List[str] = tree.lines.copy()
-        lines.insert(index, line)
-        source: str = linesep.join(lines)
-        return self.parse(source)
+    def wrap(self, tree: Tree, node: Node, prefix: str = "", postfix: str = "", encoding: str = "utf8") -> Tree:
+        replacement: str = f'{prefix}{tree.contents_of(node)}{postfix}'
+        return self.replace(tree, node, replacement, encoding)
 
-    def append_line(self, tree: Tree, index: int, line: str, encoding: str = "utf8") -> Tree:
-        return self.insert_line(self, tree, index + 1, line, encoding)
+    def insert(self, tree: Tree, node: Node, text: str, encoding: str = "utf8") -> Tree:
+        replacement: str = f'{text}{tree.contents_of(node)}'
+        return self.replace(tree, node, replacement, encoding)
+
+    def append(self, tree: Tree, node: Node, text: str, encoding: str = "utf8") -> Tree:
+        replacement: str = f'{tree.contents_of(node)}{text}'
+        return self.replace(tree, node, replacement, encoding)
+
+    def insert_line(self, tree: Tree, line_num: int, line: str, encoding: str = "utf8") -> Tree:
+        lines: List[str] = tree.lines.copy()
+        lines.insert(line_num, line)
+        source: str = linesep.join(lines)
+        return self.parse(source, tree, encoding)
+
+    def append_line(self, tree: Tree, line_num: int, line: str, encoding: str = "utf8") -> Tree:
+        return self.insert_line(tree, line_num + 1, line, encoding)
 
     def set_language(self, language: "Language") -> None:
         self._parser.set_language(language._language)
