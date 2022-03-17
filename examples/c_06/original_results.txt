@@ -1,0 +1,8 @@
+F.
+
+There was 1 failure:
+1) addTest: /input/src/AllTests.c:13: expected <1> but was <0>
+
+!!!FAILURES!!!
+Runs: 2 Passes: 1 Fails: 1
+

@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "CuTest.h"
-#include "mutated.h"
+#include "original.h"
 
 void addTest(CuTest *ct) {
 	int a = 0;

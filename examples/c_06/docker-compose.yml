@@ -3,8 +3,9 @@ version: '3.3'
 services:
   canary:
     image: canary:dev
+    privileged: true
     volumes:
-      - ./src/:/input/
+      - ./:/input/:rw
     command:
-      - /input/original.h
-      - /input/mutated.h
+      - /input/src/original.h
+      - /input/src/mutated.h
