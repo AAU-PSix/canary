@@ -1,6 +1,5 @@
 from typing import Iterable
 import unittest
-from src.cfa.cfa import CFA, CFANode
 
 from src.ts.node import Node
 from . import (
@@ -9,7 +8,6 @@ from . import (
     Query,
     Tree,
     TreeCursor,
-    TreeCFAVisitor,
 )
 
 class TreeCursorTest(unittest.TestCase):
