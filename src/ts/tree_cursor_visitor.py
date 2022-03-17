@@ -2,7 +2,7 @@ from typing import Callable, Dict, Iterable, List, Tuple
 
 from .node import Node
 from .tree_cursor import TreeCursor
-from src.cfa import CFA, CFANode
+from cfa import CFA, CFANode
 
 class TreeCFAVisitor():
     _cfa: CFA

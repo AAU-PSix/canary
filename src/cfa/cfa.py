@@ -1,4 +1,4 @@
-from src.ts import Node
+from ts import Node
 from typing import Dict, List
 
 class CFANode:
