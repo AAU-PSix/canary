@@ -24,19 +24,22 @@ class TreeInfestator:
     def _find_nests(self):
         cfa = self.cfa
         def sortFrom(node:CFANode):
-            return node.node.end_point.line
+            return node.node.start_point.line
+
+        
         for node in self.cfa.breadth_first_traverse(): 
             if node.node is not None:
                 if node.node.type == "parenthesized_expression":
                     self.found_nodes.insert(0,node)
         self.found_nodes.sort(key=sortFrom, reverse=True)
 
-    
-    def infest_tree(self, tree : Tree):
+    def infest_tree(self, tree : Tree) -> Tree:
         for node in self.found_nodes:
-            self.parser.append_line(tree, node.node.start_point.line, "TWEET();")
-            self.parser.parse(tree.text, tree)
-            print(tree.text)
-        # self.parser.parse(tree.text, tree)
+            sib = node.node.next_sibling
+            t = self.parser.append(tree, sib.children[0],"TWEET();")
+        print(t.text)
+        return t
+        #t = self.parser.parse(tree.text, tree)
+
 
             

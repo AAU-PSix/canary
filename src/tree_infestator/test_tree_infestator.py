@@ -1,3 +1,4 @@
+from itertools import tee
 from tree_infestator import TreeInfestator
 from cfa import CFA, CFANode, CFAEdge
 from ts import language_library, tree_cursor_visitor
@@ -58,10 +59,10 @@ class TestTreeInfestator(unittest.TestCase):
 
 
     def test_can_infest_tree(self):
-        infestator = self._create_cfa("if(a==2)\n{\na=0;\n if(ko == 2)\n{\ngris = 1;\n}\n}\n a = 2;\n if(b==3)\n{\nhest = 3;\n}")
-        infestator.infest_tree(self.tree)
-        print(self.tree.text)
-        
+        infestator = self._create_cfa("if(a==2)\n{ a=2;\n}")
+        t = infestator.infest_tree(self.tree)
+        self.assertTrue("TWEET();" in t.text)
+
 
     
 
