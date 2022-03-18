@@ -59,6 +59,14 @@ class Node:
         return children
 
     @property
+    def named_children(self) -> List["Node"]:
+        children: List[Node] = list()
+        for native_child in self._node.children:
+            child: Node = Node(native_child)
+            if child.is_named: children.append(child)
+        return children
+
+    @property
     def child_count(self) -> int:
         return self._node.child_count
 
