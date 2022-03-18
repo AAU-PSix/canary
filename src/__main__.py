@@ -33,18 +33,22 @@ def main():
 
     output_file: str = open(mutated_file_path, "w+")
     output_file.write(mutated_tree.text)
+    output_file.close()
 
     original_results_file: str = open("/input/original_results.txt", "w")
     subprocess.run(["make", "-C", "/input/", "build"])
     subprocess.run(["/input/build/c_06_test"], stdout=original_results_file)
+    original_results_file.close()
     
     os.rename(original_file_path, original_file_path + ".tmp")
     os.rename(mutated_file_path, original_file_path)
-    sleep(1)
 
     mutated_results_file: str = open("/input/mutated_results.txt", "w")
     subprocess.run(["make", "-C", "/input/", "build"])
-    # subprocess.run(["/input/build/c_06_test"], stdout=mutated_results_file)
+    subprocess.run(["/input/build/c_06_test"], stdout=mutated_results_file)
+    mutated_results_file.close()
+    
+    os.rename(original_file_path + ".tmp", original_file_path)
     
     # original_results_file: str = open("/input/original_results.txt", "w")
     # subprocess.run(["make", "-C", "/input/", "build"])
