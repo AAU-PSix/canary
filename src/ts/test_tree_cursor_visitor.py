@@ -260,24 +260,6 @@ class TreeCursorTest(unittest.TestCase):
                 dot.edge(name(edge.source), name(edge.destination))
         dot.save()
 
-        #bfs: List[CFANode] = [*cfa.breadth_first_traverse()]
-        # self.assertEqual(len(bfs), 8)
-        # self.assertEqual(bfs[0].node.type, "translation_unit")
-        # # The first if-statement
-        # self.assertEqual(bfs[1].node.type, "parenthesized_expression")
-        # self.assertEqual(tree.contents_of(bfs[1].node), "(a == 1)")
-        # self.assertEqual(bfs[2].node.type, "expression_statement")
-        # self.assertEqual(tree.contents_of(bfs[2].node), "a = 2;")
-        # # The else-if-statement
-        # self.assertEqual(bfs[3].node.type, "parenthesized_expression")
-        # self.assertEqual(tree.contents_of(bfs[3].node), "(a == 2)")
-        # self.assertIsNone(bfs[4].node) # The block is empty
-
-        # # self.assertEqual(bfs[5].node.type, "")
-        # self.assertEqual(bfs[6].node.type, "expression_statement")
-        # # self.assertEqual(bfs[7].node.type, "")
-
-
     def test_tree_visitor_for_cfa_one_if_elseif_else_statement(self) -> None:
         tree: Tree = self._parser.parse(
             "if (a == 1) { a = 2; } else if (a == 2) { } else { a = 3; }"
