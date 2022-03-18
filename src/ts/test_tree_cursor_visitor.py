@@ -228,6 +228,11 @@ class TreeCursorTest(unittest.TestCase):
 
     def test_tree_cfa_creation_one_if_elseif_else_statement(self) -> None:
         tree: Tree = self._parser.parse(
+            # "a=1; if(a==2) { }"
+            # "a=1; if(a==2) { } else { }"
+            # "a=1; if(a==2) { } else { } a=2;"
+            # "a=1; if(a==2) { } else if(a==3) { } else { }"
+            "a=1; if(a==2) { } else if(a==3) { } a=2;"
             # "a=1; if(a==1) { a=2; }"
             # "a=1; if(a==1) { a=2; } a=3;"
             # "a=1; if(a==1) { a=2; } else { a=3; }"
@@ -235,16 +240,15 @@ class TreeCursorTest(unittest.TestCase):
             # "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } a=4;"
             # "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } a=4;"
             # "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } else if(a==3) { a=4; } a=5;"
-            "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } else if(a==3) { a=4; } else if(a==4) { a=5; } else { a=6; } a=7;"
+            # "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } else if(a==3) { a=4; } else if(a==4) { a=5; } else { a=6; } a=7;"
         )
         visitor: TreeCFAVisitor = TreeCFAVisitor()
         cfa: CFA = visitor.create(tree.root_node)
 
-
         def name(cfa_node: CFANode) -> str:
             node: Node = cfa_node.node
             if node is None: return f'l{cfa_node.location}'
-            return f'{tree.contents_of(node)}'
+            return f'l{cfa_node.location} {tree.contents_of(node)}'
 
         dot = graphviz.Digraph('graph')
         visited: List[CFANode] = list()

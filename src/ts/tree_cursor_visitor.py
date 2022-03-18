@@ -29,6 +29,7 @@ class TreeCFAVisitor():
         s: CFANode = self.current()
         if s.node is None:
             s.node = d.node
+            s.location = d.location
             return s
         return self.branch(s, d)
 
@@ -36,6 +37,7 @@ class TreeCFAVisitor():
         # s
         # |
         # d
+        d.location = self._cfa.node_len + 1
         self._cfa.branch(s, d)
         self._current = d
         return d
@@ -75,7 +77,7 @@ class TreeCFAVisitor():
         # d
 
         self._order.append(d)
-        return self.next(CFANode(d))
+        return self.next(CFANode(d, self._cfa.node_len))
 
     def visit_if_statement(self, node: Node) -> CFANode:
         # if with alternative
@@ -92,7 +94,7 @@ class TreeCFAVisitor():
         #   s
 
         condition: Node = node.child_by_field_name("condition")
-        p: CFANode = self.next(CFANode(condition))
+        p: CFANode = self.next(CFANode(condition, self._cfa.node_len))
         s: CFANode = CFANode(None)
         self._order.append(node)
 

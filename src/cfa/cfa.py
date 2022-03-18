@@ -8,9 +8,10 @@ class CFANode:
         self.location = location
 
 class CFAEdge:
-    def __init__(self, source: CFANode, destination: CFANode) -> None:
+    def __init__(self, source: CFANode, destination: CFANode, label: str = None) -> None:
         self.source = source
         self.destination = destination
+        self.label = label
 
 class CFA:
     _root: CFANode
