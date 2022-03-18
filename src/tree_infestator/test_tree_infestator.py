@@ -16,15 +16,53 @@ class TestTreeInfestator(unittest.TestCase):
         self._parser = Parser.create_with_language(self._language)
 
     def _create_cfa(self, program_string : str) -> TreeInfestator:
-        tree = self._parser.parse(program_string)
+        self.tree = self._parser.parse(program_string)
         CFAVisitor : TreeCFAVisitor = TreeCFAVisitor()
-        cfa = CFAVisitor.create(tree.root_node)
-        return TreeInfestator(cfa, self._language)
+        cfa = CFAVisitor.create(self.tree.root_node)
+        return TreeInfestator(cfa, self._parser)
     
     def test_finds_if_node_in_if_program(self):
         infestator = self._create_cfa("if(a==2){a=0;} a = 2;")
-        self.assertIsNotNone(infestator.sought_nodes)
-        self.assertEqual(1,len(infestator.sought_nodes))
+        self.assertIsNotNone(infestator.found_nodes)
+        self.assertEqual(1,len(infestator.found_nodes))
+    
+    def test_finds_several_if_nodes_in_if_program(self):
+        infestator = self._create_cfa("if(a==2){a=0;} a = 2; if(b==3){hest = 3;}")
+        self.assertIsNotNone(infestator.found_nodes)
+        self.assertEqual(2,len(infestator.found_nodes))
+
+    def test_found_nodes_are_reversed_correctly(self):
+        infestator = self._create_cfa("if(a==2){a=0;} a = 2; if(b==3){hest = 3;}")
+        self.assertIsNotNone(infestator.found_nodes)
+        nodes : list(CFANode) = infestator.found_nodes
+        previous = nodes[0].node.start_byte
+        otherNode = nodes[1].node.start_byte
+        self.assertGreater(previous, otherNode)
+
+
+    def test_found_nested_nodes_are_reversed_correctly(self):
+        infestator = self._create_cfa("if(a==2){a=0; if(ko == 2){gris = 1;}} a = 2; if(b==3){hest = 3;}")
+        self.assertIsNotNone(infestator.found_nodes)
+        nodes : list(CFANode) = infestator.found_nodes
+        first = nodes[0].node.start_byte
+        second = nodes[1].node.start_byte
+        third = nodes[2].node.start_byte
+        self.assertGreater(first, second)
+        self.assertGreater(first, third)
+        self.assertGreater(second, third)
+    
+    def test_found_no_if_nodes_in_program(self):
+        infestator = self._create_cfa("int main(){a=2;}")
+        self.assertIsNotNone(infestator.found_nodes)
+        self.assertEqual(0,len(infestator.found_nodes))
+
+
+    def test_can_infest_tree(self):
+        infestator = self._create_cfa("if(a==2)\n{\na=0;\n if(ko == 2)\n{\ngris = 1;\n}\n}\n a = 2;\n if(b==3)\n{\nhest = 3;\n}")
+        infestator.infest_tree(self.tree)
+        print(self.tree.text)
+        
+
     
 
 

@@ -1,19 +1,22 @@
 from ast import Raise
-from src.ts import language_library
-from src.ts.language_library import Language
+import imp
+from ts import language_library
+from ts.language_library import Language
 from ts import Parser, Tree
 from unit_analyser import UnitAnalyser
 from cfa import CFA, CFANode, CFAEdge
+from typing import List
 
 class TreeInfestator:
-    def __init__(self,  cfa:CFA, language:Language):
+    def __init__(self,  cfa:CFA, parser : Parser):
         if cfa is None:
             raise Exception("CFA Constructor argument is None.")
-        if language is None:
+        if parser is None:
             raise Exception("ØV")
         self.cfa = cfa
-        self.language = language
-        self.sought_nodes : list(CFANode) = []
+        self.language = parser.language
+        self.parser = parser
+        self.found_nodes : List[CFANode] = []
         self._find_nests()
         
 
@@ -23,6 +26,17 @@ class TreeInfestator:
         def sortFrom(node:CFANode):
             return node.node.end_point.line
         for node in self.cfa.breadth_first_traverse(): 
-            if node.node.type == self.language.syntax.get_if_query:
-                self.sought_nodes.insert(node)
-        self.sought_nodes.sort(key=sortFrom, reverse=True)
+            if node.node is not None:
+                if node.node.type == "parenthesized_expression":
+                    self.found_nodes.insert(0,node)
+        self.found_nodes.sort(key=sortFrom, reverse=True)
+
+    
+    def infest_tree(self, tree : Tree):
+        for node in self.found_nodes:
+            self.parser.append_line(tree, node.node.start_point.line, "TWEET();")
+            self.parser.parse(tree.text, tree)
+            print(tree.text)
+        # self.parser.parse(tree.text, tree)
+
+            
