@@ -1,7 +1,7 @@
 from typing import Callable, Dict, List, Tuple
 
 from .node import Node
-from src.cfa import CFA, CFANode
+from cfa import CFA, CFANode
 
 class TreeCFAVisitor():
     _cfa: CFA

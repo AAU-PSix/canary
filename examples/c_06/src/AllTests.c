@@ -14,22 +14,14 @@ void addTest(CuTest *ct) {
 }
 
 void addTest_1_1(CuTest *ct) {
-	int a = 0;
+	int a = 3;
 	int b = 9;
 	
 	int actual = add(a, b);
+	int expected = 12;
 
+	CuAssertIntEquals(ct, expected, actual);
 }
-
-// void addTest(CuTest *ct) {
-// 	int a = 0;
-// 	int b = 0;
-// 
-// 	int actual = add(a, b);
-// 	int expected = 0;
-// 
-// 	CuAssertIntEquals(ct, expected, actual);
-// }
 
 CuSuite *AddSuite() {
 	CuSuite *suite = CuSuiteNew();
