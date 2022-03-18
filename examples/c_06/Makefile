@@ -14,3 +14,6 @@ run: build
 .PHONY: test
 test: build
 	./build/c_06_test
+
+up:
+	docker-compose up

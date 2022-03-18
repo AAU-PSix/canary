@@ -7,5 +7,7 @@ services:
     volumes:
       - ./:/input/:rw
     command:
-      - /input/src/original.h
-      - /input/src/mutated.h
+      - generate
+      - --base=/input
+      - --file=src/original.h
+      - --persist

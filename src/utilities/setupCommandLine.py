@@ -6,16 +6,33 @@ from .utilities import FileHandler, CanaryIOHandler
 def setupCommandLine() -> ArgumentParser:
     parser = ArgumentParser()
     parser.add_argument(
-        "input",
-        metavar="path",
+        "action",
         type=str,
-        help="The file to mutate."
+        help="The action to do",
+        default="generate",
+        choices=["generate", "mutate", "canaries"]
     )
     parser.add_argument(
-        "output",
-        metavar="path",
+        "-p", "--persist",
+        help="If true the mutants are not deleted",
+        default=False,
+        action="store_true"
+    )
+    parser.add_argument(
+        "-b", "--base",
         type=str,
-        help="specifies the name of the output file"
+        help="The base directory",
+        default=""
+    )
+    parser.add_argument(
+        "-f", "--file",
+        type=str,
+        help="The file to target"
+    )
+    parser.add_argument(
+        "-u", "--unit",
+        type=str,
+        help="The unit to test"
     )
     return parser
 
