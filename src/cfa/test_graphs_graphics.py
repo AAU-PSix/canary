@@ -51,10 +51,17 @@ class TestGraphsGraphics(unittest.TestCase):
             ("while_6", "while(a==1) { if(a==1) { a=1; } else { a=2; } a=3; } a=4;"),
             ("while_7", "while(a==1) { if(a==1) { a=1; } else if(a==2) { a=2; } else { a=3; } a=4; } a=5;"),
             ("while_8", "while(a==1) { if(a==1) { a=1; } a=2; if(a==2) { a=3; } a=4; a=5; a=6; } a=7;"),
+            ("while_9", "while(a==1) { a=1; break; a=2; } a=3;"),
+            ("while_10", "while(a==1) { a=1; continue; a=2; } a=3;"),
+            ("while_11", "while(a) { a=1; while(a) { a=2; } a=2; } a=2;"),
+            ("while_12", "while(a) { break; a=1; while(a) { break; a=2; } a=2; } a=2;"),
             ("do_while_1", "do { a=1; } while(a==1); a=2;"),
             ("do_while_2", "do { if(a==1) { a=1; } a=2; } while(a==1); a=2;"),
             ("do_while_3", "do { a=0; if(a==1) { a=1; } a=2; } while(a==1); a=2;"),
-            ("for_1", "for (int i=0; i<5; ++i) { a=2; } a=3;"),
+            ("for_1", "for(int i=0; i<5; ++i) { a=2; } a=3;"),
+            ("for_2", "for(int i=0; i<5; ++i) { a=2; for(int i=0; i<5; ++i) { a=2; } a=2; } a=3;"),
+            ("for_3", "for(int i=0; i<5; ++i) { break; a=2; } a=3;"),
+            ("for_4", "for(int i=0; i<5; ++i) { break; a=2; for(int i=0; i<5; ++i) { continue; a=2; } a=2; } a=3;"),
             ("switch_1", """
             switch (a)
             {
