@@ -8,9 +8,16 @@ from unit_analyser import UnitAnalyser
 from ts.tree_cursor_visitor import TreeCFAVisitor
 
 from typing import Iterable
+import string
 import unittest
 
 class TestTreeInfestator(unittest.TestCase):
+
+    @staticmethod
+    def removeWhitespace(input:str):
+        return input.translate(str.maketrans('', '', string.whitespace))
+
+
     def setUp(self) -> None:
         LanguageLibrary.build()
         self._language = LanguageLibrary.c()
@@ -51,22 +58,28 @@ class TestTreeInfestator(unittest.TestCase):
         self.assertGreater(first, second)
         self.assertGreater(first, third)
         self.assertGreater(second, third)
-    
+            
     def test_found_no_if_nodes_in_program(self):
         infestator = self._create_cfa("int main(){a=2;}")
         self.assertIsNotNone(infestator.found_nodes)
         self.assertEqual(0,len(infestator.found_nodes))
 
 
-    def test_can_infest_tree(self):
+    def test_can_infest_if_statement_with_newlines(self):
         infestator = self._create_cfa("if(a==2)\n{ a=2;\n}")
         t = infestator.infest_tree(self.tree)
         self.assertTrue("TWEET();" in t.text)
 
+    def test_can_infest_if_statement_without_newlines(self):
+        inputStr = "if(a==2){ a=2;\n}"
+        infestator = self._create_cfa(inputStr)
+        t = infestator.infest_tree(self.tree)
 
-    
-
-
+        expected = self.removeWhitespace("if(a==2)\n{ TWEET(); a=2;\n}")
+        actual = self.removeWhitespace(t.text)
+        print(actual)
+        print(expected)
+        self.assertEqual(actual,expected)
 
 
 

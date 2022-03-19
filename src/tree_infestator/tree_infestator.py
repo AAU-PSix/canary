@@ -1,5 +1,7 @@
 from ast import Raise
 import imp
+from xmlrpc.client import Boolean
+from src.ts.node import Node
 from ts import language_library
 from ts.language_library import Language
 from ts import Parser, Tree
@@ -39,7 +41,5 @@ class TreeInfestator:
             t = self.parser.append(tree, sib.children[0],"TWEET();")
         print(t.text)
         return t
-        #t = self.parser.parse(tree.text, tree)
 
 
-            
