@@ -1,6 +1,7 @@
 import unittest
-from os import linesep
 from typing import List, Tuple
+
+from graphviz import Digraph
 
 from src.cfa import CFA
 
@@ -11,6 +12,7 @@ from src.ts import (
     Tree,
     TreeCFAVisitor,
 )
+from src.ts.node import Node
 
 
 class TestGraphsGraphics(unittest.TestCase):
@@ -55,6 +57,9 @@ class TestGraphsGraphics(unittest.TestCase):
             ("while_10", "while(a==1) { a=1; continue; a=2; } a=3;"),
             ("while_11", "while(a) { a=1; while(a) { a=2; } a=2; } a=2;"),
             ("while_12", "while(a) { break; a=1; while(a) { break; a=2; } a=2; } a=2;"),
+            ("while_13", "while(a==1) { if(a==1) { a=1; } else if(a==2) { a=2; } else { a=3; return; } a=4; } a=5;"),
+            ("while_14", "while(a==1) { if(a==1) { a=1; break; } else if(a==2) { a=2; } else { a=3; return; } a=4; } a=5;"),
+            ("while_15", "while(a==1) { if(a==1) { a=1; break; } else if(a==2) { continue; a=2; } else { a=3; return; } a=4; } a=5;"),
             ("do_while_1", "do { a=1; } while(a==1); a=2;"),
             ("do_while_2", "do { if(a==1) { a=1; } a=2; } while(a==1); a=2;"),
             ("do_while_3", "do { a=0; if(a==1) { a=1; } a=2; } while(a==1); a=2;"),
@@ -155,6 +160,29 @@ class TestGraphsGraphics(unittest.TestCase):
                 a=9;
             }
             a=-1;
+             """),
+            ("function_1", """
+            void foo() {
+                a=2;
+                return;
+                a=2;
+            }
+             """),
+            ("function_2", """
+            void foo() {
+            target:
+                a=2;
+                a=3;
+                goto target;
+            }
+             """),
+            ("function_3", """
+            void foo() {
+                goto target;
+                a=3;
+            target:
+                a=2;
+            }
              """)
         ]
 
@@ -162,7 +190,10 @@ class TestGraphsGraphics(unittest.TestCase):
             name: str = program[0]
             prog: str = program[1]
             tree: Tree = self._parser.parse(prog)
-            visitor: TreeCFAVisitor = TreeCFAVisitor()
-            cfa: CFA = visitor.create(tree.root_node)
+            visitor: TreeCFAVisitor = TreeCFAVisitor(tree)
+            root: Node = tree.root_node
+            if root.named_children[0].type == "function_definition":
+                root = root.named_children[0].child_by_field_name("body")
+            cfa: CFA = visitor.create(root, False)
             dot = cfa.draw(tree, name)
             dot.save(directory="graphs")

@@ -1,15 +1,20 @@
 from typing import Callable, Dict, Tuple, List
 from queue import LifoQueue
 
+
 from .node import Node
+from src.ts.tree import Tree
 from src.cfa import CFA, CFANode
 
 class TreeCFAVisitor():
     _cfa: CFA
     _continue_break_stack: LifoQueue[Tuple[CFANode, CFANode]]
     _current: CFANode
+    _tree: Tree
+    _labels: List[Tuple[CFANode, str]]
+    _gotos: List[Tuple[CFANode, str]]
 
-    def __init__(self) -> None:
+    def __init__(self, tree: Tree) -> None:
         # We dont have the "translation_unit" because it will always be the root
         self._visits: Dict[str, Callable[[Node], CFANode]] = {
             "expression_statement": self.visit_expression_statement,
@@ -22,31 +27,58 @@ class TreeCFAVisitor():
             "switch_statement": self.visit_switch_statement,
             "break_statement": self.visit_break_statement,
             "continue_statement": self.visit_continue_statement,
+            "return_statement": self.visit_return_statement,
+            "labeled_statement": self.visit_labeled_statement,
+            "goto_statement": self.visit_goto_statement,
         }
         self._current = None
+        self._tree = tree
 
-    def create(self, root: Node) -> CFA:
-        cfa_root: CFANode = CFANode(root)
-        self._current = cfa_root
-        self._cfa = CFA(cfa_root)
+    def create(self, root: Node, include_root: bool = True) -> CFA:
         self._continue_break_stack = LifoQueue()
+        self._labels = list()
+        self._gotos = list()
+        cfa_root: CFANode = CFANode(root if include_root else None)
+        self._cfa = CFA(cfa_root)
+        self.next(cfa_root)
 
         self.accept(root)
-
-        if self._current.node is None:
-            self._cfa.remove(self._current)
 
         return self._cfa
 
     def _continue(self, source: CFANode) -> CFANode:
         continue_break: Tuple[CFANode, CFANode] = self._continue_break_stack.get()
         self._continue_break_stack.put(continue_break)
-        return self.branch(source, continue_break[0])
+        return self.branch(source, continue_break[0], "C")
 
     def _break(self, source: CFANode) -> CFANode:
         continue_break: Tuple[CFANode, CFANode] = self._continue_break_stack.get()
         self._continue_break_stack.put(continue_break)
-        return self.branch(source, continue_break[1])
+        return self.branch(source, continue_break[1], "B")
+
+    def _add_label(self, label: Node, label_stmt: CFANode) -> None:
+        label_str: str = self._tree.contents_of(label)
+        self._labels.append((label_stmt, label_str))
+        current: CFANode = self._current
+        for goto in self._gotos:
+            goto_stmt: CFANode = goto[0]
+            goto_label_str: str = goto[1]
+            if goto_label_str == label_str:
+                self.branch(goto_stmt, label_stmt, "G")
+                break
+        self.set_active(current)
+
+    def _add_goto(self, label: Node, goto_stmt: CFANode) -> None:
+        goto_label_str: str = self._tree.contents_of(label)
+        self._gotos.append((goto_stmt, goto_label_str))
+        current: CFANode = self._current
+        for label in self._labels:
+            label_stmt: CFANode = label[0]
+            label_str: str = label[1]
+            if label_str == goto_label_str:
+                self.branch(goto_stmt, label_stmt, "G")
+                break
+        self.set_active(current)
 
     def current(self) -> CFANode:
         return self._current
@@ -268,8 +300,17 @@ class TreeCFAVisitor():
 
         return f
 
-    def visit_goto_label(self, node: Node) -> CFANode:
-        pass
+    def visit_labeled_statement(self, node: Node) -> CFANode:
+        label: Node = node.child_by_field_name("label")
+        stmt: CFANode = self.next(CFANode(node))
+        self._add_label(label, stmt)
+        return stmt
+
+    def visit_goto_statement(self, node: Node) -> CFANode:
+        label: Node = node.child_by_field_name("label")
+        stmt: CFANode = CFANode(node)
+        self._add_goto(label, stmt)
+        return self.next(stmt)
 
     def visit_break_statement(self, node: Node) -> CFANode:
         break_node: CFANode = CFANode(node)
@@ -286,4 +327,6 @@ class TreeCFAVisitor():
         return self.next(continue_node)
 
     def visit_return_statement(self, node: Node) -> CFANode:
-        pass
+        return_node = self.next(CFANode(node))
+        self._cfa.add_final(return_node)
+        return return_node

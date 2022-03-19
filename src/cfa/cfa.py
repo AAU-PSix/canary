@@ -20,6 +20,7 @@ class CFA:
     _nodes: List[CFANode]
     _outgoing_edges: Dict[CFANode, List[CFAEdge]]
     _ingoing_edges: Dict[CFANode, List[CFAEdge]]
+    _additional_finals: List[CFANode]
 
     def __init__(self, root: CFANode) -> None:
         self._root = root
@@ -28,6 +29,7 @@ class CFA:
         self._outgoing_edges[root] = list()
         self._ingoing_edges = dict()
         self._ingoing_edges[root] = list()
+        self._additional_finals = list()
 
     def __contains__(self, node: CFANode) -> bool:
         return node in self._nodes
@@ -39,6 +41,20 @@ class CFA:
     @property
     def root(self) -> CFANode:
         return self._root
+
+    @property
+    def finals(self) -> List[CFANode]:
+        finals: List[CFANode] = list()
+        for node in self._nodes:
+            if len(self.outgoing_edges(node)) is 0 or \
+                node in self._additional_finals:
+                finals.append(node)
+        return finals
+
+    def add_final(self, final: CFANode) -> bool:
+        if final not in self._nodes: return False
+        self._additional_finals.append(final)
+        return True
 
     def outgoing(self, source: CFANode) -> List[CFANode]:
         if source not in self._outgoing_edges:
@@ -102,6 +118,9 @@ class CFA:
         del self._ingoing_edges[source]
         del self._outgoing_edges[source]
 
+        for final in self._additional_finals:
+            if final is source: self._additional_finals.remove(final)
+
     def replace(self, before: CFANode, after: CFANode) -> None:
         for ingoing in self._ingoing_edges[before]:
             ingoing.destination = after
@@ -114,18 +133,25 @@ class CFA:
         del self._ingoing_edges[before]
         del self._outgoing_edges[before]
 
-    def draw(self, tree: Tree, name: str) -> graphviz.Digraph:
-        dot = graphviz.Digraph(name)
+    def draw(self, tree: Tree, name: str, dot: graphviz.Digraph = None) -> graphviz.Digraph:
+        if dot is None: dot = graphviz.Digraph(name)
 
         def node_name(cfa_node: CFANode) -> str:
             if cfa_node is None: return f'None'
             node: Node = cfa_node.node
-            if node is None: return f'NULL'
+            if node is None: return f'None'
             location: int = cfa_node.node.end_byte
             return f'l{location} {tree.contents_of(node).replace(":", "")}'
 
+        dot.node("initial", shape="point")
+        dot.edge("initial", node_name(self.root))
+
+        dot.node("final", shape="point")
+        for final in self.finals:
+            dot.edge(node_name(final), "final")
 
         for node in self._nodes:
+            dot.node(node_name(node))
             for outgoing in self.outgoing_edges(node):
                 dot.edge(
                     node_name(outgoing.source),
@@ -133,25 +159,8 @@ class CFA:
                     outgoing.label
                 )
 
-        # visited_nodes: List[CFANode] = list()
-        # visited_edges: List[CFAEdge] = list()
-        # queue: Queue[CFANode] = Queue()
-
-        # queue.put(self.root)
-        # while not queue.empty():
-        #     current: CFANode = queue.get()
-        #     visited_nodes.append(current)
-
-        #     for edge in self.outgoing_edges(current):
-        #         if edge.destination not in visited_nodes:
-        #             queue.put(edge.destination)
-        #         if edge not in visited_edges:
-        #             visited_edges.append(edge)
-        #             dot.edge(
-        #                 node_name(edge.source),
-        #                 node_name(edge.destination),
-        #                 edge.label
-        #             )
+        # dot.comment = tree.text
+        dot.attr(label=tree.text.replace(":", ""))
         return dot
 
     def breadth_first_traverse(self) -> Iterable[CFANode]:

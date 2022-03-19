@@ -18,7 +18,7 @@ class TestTreeInfestator(unittest.TestCase):
 
     def _create_cfa(self, program_string : str) -> TreeInfestator:
         self.tree = self._parser.parse(program_string)
-        CFAVisitor : TreeCFAVisitor = TreeCFAVisitor()
+        CFAVisitor : TreeCFAVisitor = TreeCFAVisitor(self.tree)
         cfa = CFAVisitor.create(self.tree.root_node)
         return TreeInfestator(cfa, self._parser)
     
