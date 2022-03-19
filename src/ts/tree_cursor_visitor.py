@@ -275,30 +275,64 @@ class TreeCFAVisitor():
         #   |
         # --c--
         # | | |
-        # | j |
+        # | j n
         # | | |
-        # | b |
-        # | | |
-        # --u f
+        # | b f
+        # | |
+        # --u
         f: CFANode = CFANode(None)
-        j: CFANode = CFANode(None)
         i: CFANode = CFANode(node.child_by_field_name("initializer"))
         c: CFANode = CFANode(node.child_by_field_name("condition"))
         u: CFANode = CFANode(node.child_by_field_name("update"))
 
-        self._continue_break_stack.put((c, f))
+        has_init: bool = i.node is not None
+        has_cond: bool = c.node is not None
+        has_update: bool = u.node is not None
 
-        self.next(i)
-        self.next(c)
-        self.branch(c, j, "T")
-        self.accept(node.named_children[-1])
-        self.next(u)
-        self.branch(u, c)
-        self.branch(c, f, "F")
+        last_child: Node = node.named_children[-1]
+        l: CFANode = CFANode(last_child)
+        is_expression: bool = last_child.type == "expression_statement"
+        is_compound: bool = last_child.type == "compound_statement"
+        is_empty: bool = is_expression or is_compound and last_child.named_child_count is 0
+
+        self._continue_break_stack.put((u, f))
+
+        if has_init:
+            self.next(i)
+        if has_cond:
+            self.next(c)
+
+        # The following are the various configurations which can be made
+        #   with the "condition", "update", and "body". However, the
+        #   biggest problems lies when there are no "condition" beucase
+        #   implicitly it means that there is a "condition" which cant
+        #   be found in the tree and evaluated to TRUE constantly.
+        if has_cond and not has_update and is_empty:
+            self.branch(c, c, "T")
+        elif not has_cond and not has_update and is_empty:
+            c = self.next(l)
+            self.branch(c, c, "T")
+        elif has_cond and has_update and is_empty:
+            self.next(u)
+            self.branch(self.current(), c, "T")
+        elif has_cond and has_update and not is_empty:
+            j: CFANode = CFANode(None)
+            self.branch(self.current(), j, "T")
+            self.accept(last_child)
+            self.next(u)
+            self.next(c)
+        elif has_cond and not has_update and not is_empty:
+            j: CFANode = CFANode(None)
+            self.branch(self.current(), j, "T")
+            self.accept(last_child)
+            self.next(c)
+        elif not has_cond and not has_update and not is_empty:
+            c = self.accept(last_child)
+            self.branch(c, c, "T")
 
         self._continue_break_stack.get()
 
-        return f
+        return self.branch(c, f, "F")
 
     def visit_labeled_statement(self, node: Node) -> CFANode:
         label: Node = node.child_by_field_name("label")
