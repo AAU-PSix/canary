@@ -1,5 +1,6 @@
 ./pylintrc.txt
 examples/
+/graphs
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

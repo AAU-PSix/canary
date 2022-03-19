@@ -1,14 +1,10 @@
-
-from platform import node
 import unittest
 from typing import Iterable, List
-import graphviz
 
 from src.cfa import CFA
-from src.cfa.cfa import CFAEdge, CFANode
-from queue import Queue
+from src.cfa.cfa import CFANode
 
-from . import (
+from src.ts import (
     Node,
     LanguageLibrary,
     Parser,
@@ -225,44 +221,6 @@ class TreeCursorTest(unittest.TestCase):
         self.assertEqual(next_true.node, next_false.node)
         self.assertEqual(next_true.node.type, "expression_statement")
         self.assertEqual(tree.contents_of(next_true.node), "a = 4;")
-
-    def test_tree_cfa_creation_one_if_elseif_else_statement(self) -> None:
-        tree: Tree = self._parser.parse(
-            # "a=1; if(a==2) { }"
-            # "a=1; if(a==2) { } else { }"
-            # "a=1; if(a==2) { } else { } a=2;"
-            # "a=1; if(a==2) { } else if(a==3) { } else { }"
-            "a=1; if(a==2) { } else if(a==3) { } a=2;"
-            # "a=1; if(a==1) { a=2; }"
-            # "a=1; if(a==1) { a=2; } a=3;"
-            # "a=1; if(a==1) { a=2; } else { a=3; }"
-            # "a=1; if(a==1) { a=2; } else { a=3; } a=4;"
-            # "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } a=4;"
-            # "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } a=4;"
-            # "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } else if(a==3) { a=4; } a=5;"
-            # "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } else if(a==3) { a=4; } else if(a==4) { a=5; } else { a=6; } a=7;"
-        )
-        visitor: TreeCFAVisitor = TreeCFAVisitor()
-        cfa: CFA = visitor.create(tree.root_node)
-
-        def name(cfa_node: CFANode) -> str:
-            node: Node = cfa_node.node
-            if node is None: return f'l{cfa_node.location}'
-            return f'l{cfa_node.location} {tree.contents_of(node)}'
-
-        dot = graphviz.Digraph('graph')
-        visited: List[CFANode] = list()
-        queue: Queue[CFANode] = Queue()
-        queue.put(cfa.root)
-        while not queue.empty():
-            current: CFANode = queue.get()
-            visited.append(current)
-
-            for edge in cfa.outgoing_edges(current):
-                if edge.destination not in visited:
-                    queue.put(edge.destination)
-                dot.edge(name(edge.source), name(edge.destination))
-        dot.save()
 
     def test_tree_visitor_for_cfa_one_if_elseif_else_statement(self) -> None:
         tree: Tree = self._parser.parse(

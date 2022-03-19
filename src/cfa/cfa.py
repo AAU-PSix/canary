@@ -1,6 +1,8 @@
-from ts import Node
+from src.ts.tree import Tree
+from src.ts.node import Node
 from typing import Dict, List, Iterable
 from queue import Queue
+import graphviz
 
 class CFANode:
     def __init__(self, node: Node, location: int = -1) -> None:
@@ -60,7 +62,7 @@ class CFA:
     def ingoing_edges(self, source: CFANode) -> List[CFAEdge]:
         return self._ingoing_edges[source]
 
-    def branch(self, source: CFANode, destination: CFANode) -> None:
+    def branch(self, source: CFANode, destination: CFANode, label: str = None) -> None:
         if source not in self._nodes:
             self._nodes.append(source)
             self._outgoing_edges[source] = list()
@@ -70,7 +72,7 @@ class CFA:
             self._outgoing_edges[destination] = list()
             self._ingoing_edges[destination] = list()
 
-        edge: CFAEdge = CFAEdge(source, destination)
+        edge: CFAEdge = CFAEdge(source, destination, label)
         self._outgoing_edges[source].append(edge)
         self._ingoing_edges[destination].append(edge)
 
@@ -84,9 +86,8 @@ class CFA:
         # b -> a
         for ingoing in self._ingoing_edges[source]:
             for outgoing in self._outgoing_edges[source]:
-                self.branch(ingoing.source, outgoing.destination)
+                self.branch(ingoing.source, outgoing.destination, ingoing.label)
 
-        
         for node in self._ingoing_edges:
             for edge in self._ingoing_edges[node]:
                 if edge.source is source or edge.destination is source:
@@ -112,6 +113,35 @@ class CFA:
         self._outgoing_edges[after] = self._outgoing_edges[before]
         del self._ingoing_edges[before]
         del self._outgoing_edges[before]
+
+    def draw(self, tree: Tree, name: str) -> graphviz.Digraph:
+        dot = graphviz.Digraph(name)
+
+        def node_name(cfa_node: CFANode) -> str:
+            node: Node = cfa_node.node
+            if node is None: return f'NULL'
+            location: int = cfa_node.node.end_byte
+            return f'l{location} {tree.contents_of(node).replace(":", "")}'
+
+        visited: List[CFANode] = list()
+        visited_edges: List[CFAEdge] = list()
+        queue: Queue[CFANode] = Queue()
+        queue.put(self.root)
+        while not queue.empty():
+            current: CFANode = queue.get()
+            visited.append(current)
+
+            for edge in self.outgoing_edges(current):
+                if edge.destination not in visited:
+                    queue.put(edge.destination)
+                if edge not in visited_edges:
+                    visited_edges.append(edge)
+                    dot.edge(
+                        node_name(edge.source),
+                        node_name(edge.destination),
+                        edge.label
+                    )
+        return dot
 
     def breadth_first_traverse(self) -> Iterable[CFANode]:
         queue: Queue[CFANode] = Queue()
