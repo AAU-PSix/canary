@@ -1,8 +1,6 @@
 import unittest
 from typing import List, Tuple
 
-from graphviz import Digraph
-
 from src.cfa import CFA
 
 from src.ts import (
