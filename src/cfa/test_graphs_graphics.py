@@ -94,8 +94,63 @@ class TestGraphsGraphics(unittest.TestCase):
                 default: a=3;
             }
             a=10;
+             """),
+            ("switch_6", """
+            switch (a)
+            {
+                case 1: 
+                case 2: a=1;
+                case 3: { a=2; }
+                default: a=3;
+            }
+             """),
+            ("switch_7", """
+            if(a==1) {
+                switch (a)
+                {
+                    case 2: a=1;
+                }
+                a=4;
+            } else {
+                a=9;
+            }
+            a=-1;
+             """),
+            ("switch_8", """
+            if(a==1) {
+                switch (a)
+                {
+                    case 1: 
+                    case 2: a=1;
+                    case 3: { a=2; }
+                    default: a=3;
+                }
+                a=3;
+                while (a==1) { a=2; }
+                a=4;
+            } else {
+                a=9;
+            }
+            a=-1;
+             """),
+            ("switch_9", """
+            if(a==1) {
+                switch (a)
+                {
+                    case 1: 
+                    case 2: a=1;
+                    case 3: { a=2; }
+                    default: a=3;
+                }
+                while (a==1) { a=2; }
+                a=4;
+            } else {
+                a=9;
+            }
+            a=-1;
              """)
         ]
+
         for program in programs:
             name: str = program[0]
             prog: str = program[1]
@@ -104,5 +159,3 @@ class TestGraphsGraphics(unittest.TestCase):
             cfa: CFA = visitor.create(tree.root_node)
             dot = cfa.draw(tree, name)
             dot.save(directory="graphs")
-
-        self.assertEqual('  '.join(visitor._order), None)

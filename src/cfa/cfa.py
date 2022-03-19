@@ -118,29 +118,40 @@ class CFA:
         dot = graphviz.Digraph(name)
 
         def node_name(cfa_node: CFANode) -> str:
+            if cfa_node is None: return f'None'
             node: Node = cfa_node.node
             if node is None: return f'NULL'
             location: int = cfa_node.node.end_byte
             return f'l{location} {tree.contents_of(node).replace(":", "")}'
 
-        visited: List[CFANode] = list()
-        visited_edges: List[CFAEdge] = list()
-        queue: Queue[CFANode] = Queue()
-        queue.put(self.root)
-        while not queue.empty():
-            current: CFANode = queue.get()
-            visited.append(current)
 
-            for edge in self.outgoing_edges(current):
-                if edge.destination not in visited:
-                    queue.put(edge.destination)
-                if edge not in visited_edges:
-                    visited_edges.append(edge)
-                    dot.edge(
-                        node_name(edge.source),
-                        node_name(edge.destination),
-                        edge.label
-                    )
+        for node in self._nodes:
+            for outgoing in self.outgoing_edges(node):
+                dot.edge(
+                    node_name(outgoing.source),
+                    node_name(outgoing.destination),
+                    outgoing.label
+                )
+
+        # visited_nodes: List[CFANode] = list()
+        # visited_edges: List[CFAEdge] = list()
+        # queue: Queue[CFANode] = Queue()
+
+        # queue.put(self.root)
+        # while not queue.empty():
+        #     current: CFANode = queue.get()
+        #     visited_nodes.append(current)
+
+        #     for edge in self.outgoing_edges(current):
+        #         if edge.destination not in visited_nodes:
+        #             queue.put(edge.destination)
+        #         if edge not in visited_edges:
+        #             visited_edges.append(edge)
+        #             dot.edge(
+        #                 node_name(edge.source),
+        #                 node_name(edge.destination),
+        #                 edge.label
+        #             )
         return dot
 
     def breadth_first_traverse(self) -> Iterable[CFANode]:

@@ -1,4 +1,4 @@
-from typing import Callable, Dict
+from typing import Callable, Dict, Tuple, List
 
 from .node import Node
 from src.cfa import CFA, CFANode
@@ -134,23 +134,31 @@ class TreeCFAVisitor():
         # TODO: Implement fallthrough
         #   p
         #  /|\
-        # c-c-c
+        # v v v
+        # | | |
+        # c c c
         #  \|/
         #   s
         p: CFANode = CFANode(node.child_by_field_name("condition"))
         self.next(p)
         s: CFANode = CFANode(None)
 
+        cases: List[Tuple[CFANode, CFANode]] = list()
+
         body: Node = node.child_by_field_name("body")
         # A child will always be a "case_statement"
         for child in body.named_children:
             c: CFANode = CFANode(None)
+
             value: Node = child.child_by_field_name("value")
+            v: CFANode = CFANode(value)
+
             # Case 1: No body "case 1:"
             if child.named_child_count == 1 and value is not None:
-                pass
+                c = self.branch(p, v, "C")
             # Case 2: Has body "case 1: a=1;"
             elif child.named_child_count == 2:
+                c = self.branch(p, v, "C")
                 # The next named sibling could eg. be 
                 #   "expression_statement" and "compound_statement"
                 c = self.accept(
@@ -158,13 +166,23 @@ class TreeCFAVisitor():
                 )
             # Case 3: Default "default: a=3;"
             elif child.named_child_count == 1 and value is None:
+                c = self.branch(p, v, "D")
                 c = self.accept(
                     child.named_children[0]
                 )
+            cases.append((v, c))
 
-            self.branch(c, s)
-            self.set_active(p)
-        self.set_active(s)
+        # Connect fall throughs
+        for idx in range(0, len(cases) - 1):
+            prev_end: CFANode = cases[idx][1]
+            next_start: CFANode = cases[idx + 1][0]
+            self.branch(prev_end, next_start)
+
+        # Connect breaks
+        for idx in range(0, len(cases)):
+            prev_end: CFANode = cases[idx][1]
+            self.branch(prev_end, s)
+
         return s
 
     def visit_while_statement(self, node: Node) -> CFANode:
