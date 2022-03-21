@@ -37,7 +37,7 @@ class TreeInfestator:
         cfa_nodes: List[CFANode] = self.sorted_cfa(cfa)
         for cfa_node in cfa_nodes:
             if self.is_alternative_of_if(cfa_node.node):
-                tree = self._parser.append(tree, cfa_node.node, "TWEET();")
-            elif self.is_condition_of_if(cfa_node.node):
-                tree = self._parser.append(tree, cfa_node.node, "TWEET();")
+                tree = self._parser.append(tree, cfa_node.node.children[0], "TWEET();")
+            elif self.is_consequence_of_if(cfa_node.node):
+                tree = self._parser.append(tree, cfa_node.node.children[0], "TWEET();")
         return tree

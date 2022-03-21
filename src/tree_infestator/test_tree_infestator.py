@@ -102,11 +102,11 @@ class TestTreeInfestator(unittest.TestCase):
 
 
     def test_infect(self) -> None:
-        program: str = "if(a) { } else { }"
+        program: str = "if(a) { } else if(a) { } else { }"
         tree: Tree = self._parser.parse(program)
         cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node.first_child, False)
         actual: Tree = self._infestator.infect(tree, cfa)
-        # self.assertEqual(actual.text, "")
+        self.assertEqual(actual.text, "if(a) {TWEET(); } else if(a) {TWEET(); } else {TWEET(); }")
 
     def test_else_if_is_alternative_of_if_false(self) -> None:
         program: str = "if(a) { } else if (b){ }"
