@@ -8,7 +8,7 @@ from src.cfa import CFA, CFANode
 
 class TreeCFAVisitor():
     _cfa: CFA
-    _continue_break_stack: deque[Tuple[CFANode, CFANode]]
+    _continue_break_stack: "deque[Tuple[CFANode, CFANode]]"
     _current: CFANode
     _tree: Tree
     _labels: List[Tuple[CFANode, str]]
