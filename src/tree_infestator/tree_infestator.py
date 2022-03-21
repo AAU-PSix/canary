@@ -1,45 +1,31 @@
-from ast import Raise
-import imp
-from xmlrpc.client import Boolean
-from src.ts.node import Node
-from ts import language_library
-from ts.language_library import Language
-from ts import Parser, Tree
-from unit_analyser import UnitAnalyser
-from cfa import CFA, CFANode, CFAEdge
-from typing import List
+from src.ts import *
+from src.cfa import *
 
 class TreeInfestator:
-    def __init__(self,  cfa:CFA, parser : Parser):
-        if cfa is None:
-            raise Exception("CFA Constructor argument is None.")
-        if parser is None:
-            raise Exception("ØV")
-        self.cfa = cfa
-        self.language = parser.language
-        self.parser = parser
-        self.found_nodes : List[CFANode] = []
-        self._find_nests()
-        
+    def is_condition_of_if(self, node: Node) -> bool:
+        if_statement: Node = node.parent
+        alternative: Node = if_statement.child_by_field_name("condition")
+        return alternative is not None and node == alternative
 
+    def is_consequence_of_if(self, node: Node) -> bool:
+        # Assume that all blocks are wrapped in a "compound_statment"
+        if_statement: Node = node.parent
+        if node.type != "compound_statement":
+            if_statement = if_statement.parent
+        alternative: Node = if_statement.child_by_field_name("consequence")
+        return alternative is not None and node == alternative
 
-    def _find_nests(self):
-        cfa = self.cfa
-        def sortFrom(node:CFANode):
-            return node.node.start_point.line
+    def is_alternative_of_if(self, node: Node) -> bool:
+        if_statement: Node = node.parent
+        if node.type != "compound_statement":
+            if_statement = if_statement.parent
+        alternative: Node = if_statement.child_by_field_name("alternative")
+        return alternative is not None and node == alternative
 
-        
-        for node in self.cfa.breadth_first_traverse(): 
-            if node.node is not None:
-                if node.node.type == "parenthesized_expression":
-                    self.found_nodes.insert(0,node)
-        self.found_nodes.sort(key=sortFrom, reverse=True)
+    def sorted_cfa(self, cfa: CFA) -> List[CFANode]:
+        nodes: List[CFANode] = list(cfa.breadth_first_traverse())
+        nodes.sort(key=lambda x: x.node.end_byte, reverse=True)
+        return nodes
 
-    def infest_tree(self, tree : Tree) -> Tree:
-        for node in self.found_nodes:
-            sib = node.node.next_sibling
-            t = self.parser.append(tree, sib.children[0],"TWEET();")
-        print(t.text)
-        return t
-
-
+    def infect(self, cfa: CFA) -> Tree:
+        pass

@@ -1,85 +1,101 @@
-from itertools import tee
-from tree_infestator import TreeInfestator
-from cfa import CFA, CFANode, CFAEdge
-from ts import language_library, tree_cursor_visitor
-from ts.language_library import Language, LanguageLibrary
-from ts import Parser, Tree
-from unit_analyser import UnitAnalyser
-from ts.tree_cursor_visitor import TreeCFAVisitor
-
-from typing import Iterable
-import string
 import unittest
 
+from src.ts import *
+from src.cfa import *
+from . import TreeInfestator
+
 class TestTreeInfestator(unittest.TestCase):
-
-    @staticmethod
-    def removeWhitespace(input:str):
-        return input.translate(str.maketrans('', '', string.whitespace))
-
-
     def setUp(self) -> None:
         LanguageLibrary.build()
         self._language = LanguageLibrary.c()
         self._parser = Parser.create_with_language(self._language)
+        self._infestator = TreeInfestator()
 
-    def _create_cfa(self, program_string : str) -> TreeInfestator:
-        self.tree = self._parser.parse(program_string)
-        CFAVisitor : TreeCFAVisitor = TreeCFAVisitor(self.tree)
-        cfa = CFAVisitor.create(self.tree.root_node)
-        return TreeInfestator(cfa, self._parser)
-    
-    def test_finds_if_node_in_if_program(self):
-        infestator = self._create_cfa("if(a==2){a=0;} a = 2;")
-        self.assertIsNotNone(infestator.found_nodes)
-        self.assertEqual(1,len(infestator.found_nodes))
-    
-    def test_finds_several_if_nodes_in_if_program(self):
-        infestator = self._create_cfa("if(a==2){a=0;} a = 2; if(b==3){hest = 3;}")
-        self.assertIsNotNone(infestator.found_nodes)
-        self.assertEqual(2,len(infestator.found_nodes))
+    def test_is_condition_of_if_true(self) -> None:
+        program: str = "if(a) { } else { }"
+        tree: Tree = self._parser.parse(program)
+        if_node: Node = tree.root_node.named_children[0]
+        condition: Node = if_node.child_by_field_name("condition")
+        expected: bool = True
 
-    def test_found_nodes_are_reversed_correctly(self):
-        infestator = self._create_cfa("if(a==2){a=0;} a = 2; if(b==3){hest = 3;}")
-        self.assertIsNotNone(infestator.found_nodes)
-        nodes : list(CFANode) = infestator.found_nodes
-        previous = nodes[0].node.start_byte
-        otherNode = nodes[1].node.start_byte
-        self.assertGreater(previous, otherNode)
+        actual = self._infestator.is_condition_of_if(condition)
 
+        self.assertEqual(if_node.type, "if_statement")
+        self.assertEqual(condition.type, "parenthesized_expression")
+        self.assertEqual(actual, expected)
 
-    def test_found_nested_nodes_are_reversed_correctly(self):
-        infestator = self._create_cfa("if(a==2){a=0; if(ko == 2){gris = 1;}} a = 2; if(b==3){hest = 3;}")
-        self.assertIsNotNone(infestator.found_nodes)
-        nodes : list(CFANode) = infestator.found_nodes
-        first = nodes[0].node.start_byte
-        second = nodes[1].node.start_byte
-        third = nodes[2].node.start_byte
-        self.assertGreater(first, second)
-        self.assertGreater(first, third)
-        self.assertGreater(second, third)
-            
-    def test_found_no_if_nodes_in_program(self):
-        infestator = self._create_cfa("int main(){a=2;}")
-        self.assertIsNotNone(infestator.found_nodes)
-        self.assertEqual(0,len(infestator.found_nodes))
+    def test_is_condition_of_if_false(self) -> None:
+        program: str = "if(a) { } else { }"
+        tree: Tree = self._parser.parse(program)
+        if_node: Node = tree.root_node.named_children[0]
+        alternative: Node = if_node.child_by_field_name("alternative")
+        expected: bool = False
 
+        actual = self._infestator.is_condition_of_if(alternative)
 
-    def test_can_infest_if_statement_with_newlines(self):
-        infestator = self._create_cfa("if(a==2)\n{ a=2;\n}")
-        t = infestator.infest_tree(self.tree)
-        self.assertTrue("TWEET();" in t.text)
+        self.assertEqual(if_node.type, "if_statement")
+        self.assertEqual(alternative.type, "compound_statement")
+        self.assertEqual(actual, expected)
 
-    def test_can_infest_if_statement_without_newlines(self):
-        inputStr = "if(a==2){ a=2;\n}"
-        infestator = self._create_cfa(inputStr)
-        t = infestator.infest_tree(self.tree)
+    def test_is_consequence_of_if_true(self) -> None:
+        program: str = "if(a) { } else { }"
+        tree: Tree = self._parser.parse(program)
+        if_node: Node = tree.root_node.named_children[0]
+        consequence: Node = if_node.child_by_field_name("consequence")
+        expected: bool = True
 
-        expected = self.removeWhitespace("if(a==2)\n{ TWEET(); a=2;\n}")
-        actual = self.removeWhitespace(t.text)
-        print(actual)
-        print(expected)
-        self.assertEqual(actual,expected)
+        actual = self._infestator.is_consequence_of_if(consequence)
 
+        self.assertEqual(if_node.type, "if_statement")
+        self.assertEqual(consequence.type, "compound_statement")
+        self.assertEqual(actual, expected)
 
+    def test_is_consequence_of_if_false(self) -> None:
+        program: str = "if(a) { } else { }"
+        tree: Tree = self._parser.parse(program)
+        if_node: Node = tree.root_node.named_children[0]
+        consequence: Node = if_node.child_by_field_name("alternative")
+        expected: bool = False
 
+        actual = self._infestator.is_consequence_of_if(consequence)
+
+        self.assertEqual(if_node.type, "if_statement")
+        self.assertEqual(consequence.type, "compound_statement")
+        self.assertEqual(actual, expected)
+
+    def test_is_alternative_of_if_true(self) -> None:
+        program: str = "if(a) { } else { }"
+        tree: Tree = self._parser.parse(program)
+        if_node: Node = tree.root_node.named_children[0]
+        alternative: Node = if_node.child_by_field_name("alternative")
+        expected: bool = True
+
+        actual = self._infestator.is_alternative_of_if(alternative)
+
+        self.assertEqual(if_node.type, "if_statement")
+        self.assertEqual(alternative.type, "compound_statement")
+        self.assertEqual(actual, expected)
+
+    def test_is_alternative_of_if_false(self) -> None:
+        program: str = "if(a) { } else { }"
+        tree: Tree = self._parser.parse(program)
+        if_node: Node = tree.root_node.named_children[0]
+        consequence: Node = if_node.child_by_field_name("consequence")
+        expected: bool = False
+
+        actual = self._infestator.is_alternative_of_if(consequence)
+
+        self.assertEqual(if_node.type, "if_statement")
+        self.assertEqual(consequence.type, "compound_statement")
+        self.assertEqual(actual, expected)
+
+    def test_sorted_cfa(self) -> None:
+        program: str = "if(a) { } else { a=2; }"
+        tree: Tree = self._parser.parse(program)
+        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node.first_child, False)
+        sorted: List[CFANode] = self._infestator.sorted_cfa(cfa)
+
+        self.assertEqual(len(sorted), 3)
+        self.assertEqual(sorted[0].node.type, "expression_statement")
+        self.assertEqual(sorted[1].node.type, "compound_statement")
+        self.assertEqual(sorted[2].node.type, "parenthesized_expression")
