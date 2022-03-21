@@ -162,9 +162,11 @@ class TreeCFAVisitor():
             else:
                 self._cfa.remove(j)
                 self.branch(p, s, "T")
+            if c is not None and c.node is None:
+                self._cfa.remove(c)
 
         alternative: Node = node.child_by_field_name("alternative")
-        if alternative is not None and alternative.child_count > 0:
+        if alternative is not None and alternative.type == "if_statement":
             i: CFANode = CFANode(None)
             # By doing this branch the next to be replaced will be "i"
             i = self.branch(p, i, "F")
@@ -174,6 +176,8 @@ class TreeCFAVisitor():
             else:
                 self._cfa.remove(i)
                 self.branch(p, s, "F")
+            if a is not None and a.node is None:
+                self._cfa.remove(a)
         else:
             self.branch(p, s, "F")
         return s
