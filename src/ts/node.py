@@ -1,3 +1,4 @@
+from argparse import BooleanOptionalAction
 from typing import List, Optional, Iterable
 
 from tree_sitter import Node as _Node
@@ -138,6 +139,15 @@ class Node:
             if current.parent.type in types: return current.parent.type
             current = current.parent
         return None
+
+    def __eq__(self, other: "Node") -> bool:
+        if other is None: return False
+        return self.start_byte == other.start_byte and \
+            self.end_byte == other.end_byte and \
+            self.type == other.type
+
+    def __ne__(self, other: "Node") -> bool:
+        return not (self == other)
 
     def pre_order_traverse(self, named_only: bool = False) -> Iterable["Node"]:
         reached_root: bool = False

@@ -100,7 +100,6 @@ class Syntax:
     def query_if_statement(self) -> str:
         return self._get_if_query
 
-
     @property
     def query_binary_expression(self) -> str:
         return self._binary_expression_query
