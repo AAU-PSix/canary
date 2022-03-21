@@ -1,5 +1,4 @@
-from argparse import BooleanOptionalAction
-from typing import List, Optional, Iterable
+from typing import List, Iterable
 
 from tree_sitter import Node as _Node
 
