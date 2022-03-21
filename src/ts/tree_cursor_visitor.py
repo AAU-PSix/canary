@@ -17,7 +17,8 @@ class TreeCFAVisitor():
     def __init__(self, tree: Tree) -> None:
         # We dont have the "translation_unit" because it will always be the root
         self._visits: Dict[str, Callable[[Node], CFANode]] = {
-            "expression_statement": self.visit_expression_statement,
+            "expression_statement": self.visit_node,
+            "declaration": self.visit_node,
             "if_statement": self.visit_if_statement,
             "while_statement": self.visit_while_statement,
             "translation_unit": self.visit_translation_unit,
@@ -123,11 +124,10 @@ class TreeCFAVisitor():
             last = self.accept(child)
         return last
 
-    def visit_expression_statement(self, d: Node) -> CFANode:
+    def visit_node(self, d: Node) -> CFANode:
         # p
         # |
         # d
-
         return self.next(CFANode(d))
 
     def visit_if_statement(self, node: Node) -> CFANode:
@@ -176,16 +176,16 @@ class TreeCFAVisitor():
     def visit_switch_statement(self, node: Node) -> CFANode:
         # Because of fallthrough for now we assume that the end of
         #   the first case is connected with the start of the next.
-        # TODO: Implement fallthrough
         #   p
         #  /|\
         # v v v
-        # | | |
+        # |/|/|
         # c c c
         #  \|/
         #   s
+
         p: CFANode = CFANode(node.child_by_field_name("condition"))
-        self.next(p)
+        p = self.next(p)
         s: CFANode = CFANode(None)
 
         cases: List[Tuple[CFANode, CFANode]] = list()
@@ -193,29 +193,27 @@ class TreeCFAVisitor():
         body: Node = node.child_by_field_name("body")
         # A child will always be a "case_statement"
         for child in body.named_children:
-            c: CFANode = CFANode(None)
-
             value: Node = child.child_by_field_name("value")
             v: CFANode = CFANode(value)
 
             # Case 1: No body "case 1:"
             if child.named_child_count == 1 and value is not None:
-                c = self.branch(p, v, "C")
+                self.branch(p, v, "C")
             # Case 2: Has body "case 1: a=1;"
             elif child.named_child_count == 2:
-                c = self.branch(p, v, "C")
+                self.branch(p, v, "C")
                 # The next named sibling could eg. be 
                 #   "expression_statement" and "compound_statement"
-                c = self.accept(
+                self.accept(
                     value.next_named_sibling
                 )
             # Case 3: Default "default: a=3;"
             elif child.named_child_count == 1 and value is None:
-                c = self.branch(p, v, "D")
-                c = self.accept(
+                self.branch(p, v, "D")
+                self.accept(
                     child.named_children[0]
                 )
-            cases.append((v, c))
+            cases.append((v, self._current))
 
         # Connect fall throughs
         for idx in range(0, len(cases) - 1):

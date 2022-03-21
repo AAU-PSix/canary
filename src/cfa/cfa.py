@@ -46,8 +46,7 @@ class CFA:
     def finals(self) -> List[CFANode]:
         finals: List[CFANode] = list()
         for node in self._nodes:
-            if len(self.outgoing_edges(node)) is 0 or \
-                node in self._additional_finals:
+            if len(self.outgoing_edges(node)) is 0:
                 finals.append(node)
         return finals
 
@@ -65,10 +64,12 @@ class CFA:
         return children
 
     def outgoing_edges(self, source: CFANode) -> List[CFAEdge]:
+        if source not in self._nodes:
+            return list()
         return self._outgoing_edges[source]
 
     def ingoing(self, destination: CFANode) -> List[CFANode]:
-        if destination not in self._ingoing_edges:
+        if destination not in self._nodes:
             return list()
         children: List[CFANode] = list()
         for edge in self._ingoing_edges[destination]:
@@ -146,9 +147,11 @@ class CFA:
         dot.node("initial", shape="point")
         dot.edge("initial", node_name(self.root))
 
-        dot.node("final", shape="point")
-        for final in self.finals:
-            dot.edge(node_name(final), "final")
+        finals: List[CFANode] = self.finals
+        if len(finals) > 0:
+            dot.node("final", shape="point")
+            for final in self.finals:
+                dot.edge(node_name(final), "final")
 
         for node in self._nodes:
             dot.node(node_name(node))

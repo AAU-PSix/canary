@@ -59,7 +59,7 @@ class TestGraphsGraphics(unittest.TestCase):
             ("while_14", "while(a==1) { if(a==1) { a=1; break; } else if(a==2) { a=2; } else { a=3; return; } a=4; } a=5;"),
             ("while_15", "while(a==1) { if(a==1) { a=1; break; } else if(a==2) { continue; a=2; } else { a=3; return; } a=4; } a=5;"),
             ("do_while_1", "do { a=1; } while(a==1); a=2;"),
-            ("do_while_2", "do { if(a==1) { a=1; } a=2; } while(a==1); a=2;"),
+            ("do_while_2", "do { if(a==1) f{ a=1; } a=2; } while(a==1); a=2;"),
             ("do_while_3", "do { a=0; if(a==1) { a=1; } a=2; } while(a==1); a=2;"),
             ("for_1", "for(int i = 0;;) { } a=3;"),
             ("for_2", "for(int i = 0; i<5;) { } a=3;"),
@@ -170,6 +170,27 @@ class TestGraphsGraphics(unittest.TestCase):
                 a=9;
             }
             a=-1;
+             """),
+            ("switch_10", """
+            int a = 3;
+            switch (a)
+            {
+                case 1: 
+                case 2: a=1;
+                case 3: { a=2; }
+                default: a=3;
+            }
+            a=10;
+             """),
+            ("switch_11", """
+            switch (a)
+            {
+                case 1: 
+                case 2: a=1;  a=1;
+                case 3: { a=2;  a=1; }
+                default: a=3;
+            }
+            a=10;
              """),
             ("function_1", """
             void foo() {
