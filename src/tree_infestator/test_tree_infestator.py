@@ -106,4 +106,41 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node.first_child, False)
         actual: Tree = self._infestator.infect(tree, cfa)
-        self.assertEqual(actual.text, "")
+        # self.assertEqual(actual.text, "")
+
+    def test_else_if_is_alternative_of_if_false(self) -> None:
+        program: str = "if(a) { } else if (b){ }"
+        tree: Tree = self._parser.parse(program)
+        if_else_node: Node = tree.root_node.named_children[0]
+        consequence: Node = if_else_node.child_by_field_name("consequence")
+        
+        expected: bool = False
+        actual = self._infestator.is_alternative_of_if(consequence)
+
+        self.assertEqual(if_else_node.type, "if_statement")
+        self.assertEqual(consequence.type, "compound_statement")
+        self.assertEqual(actual, expected)
+
+
+    def test_else_if_else_is_alternative_of_if_false(self) -> None:
+        program: str = "if(a) { } else if (b){ } else {}"
+        tree: Tree = self._parser.parse(program)
+        else_if_else_node: Node = tree.root_node.named_children[0]
+
+        consequence: Node = else_if_else_node.child_by_field_name("consequence")
+        
+        expected: bool = True
+        actual = self._infestator.is_consequence_of_if(consequence)
+        
+        self.assertEqual(else_if_else_node.type, "if_statement")
+        self.assertEqual(consequence.type, "compound_statement")
+        self.assertEqual(actual, expected)  
+
+    
+
+
+
+
+
+
+

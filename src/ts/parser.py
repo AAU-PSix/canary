@@ -41,6 +41,7 @@ class Parser:
         replacement: str = f'{text}{tree.contents_of(node)}'
         return self.replace(tree, node, replacement, encoding)
 
+
     def append(self, tree: Tree, node: Node, text: str, encoding: str = "utf8") -> Tree:
         replacement: str = f'{tree.contents_of(node)}{text}'
         return self.replace(tree, node, replacement, encoding)
