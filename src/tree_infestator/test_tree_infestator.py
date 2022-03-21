@@ -200,9 +200,14 @@ class TestTreeInfestator(unittest.TestCase):
         return self._infestator.infect(tree, cfa).text
 
 
-    def test_can_add_tweets_for_if_elif_else(self):
+    def test_can_add_tweets_for_if_elif_elif_else(self):
         actual = self._create_and_infect_tree("if(a) { } else if (b) {} else if (c) {} else {}")        
         expected = "if(a) {TWEET(); } else if (b) {TWEET();} else if (c) {TWEET();} else {TWEET();}"
+        self.assertEqual(expected, actual)       
+
+    def test_can_add_tweets_for_if_elif_elif_nested_if_else(self):
+        actual = self._create_and_infect_tree("if(a) { } else if (b) {} else if (c) { if (a) {} else if (b) {}} else {}")        
+        expected = "if(a) {TWEET(); } else if (b) {TWEET();} else if (c) {TWEET(); if (a) {TWEET();} else if (b) {TWEET();}} else {TWEET();}"
         self.assertEqual(expected, actual)        
     
 
