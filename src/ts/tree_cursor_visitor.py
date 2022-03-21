@@ -122,6 +122,8 @@ class TreeCFAVisitor():
         return last
 
     def visit_compound_statement(self, node: Node) -> CFANode:
+        if node.named_child_count == 0:
+            return self.next(CFANode(node))
         last: CFANode = None
         for child in node.named_children:
             last = self.accept(child)
@@ -152,7 +154,7 @@ class TreeCFAVisitor():
         s: CFANode = CFANode(None)
 
         consequence: Node = node.child_by_field_name("consequence")
-        if consequence is not None and consequence.child_count > 0:
+        if consequence is not None:
             j: CFANode = CFANode(None)
             # By doing this branch the next to be replaced will be "j"
             j = self.branch(p, j, "T")
@@ -166,7 +168,7 @@ class TreeCFAVisitor():
                 self._cfa.remove(c)
 
         alternative: Node = node.child_by_field_name("alternative")
-        if alternative is not None and alternative.type == "if_statement":
+        if alternative is not None:
             i: CFANode = CFANode(None)
             # By doing this branch the next to be replaced will be "i"
             i = self.branch(p, i, "F")
