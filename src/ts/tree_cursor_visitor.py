@@ -45,6 +45,9 @@ class TreeCFAVisitor():
 
         self.accept(root)
 
+        if self._current is not None and self._current.node is None:
+            self._cfa.remove(self._current)
+
         return self._cfa
 
     def _continue(self, source: CFANode) -> CFANode:
@@ -152,25 +155,27 @@ class TreeCFAVisitor():
         if consequence is not None and consequence.child_count > 0:
             j: CFANode = CFANode(None)
             # By doing this branch the next to be replaced will be "j"
-            self.branch(p, j, "T")
+            j = self.branch(p, j, "T")
             c: CFANode = self.accept(consequence)
-            self.branch(c, s)
-            if c is not None and c.node is None:
-                self._cfa.remove(c)
+            if j.node is not None:
+                self.branch(c, s)
+            else:
+                self._cfa.remove(j)
+                self.branch(p, s, "T")
 
         alternative: Node = node.child_by_field_name("alternative")
         if alternative is not None and alternative.child_count > 0:
             i: CFANode = CFANode(None)
             # By doing this branch the next to be replaced will be "i"
-            self.branch(p, i, "F")
+            i = self.branch(p, i, "F")
             a: CFANode = self.accept(alternative)
-            self.branch(a, s)
-            if a is not None and a.node is None:
-                self._cfa.remove(a)
+            if i.node is not None:
+                self.branch(a, s)
+            else:
+                self._cfa.remove(i)
+                self.branch(p, s, "F")
         else:
             self.branch(p, s, "F")
-            if p is not None and p.node is None:
-                self._cfa.remove(p)
         return s
 
     def visit_switch_statement(self, node: Node) -> CFANode:

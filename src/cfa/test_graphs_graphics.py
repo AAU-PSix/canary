@@ -43,6 +43,8 @@ class TestGraphsGraphics(unittest.TestCase):
             ("if_15", "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } else if(a==3) { a=4; } else if(a==4) { a=5; } else { a=6; } a=7;"),
             ("if_16",  "a=1; if(a==1) { a=2; } a=3; if(a==2) { a=2; } a=3; if(a==3) { a=2; } a=3;"),
             ("if_17",  "a=1; if((((a==1)))) { a=2; }"),
+            ("if_18",  "a=1; if(a==1) { } a=3;"),
+            ("if_18",  "a=1; if(a==1) { a=2; } else { } a=3;"),
             ("while_1", "while(a==1) { }"),
             ("while_2", "while(a==1) { } a=3;"),
             ("while_3", "while(a==1) { a=2; } a=3;"),
