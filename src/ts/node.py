@@ -125,6 +125,20 @@ class Node:
             return None
         return Node(result)
 
+    def is_descendent_of_type(self, type: str) -> bool:
+        current: Node = self
+        while current.parent is not None:
+            if current.parent.type == type: return True
+            current = current.parent
+        return False
+
+    def is_descendent_of_types(self, types: List[str]) -> str:
+        current: Node = self
+        while current.parent is not None:
+            if current.parent.type in types: return current.parent.type
+            current = current.parent
+        return None
+
     def pre_order_traverse(self, named_only: bool = False) -> Iterable["Node"]:
         reached_root: bool = False
         curr: Node = self
