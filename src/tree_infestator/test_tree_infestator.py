@@ -9,7 +9,7 @@ class TestTreeInfestator(unittest.TestCase):
         LanguageLibrary.build()
         self._language = LanguageLibrary.c()
         self._parser = Parser.create_with_language(self._language)
-        self._infestator = TreeInfestator()
+        self._infestator = TreeInfestator(self._parser)
 
     def test_is_condition_of_if_true(self) -> None:
         program: str = "if(a) { } else { }"
@@ -99,3 +99,11 @@ class TestTreeInfestator(unittest.TestCase):
         self.assertEqual(sorted[0].node.type, "expression_statement")
         self.assertEqual(sorted[1].node.type, "compound_statement")
         self.assertEqual(sorted[2].node.type, "parenthesized_expression")
+
+
+    def test_infect(self) -> None:
+        program: str = "if(a) { } else { }"
+        tree: Tree = self._parser.parse(program)
+        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node.first_child, False)
+        actual: Tree = self._infestator.infect(tree, cfa)
+        self.assertEqual(actual.text, "")
