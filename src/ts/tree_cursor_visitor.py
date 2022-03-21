@@ -1,5 +1,5 @@
 from typing import Callable, Dict, Tuple, List
-from queue import LifoQueue
+from collections import deque
 
 
 from .node import Node
@@ -8,7 +8,7 @@ from src.cfa import CFA, CFANode
 
 class TreeCFAVisitor():
     _cfa: CFA
-    _continue_break_stack: LifoQueue[Tuple[CFANode, CFANode]]
+    _continue_break_stack: deque[Tuple[CFANode, CFANode]]
     _current: CFANode
     _tree: Tree
     _labels: List[Tuple[CFANode, str]]
@@ -36,7 +36,7 @@ class TreeCFAVisitor():
         self._tree = tree
 
     def create(self, root: Node, include_root: bool = True) -> CFA:
-        self._continue_break_stack = LifoQueue()
+        self._continue_break_stack = deque()
         self._labels = list()
         self._gotos = list()
         cfa_root: CFANode = CFANode(root if include_root else None)
@@ -48,13 +48,13 @@ class TreeCFAVisitor():
         return self._cfa
 
     def _continue(self, source: CFANode) -> CFANode:
-        continue_break: Tuple[CFANode, CFANode] = self._continue_break_stack.get()
-        self._continue_break_stack.put(continue_break)
+        continue_break: Tuple[CFANode, CFANode] = self._continue_break_stack.pop()
+        self._continue_break_stack.append(continue_break)
         return self.branch(source, continue_break[0], "C")
 
     def _break(self, source: CFANode) -> CFANode:
-        continue_break: Tuple[CFANode, CFANode] = self._continue_break_stack.get()
-        self._continue_break_stack.put(continue_break)
+        continue_break: Tuple[CFANode, CFANode] = self._continue_break_stack.pop()
+        self._continue_break_stack.append(continue_break)
         return self.branch(source, continue_break[1], "B")
 
     def _add_label(self, label: Node, label_stmt: CFANode) -> None:
@@ -195,25 +195,26 @@ class TreeCFAVisitor():
         for child in body.named_children:
             value: Node = child.child_by_field_name("value")
             v: CFANode = CFANode(value)
+            c: CFANode = CFANode(None)
 
             # Case 1: No body "case 1:"
             if child.named_child_count == 1 and value is not None:
-                self.branch(p, v, "C")
+                c = self.branch(p, v, "C")
             # Case 2: Has body "case 1: a=1;"
             elif child.named_child_count == 2:
-                self.branch(p, v, "C")
+                c = self.branch(p, v, "C")
                 # The next named sibling could eg. be 
                 #   "expression_statement" and "compound_statement"
-                self.accept(
+                c = self.accept(
                     value.next_named_sibling
                 )
             # Case 3: Default "default: a=3;"
             elif child.named_child_count == 1 and value is None:
-                self.branch(p, v, "D")
-                self.accept(
+                c = self.branch(p, v, "D")
+                c = self.accept(
                     child.named_children[0]
                 )
-            cases.append((v, self._current))
+            cases.append((v, c))
 
         # Connect fall throughs
         for idx in range(0, len(cases) - 1):
@@ -241,7 +242,7 @@ class TreeCFAVisitor():
         p: CFANode = self.next(CFANode(condition))
         s: CFANode = CFANode(None)
 
-        self._continue_break_stack.put((p, s))
+        self._continue_break_stack.append((p, s))
 
         j: CFANode = CFANode(None)
         self.branch(p, j, "T")
@@ -249,7 +250,7 @@ class TreeCFAVisitor():
         self.accept(b)
         self.next(p)
 
-        self._continue_break_stack.get()
+        self._continue_break_stack.pop()
 
         return self.branch(p, s, "F")
 
@@ -293,7 +294,7 @@ class TreeCFAVisitor():
         is_compound: bool = last_child.type == "compound_statement"
         is_empty: bool = is_expression or is_compound and last_child.named_child_count is 0
 
-        self._continue_break_stack.put((u, f))
+        self._continue_break_stack.append((u, f))
 
         if has_init:
             self.next(i)
@@ -328,7 +329,7 @@ class TreeCFAVisitor():
             c = self.accept(last_child)
             self.branch(c, c, "T")
 
-        self._continue_break_stack.get()
+        self._continue_break_stack.pop()
 
         return self.branch(c, f, "F")
 
