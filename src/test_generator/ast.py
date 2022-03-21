@@ -101,7 +101,7 @@ class Expression(ASTNode):
         visitor.visit_expression(self)
 
 class FunctionCall(Expression):
-    def __init__(self, name: str, actual_parameters: list[Expression] = list()) -> None:
+    def __init__(self, name: str, actual_parameters: "list[Expression]" = list()) -> None:
         self._name = name
         self._actual_parameters = actual_parameters
 
