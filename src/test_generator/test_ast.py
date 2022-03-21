@@ -47,7 +47,7 @@ class TestFunctionDeclaration(unittest.TestCase):
         
         self.assertEqual(function_declration.return_type, "void")
         self.assertEqual(len(function_declration.formal_parameters), 1)
-        self.assertEqual(function_declration.formal_parameters[0], "int*")
+        self.assertEqual(function_declration.formal_parameters[0].type, "int*")
 
     def test_create_c_return_void_one_params_as_pointer_of_pointers(self) -> None:
         tree: Tree = self._parser.parse(
@@ -64,7 +64,7 @@ class TestFunctionDeclaration(unittest.TestCase):
         
         self.assertEqual(function_declration.return_type, "void")
         self.assertEqual(len(function_declration.formal_parameters), 1)
-        self.assertEqual(function_declration.formal_parameters[0], "int****")
+        self.assertEqual(function_declration.formal_parameters[0].type, "int****")
 
     def test_create_c_return_int_two_params(self) -> None:
         tree: Tree = self._parser.parse(
@@ -81,5 +81,5 @@ class TestFunctionDeclaration(unittest.TestCase):
         
         self.assertEqual(function_declration.return_type, "int")
         self.assertEqual(len(function_declration.formal_parameters), 2)
-        self.assertEqual(function_declration.formal_parameters[0], "int")
-        self.assertEqual(function_declration.formal_parameters[1], "double")
+        self.assertEqual(function_declration.formal_parameters[0].type, "int")
+        self.assertEqual(function_declration.formal_parameters[1].type, "double")

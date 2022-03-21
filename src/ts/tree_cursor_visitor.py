@@ -122,6 +122,7 @@ class TreeCFAVisitor():
         return last
 
     def visit_compound_statement(self, node: Node) -> CFANode:
+        # Only is the 
         if node.named_child_count == 0:
             return self.next(CFANode(node))
         last: CFANode = None

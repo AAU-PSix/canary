@@ -1,8 +1,8 @@
 from io import TextIOWrapper
-from multiprocessing import set_forkserver_preload
 from typing import List
 from .ast import (
     Assertion,
+    Declaration,
     Expression,
     Statement,
     TestCase,
@@ -25,6 +25,7 @@ class CuTestCodeGenerator(ASTVisitor):
         self._write_line("// Act")
         if test.act is not None: test.act.accept(self)
         self._write_line("// Assert")
+        for stmt in test.assertions: stmt.accept(self)
         self._write_line("}")
         return self._lines
 
@@ -37,18 +38,37 @@ class CuTestCodeGenerator(ASTVisitor):
         statement.epxression.accept(self)
         self._write(";")
 
-    def visit_assertion(self, assertion: Assertion): pass
+    def visit_declaration(self, declaration: Declaration):
+        self._write_line()
+        self._write(f'{declaration._type} {declaration._identifier}')
+        if declaration.initialization is not None:
+            self._write(" = ")
+            declaration.initialization.accept(self)
+        self._write(";")
+
+    def visit_assertion(self, assertion: Assertion):
+        self._write_line()
+        self._write("CuAssert(")
+        assertion.expected.accept(self)
+        self._write(", ")
+        assertion.actual.accept(self)
+        self._write(");")
 
     def visit_constant(self, constant: Constant):
         self._write(constant.value)
 
     def visit_assignment(self, assignment: Assignment):
-        self._write_line(f'{assignment.lhs}=')
+        self._write_line(f'{assignment.lhs} = ')
         assignment.rhs.accept(self)
         self._write(";")
 
     def visit_function_call(self, function_call: FunctionCall):
-        self._write(f'{function_call.name}()')
+        self._write(f'{function_call.name}(')
+        for parameter in function_call.actual_parameters:
+            parameter.accept(self)
+            if parameter is not function_call.actual_parameters[-1]:
+                self._write(", ")
+        self._write(")")
 
     def _write(self, text: str) -> None:
         self._lines[-1] += text
@@ -56,5 +76,5 @@ class CuTestCodeGenerator(ASTVisitor):
     def _next_line(self) -> None:
         self._write_line("")
 
-    def _write_line(self, line: str) -> None:
+    def _write_line(self, line: str = "") -> None:
         self._lines.append(line)

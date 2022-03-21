@@ -9,18 +9,18 @@ class FormalParameter:
 
     @property
     def identifier(self) -> str:
-        return self.identifier
+        return self._identifier
 
     @property
     def type(self) -> str:
-        return self.type
+        return self._type
 
 class FunctionDeclaration:
     def __init__(
         self,
         name: str,
         return_type: str,
-        formal_parameters: List[str]
+        formal_parameters: List[FormalParameter]
     ) -> None:
         self._name = name
         self._return_type = return_type
@@ -35,32 +35,36 @@ class FunctionDeclaration:
         return self._return_type
 
     @property
-    def formal_parameters(self) -> List[str]:
+    def formal_parameters(self) -> List[FormalParameter]:
         return self._formal_parameters
 
     @staticmethod
     def create_c(tree: Tree, node: Node) -> "FunctionDeclaration":
         return_type_node: Node = node.child_by_field_name("type")
         return_type: str = tree.contents_of(return_type_node)
-        
-        formal_parameters: List[str] = list()
+
+        formal_parameters: List[FormalParameter] = list()
         declarator_node: Node = node.child_by_field_name("declarator")
-        
-        function_name_node: Node = node.child_by_field_name("declarator")
+
+        function_name_node: Node = declarator_node.child_by_field_name("declarator")
         function_name: str = tree.contents_of(function_name_node)
-        
+
         parameter_list: Node = declarator_node.child_by_field_name("parameters")
         for parameter_declaration in parameter_list.named_children:
             parameter_type_node = parameter_declaration.child_by_field_name("type")
+            parameter_identifier_node = parameter_declaration.child_by_field_name("declarator")
 
             formal_type: str = tree.contents_of(parameter_type_node)
+            formal_identifier = tree.contents_of(parameter_identifier_node)
 
             parameter_declarator_node: Node = parameter_declaration.child_by_field_name("declarator")
             while parameter_declarator_node.type == "pointer_declarator":
                 formal_type += "*"
                 parameter_declarator_node = parameter_declarator_node.named_children[0]
 
-            formal_parameters.append(formal_type)
+            formal_parameters.append(
+                FormalParameter(formal_identifier, formal_type)
+            )
 
         return FunctionDeclaration(
             function_name, return_type, formal_parameters
@@ -79,6 +83,8 @@ class ASTVisitor(ABC):
     def visit_constant(self, constant: "Constant"): pass
     @abstractmethod
     def visit_assignment(self, assignment: "Assignment"): pass
+    @abstractmethod
+    def visit_declaration(self, assignment: "Declaration"): pass
     @abstractmethod
     def visit_function_call(self, function_call: "FunctionCall"): pass
 
@@ -109,6 +115,10 @@ class FunctionCall(Expression):
     def name(self) -> str:
         return self._name
 
+    @property
+    def actual_parameters(self) -> "list[Expression]":
+        return self._actual_parameters
+
     def accept(self, visitor: ASTVisitor):
         visitor.visit_function_call(self)
 
@@ -125,7 +135,7 @@ class Constant(Expression):
         visitor.visit_constant(self)
 
 class Assignment(Statement):
-    def __init__(self, lhs: str, rhs: Expression) -> None:
+    def __init__(self, lhs: str, rhs: Expression = None) -> None:
         self._lhs = lhs
         self._rhs = rhs
 
@@ -140,6 +150,33 @@ class Assignment(Statement):
     def accept(self, visitor: ASTVisitor):
         visitor.visit_assignment(self)
 
+class Declaration(Statement):
+    def __init__(
+        self,
+        type: str,
+        identifier: str,
+        initialization: Expression = None
+    ) -> None:
+        self._type = type
+        self._identifier = identifier
+        self._initialization = initialization
+        super().__init__()
+
+    @property
+    def type(self) -> str:
+        return self._type
+
+    @property
+    def identifier(self) -> str:
+        return self._identifier
+
+    @property
+    def initialization(self) -> Expression:
+        return self._initialization
+
+    def accept(self, visitor: ASTVisitor):
+        visitor.visit_declaration(self)
+
 class ExpressionStatement(Statement):
     def __init__(self, expression: Expression) -> None:
         self._expression = expression
@@ -153,8 +190,17 @@ class ExpressionStatement(Statement):
         visitor.visit_expression_statement(self)
 
 class Assertion:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, actual: Expression, expected: Expression) -> None:
+        self._actual = actual
+        self._expected = expected
+
+    @property
+    def actual(self) -> Expression:
+        return self._actual
+
+    @property
+    def expected(self) -> Expression:
+        return self._expected
 
     def accept(self, visitor: ASTVisitor):
         visitor.visit_assertion(self)
