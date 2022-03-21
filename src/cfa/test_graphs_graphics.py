@@ -27,7 +27,7 @@ class TestGraphsGraphics(unittest.TestCase):
     def test_create_graphs_graphics(self) -> None:
         programs: List[Tuple[str, str]] = [
             ("if_1",  "a=1; if(a==2) { }"),
-            ("if_2",  "a=1; if(a==2) { } else { }"),
+            ("if_2",  "if(a==2) { } else { }"),
             ("if_3",  "a=1; if(a==2) { } else { } a=2;"),
             ("if_4",  "a=1; if(a==2) { } else if(a==3) { } else { }"),
             ("if_5",  "a=1; if(a==2) { } else if(a==3) { } a=2;"),
