@@ -1,1 +1,1 @@
-from .tree_infestator import TreeInfestator
+from .tree_infestator import *

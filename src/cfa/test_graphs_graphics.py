@@ -1,7 +1,10 @@
 import unittest
 from typing import List, Tuple
 
+from graphviz import Digraph
+
 from src.cfa import CFA
+from src.tree_infestator.tree_infestator import TreeInfestator
 
 from src.ts import (
     LanguageLibrary,
@@ -41,14 +44,15 @@ class TestGraphsGraphics(unittest.TestCase):
             ("if_13", "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } else if(a==3) { a=4; } a=5;"),
             ("if_14", "a=1; if(a==1) { a=2; } else if(a==2) { } else if(a==3) { a=4; } else if(a==4) { a=5; } else { a=6; } a=7;"),
             ("if_15", "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } else if(a==3) { a=4; } else if(a==4) { a=5; } else { a=6; } a=7;"),
-            ("if_16",  "a=1; if(a==1) { a=2; } a=3; if(a==2) { a=2; } a=3; if(a==3) { a=2; } a=3;"),
-            ("if_17",  "a=1; if((((a==1)))) { a=2; }"),
-            ("if_18",  "a=1; if(a==1) { } a=3;"),
-            ("if_18",  "a=1; if(a==1) { a=2; } else { } a=3;"),
-            ("if_19",  "if(a==1) { } if(a==3) { b=2; }"),
-            ("if_20",  "if(a==1) { a=1; a=2; } if(a==3) { b=2; }"),
-            ("if_21",  "if (a) { { { { { } } } } } else { a=2; } a=2"),
-            ("if_22",  "if (a) { { A=1; { { { } b=2; } } } } else { a=2; } a=2"),
+            ("if_16", "a=1; if(a==1) { a=2; } a=3; if(a==2) { a=2; } a=3; if(a==3) { a=2; } a=3;"),
+            ("if_17", "a=1; if((((a==1)))) { a=2; }"),
+            ("if_18", "a=1; if(a==1) { } a=3;"),
+            ("if_18", "a=1; if(a==1) { a=2; } else { } a=3;"),
+            ("if_19", "if(a==1) { } if(a==3) { b=2; }"),
+            ("if_20", "if(a==1) { a=1; a=2; } if(a==3) { b=2; }"),
+            ("if_21", "if (a) { { { { { } } } } } else { a=2; } a=2"),
+            ("if_22", "if (a) { { A=1; { { { } b=2; } } } } else { a=2; } a=2"),
+            ("if_23", "if(a) { if(a) { } }"),
             ("while_1", "while(a==1) { }"),
             ("while_2", "while(a==1) { } a=3;"),
             ("while_3", "while(a==1) { a=2; } a=3;"),
@@ -223,17 +227,60 @@ class TestGraphsGraphics(unittest.TestCase):
             target:
                 a=2;
             }
+             """),
+            ("program_1", """
+             void foo() {
+                 int a = 0;
+                 int b;
+                 double c;
+                 for (b = 0; b < 10; ++b) {
+                     print(b);
+                     if (b % 2 == 0) {
+                         continue;
+                     }
+                    b /= 2;
+                 }
+                 b /= 2; a += 2; c = 42;
+                 a = b = c;
+             }
              """)
         ]
 
-        for program in programs:
-            name: str = program[0]
-            prog: str = program[1]
-            tree: Tree = self._parser.parse(prog)
+        def draw_normal_cfa(name: str, program: str):
+            tree: Tree = self._parser.parse(program)
             visitor: TreeCFAVisitor = TreeCFAVisitor(tree)
+
             root: Node = tree.root_node
             if root.named_children[0].type == "function_definition":
                 root = root.named_children[0].child_by_field_name("body")
+
             cfa: CFA = visitor.create(root, False)
-            dot = cfa.draw(tree, name)
+            dot: Digraph = cfa.draw(tree, name)
             dot.save(directory="graphs")
+            draw_infected_cfa(name, tree, cfa)
+
+        def draw_infected_cfa(name: str, tree: Tree, cfa: CFA):
+            try:
+                infestator: TreeInfestator = TreeInfestator(self._parser)
+                infested_tree: Tree = infestator.infect(tree, cfa)
+                # TODO (IMPORTANT): Editing does not work correctly and for this
+                #   reason we have to re-parse with a COMPLETELY NEW PARSER!!!
+                infested_tree = Parser.c().parse(infested_tree.text)
+
+                root: Node = infested_tree.root_node
+                if root.named_children[0].type == "function_definition":
+                    root = root.named_children[0].child_by_field_name("body")
+
+
+                infested_visitor: TreeCFAVisitor = TreeCFAVisitor(infested_tree)
+                infested_cfa: CFA = infested_visitor.create(root, False)
+                infested_dot: Digraph = infested_cfa.draw(infested_tree, f'{name}_infested')
+                infested_dot.save(directory="graphs")
+            except: pass
+                # self.assertEqual(name, "", "Infestation failed for this program")
+
+        for program in programs:
+            name: str = program[0]
+            progame: str = program[1]
+
+            draw_normal_cfa(name, progame)

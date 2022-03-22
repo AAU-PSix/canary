@@ -7,37 +7,44 @@ class TreeInfestator:
 
     def is_condition_of_if(self, node: Node) -> bool:
         if_statement: Node = node.parent
-        alternative: Node = if_statement.child_by_field_name("condition")
-        return alternative is not None and node == alternative
+        condition: Node = if_statement.child_by_field_name("condition")
+        return condition is not None and node == condition
 
-    def is_consequence_of_if(self, node: Node) -> bool:
-        if_statement: Node = node.parent
-        if node.type != "compound_statement":
-            if_statement = if_statement.parent
-        alternative: Node = if_statement.child_by_field_name("consequence")
-        return alternative is not None and node == alternative
-
-    def is_alternative_of_if(self, node: Node) -> bool:
-        if_statement: Node = node.parent
-        if node.type != "compound_statement":
-            if_statement = if_statement.parent
+    def nests_of_if_statement(self, condition: Node) -> List[Node]:
+        nests: List[Node] = list()
+        if_statement: Node = condition.parent
+        consequence: Node = if_statement.child_by_field_name("consequence")
+        if consequence is not None: nests.append(consequence)
         alternative: Node = if_statement.child_by_field_name("alternative")
-        return alternative is not None and node == alternative
+        if alternative is not None: nests.append(alternative)
+        return nests
 
-    def is_branch(self, node: Node) -> bool:
-        return self.is_consequence_of_if(node) or \
-            self.is_alternative_of_if(node)
+    def nests(self, cfa: CFA) -> List[Node]:
+        nests: List[Node] = list()
+        for cfa_node in cfa.nodes:
+            node: Node = cfa_node.node
+            if self.is_condition_of_if(node):
+                nests.extend(self.nests_of_if_statement(node))
+        nests.sort(key=lambda x: x.start_byte, reverse=True)
+        return nests
 
-    def sorted_cfa(self, cfa: CFA) -> List[CFANode]:
-        nodes: List[CFANode] = list(cfa.breadth_first_traverse())
-        nodes.sort(key=lambda x: x.node.end_byte, reverse=True)
-        return nodes
+    def infect_compound_statement(self, tree: Tree, node: Node) -> Tree:
+        return self._parser.append(tree, node.children[0], "TWEET();")
+
+    def infect_expression_statement(self, tree: Tree, node: Node) -> Tree:
+        return self._parser.append(tree, node.children[0], "TWEET();")
+
+    def infect_declaration(self, tree: Tree, node: Node) -> Tree:
+        return self._parser.append(tree, node.children[0], "TWEET();")
 
     def infect(self, tree: Tree, cfa: CFA) -> Tree:
-        cfa_nodes: List[CFANode] = self.sorted_cfa(cfa)
-        for cfa_node in cfa_nodes:
-            if self.is_alternative_of_if(cfa_node.node):
-                tree = self._parser.append(tree, cfa_node.node.children[0], "TWEET();")
-            elif self.is_consequence_of_if(cfa_node.node):
-                tree = self._parser.append(tree, cfa_node.node.children[0], "TWEET();")
+        infections: Dict[str, Callable[[Tree, Node], Tree]] = {
+            "compound_statement": self.infect_compound_statement,
+            "expression_statement": self.infect_expression_statement,
+            "declaration": self.infect_declaration,
+        }
+        nests: List[Node] = self.nests(cfa)
+        for nest in nests:
+            if nest.type in infections:
+                tree = infections[nest.type](tree, nest)
         return tree
