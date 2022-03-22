@@ -5,7 +5,7 @@ clean:
 .PHONY: build
 build: clean
 	mkdir -p ./build
-	cd ./build && cmake ../src/ && cmake --build .
+	cd ./build && cmake ../ && cmake --build .
 
 .PHONY: run
 run: build
