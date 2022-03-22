@@ -1,16 +1,14 @@
 from typing import Callable, Dict, Tuple, List
 from collections import deque
 
-
-from .node import Node
-from src.ts.tree import Tree
-from src.cfa import CFA, CFANode
+from ts.tree import Node, Tree
+from .cfa import CFA, CFANode
 
 class TreeCFAVisitor():
     _cfa: CFA
+    _tree: Tree
     _continue_break_stack: "deque[Tuple[CFANode, CFANode]]"
     _current: CFANode
-    _tree: Tree
     _labels: List[Tuple[CFANode, str]]
     _gotos: List[Tuple[CFANode, str]]
 

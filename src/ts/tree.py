@@ -1,6 +1,6 @@
-from os import linesep
 from typing import Iterable, List
 from tree_sitter import Tree as _Tree
+
 from .node import Node
 from .tree_cursor import TreeCursor
 from .file_point import FilePoint

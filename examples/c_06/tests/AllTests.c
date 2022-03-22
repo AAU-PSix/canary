@@ -1,7 +1,8 @@
 #include <stdio.h>
 
 #include "CuTest.h"
-#include "original.h"
+#include "CanaryCuTest.h"
+#include "../src/original.h"
 
 void addTest(CuTest *ct) {
 	int a = 0;
@@ -35,6 +36,7 @@ void RunAllTests(void) {
 	CuSuite* suite = CuSuiteNew();
 
 	CuSuiteAddSuite(suite, AddSuite());
+	CuSuiteAddSuite(suite, CanarySuites());
 
 	CuSuiteRun(suite);
 	CuSuiteSummary(suite, output);

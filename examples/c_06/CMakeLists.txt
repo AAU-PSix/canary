@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 3.0.2)
 # set the project name
 project(c_06)
 
-include_directories(src)
-include_directories(tests)
-
 # Build test project
 add_executable(c_06_test ./tests/AllTests.c ./tests/CuTest.c)
 

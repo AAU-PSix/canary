@@ -1,19 +1,13 @@
-from src.ts.tree import Tree
-from src.ts.node import Node
 from typing import Dict, List, Iterable
 from queue import Queue
 import graphviz
 
-class CFANode:
-    def __init__(self, node: Node, location: int = -1) -> None:
-        self.node = node
-        self.location = location
+from ts.tree import Tree
+from ts.node import Node
 
-class CFAEdge:
-    def __init__(self, source: CFANode, destination: CFANode, label: str = None) -> None:
-        self.source = source
-        self.destination = destination
-        self.label = label
+from .cfa_edge import *
+from .cfa_node import *
+
 
 class CFA:
     _root: CFANode

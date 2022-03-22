@@ -8,8 +8,8 @@ from src.ts import (
     Parser,
     Query,
     Tree,
-    TreeCFAVisitor,
 )
+from . import TreeCFAVisitor
 from src.ts.node import Node
 
 

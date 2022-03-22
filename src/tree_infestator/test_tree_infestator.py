@@ -136,6 +136,79 @@ class TestTreeInfestator(unittest.TestCase):
         self.assertEqual(consequence.type, "compound_statement")
         self.assertEqual(actual, expected)  
 
+
+    def test_can_add_tweet_for_if_statement(self):
+        program: str = "if(a) { }"
+        tree: Tree = self._parser.parse(program)
+
+        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node.first_child, False)
+
+        actual = self._infestator.infect(tree, cfa).text
+        expected = "if(a) {TWEET(); }"
+        self.assertEqual(expected, actual)
+
+#    def test_can_add_tweets_for_sequential_if_statement(self):
+#        program: str = "if(a) { } if (b) { }"
+#        tree: Tree = self._parser.parse(program)
+#
+#        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node.first_child, False)
+#
+#        actual = self._infestator.infect(tree, cfa).text
+#        expected = "if(a) {TWEET(); } if (b) {TWEET(); }"
+#        self.assertEqual(expected, actual)
+#
+#    def test_can_add_tweets_for_nested_if_statements(self):
+#        program: str = "if(a) { if (b) { } }"
+#        tree: Tree = self._parser.parse(program)
+#
+#        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node.first_child, False)
+#
+#        actual = self._infestator.infect(tree, cfa).text
+#        expected = "if(a) {TWEET(); if (b) {TWEET(); }}"
+#        self.assertEqual(expected, actual)
+#
+#    def test_can_add_tweets_for_if_with_nested_else(self):
+#        program: str = "if(a) { if (b) { } } else {}"
+#        tree: Tree = self._parser.parse(program)
+#        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node.first_child, False)
+#
+#        actual = self._infestator.infect(tree, cfa).text
+#        expected = "if(a) {TWEET(); if (b) {TWEET(); } } else {TWEET();}"
+#        self.assertEqual(expected, actual)
+#
+#    def test_can_add_tweets_for_if_with_nested_else_with_if(self):
+#        program: str = "if(a) { if (b) { } } else { if (a){}}"
+#        tree: Tree = self._parser.parse(program)
+#        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node.first_child, False)
+#
+#        actual = self._infestator.infect(tree, cfa).text
+#        expected = "if(a) {TWEET(); if (b) {TWEET(); } } else {TWEET(); if (a){TWEET();}}"
+#        self.assertEqual(expected, actual)
+#
+#    def test_can_add_tweets_for_if_elif_else(self):
+#        program: str = "if(a) { } else if (b) {} else if (c) {} else {}"
+#        tree: Tree = self._parser.parse(program)
+#        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node.first_child, False)
+#
+#        actual = self._infestator.infect(tree, cfa).text
+#        expected = "if(a) {TWEET(); } else if (b) {TWEET();} else if (c) {TWEET();} else {TWEET();}"
+#        self.assertEqual(expected, actual)        
+#
+#    def _create_and_infect_tree(self,program:str) -> str:
+#        tree: Tree = self._parser.parse(program)
+#        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node.first_child, False)
+#        return self._infestator.infect(tree, cfa).text
+#
+#
+#    def test_can_add_tweets_for_if_elif_elif_else(self):
+#        actual = self._create_and_infect_tree("if(a) { } else if (b) {} else if (c) {} else {}")        
+#        expected = "if(a) {TWEET(); } else if (b) {TWEET();} else if (c) {TWEET();} else {TWEET();}"
+#        self.assertEqual(expected, actual)       
+#
+#    def test_can_add_tweets_for_if_elif_elif_nested_if_else(self):
+#        actual = self._create_and_infect_tree("if(a) { } else if (b) {} else if (c) { if (a) {} else if (b) {}} else {}")        
+#        expected = "if(a) {TWEET(); } else if (b) {TWEET();} else if (c) {TWEET(); if (a) {TWEET();} else if (b) {TWEET();}} else {TWEET();}"
+#        self.assertEqual(expected, actual)        
     
 
 

@@ -1,0 +1,13 @@
+state=a
+value=0
+state=a
+value=3
+FF
+
+There were 2 failures:
+1) addTest: /input/tests/AllTests.c:14: expected <1> but was <0>
+2) addTest_1_1: /input/tests/AllTests.c:24: expected <12> but was <0>
+
+!!!FAILURES!!!
+Runs: 2 Passes: 0 Fails: 2
+
