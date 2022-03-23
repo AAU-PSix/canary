@@ -205,6 +205,46 @@ class TestGraphsGraphics(unittest.TestCase):
             }
             a=10;
              """),
+            ("switch_12", """
+            switch (a)
+            {
+                case 1: 
+                case 2: 
+                case 3: { a=2;  a=1; }
+                default: a=3;
+            }
+            a=10;
+             """),
+            ("switch_13", """
+            switch (a)
+            {
+                case 1: 
+                case 2: a=1;  a=1;
+                case 3: { }
+                default: a=3;
+            }
+            a=10;
+             """),
+            ("switch_14", """
+            switch (a)
+            {
+                case 1: 
+                case 2: a=1;  a=1;
+                case 3: { a=2;  a=1; }
+                default:
+            }
+            a=10;
+             """),
+            ("switch_15", """
+            switch (a)
+            {
+                case 1:
+                case 2:
+                case 3:
+                default:
+            }
+            a=10;
+             """),
             ("function_1", """
             void foo() {
                 a=2;
@@ -243,6 +283,223 @@ class TestGraphsGraphics(unittest.TestCase):
                  b /= 2; a += 2; c = 42;
                  a = b = c;
              }
+             """),
+            # https://github.com/neovim/neovim
+            ("program_2", """
+                static int conv_error(const char *const msg, const MPConvStack *const mpstack,
+                                    const char *const objname)
+                FUNC_ATTR_NONNULL_ALL
+                {
+                garray_T msg_ga;
+                ga_init(&msg_ga, (int)sizeof(char), 80);
+                const char *const key_msg = _("key %s");
+                const char *const key_pair_msg = _("key %s at index %i from special map");
+                const char *const idx_msg = _("index %i");
+                const char *const partial_arg_msg = _("partial");
+                const char *const partial_arg_i_msg = _("argument %i");
+                const char *const partial_self_msg = _("partial self dictionary");
+                for (size_t i = 0; i < kv_size(*mpstack); i++) {
+                    if (i != 0) {
+                    ga_concat(&msg_ga, ", ");
+                    }
+                    MPConvStackVal v = kv_A(*mpstack, i);
+                    switch (v.type) {
+                    case kMPConvDict: {
+                    typval_T key_tv = {
+                        .v_type = VAR_STRING,
+                        .vval = { .v_string = (v.data.d.hi == NULL
+                                                ? v.data.d.dict->dv_hashtab.ht_array
+                                                : (v.data.d.hi - 1))->hi_key },
+                    };
+                    char *const key = encode_tv2string(&key_tv, NULL);
+                    vim_snprintf((char *)IObuff, IOSIZE, key_msg, key);
+                    xfree(key);
+                    ga_concat(&msg_ga, (char *)IObuff);
+                    break;
+                    }
+                    case kMPConvPairs:
+                    case kMPConvList: {
+                    const int idx = (v.data.l.li == tv_list_first(v.data.l.list)
+                                        ? 0
+                                        : (v.data.l.li == NULL
+                                            ? tv_list_len(v.data.l.list) - 1
+                                            : (int)tv_list_idx_of_item(v.data.l.list,
+                                                                    TV_LIST_ITEM_PREV(v.data.l.list,
+                                                                                        v.data.l.li))));
+                    const listitem_T *const li = (v.data.l.li == NULL
+                                                    ? tv_list_last(v.data.l.list)
+                                                    : TV_LIST_ITEM_PREV(v.data.l.list,
+                                                                        v.data.l.li));
+                    if (v.type == kMPConvList
+                        || li == NULL
+                        || (TV_LIST_ITEM_TV(li)->v_type != VAR_LIST
+                            && tv_list_len(TV_LIST_ITEM_TV(li)->vval.v_list) <= 0)) {
+                        vim_snprintf((char *)IObuff, IOSIZE, idx_msg, idx);
+                        ga_concat(&msg_ga, (char *)IObuff);
+                    } else {
+                        assert(li != NULL);
+                        listitem_T *const first_item =
+                        tv_list_first(TV_LIST_ITEM_TV(li)->vval.v_list);
+                        assert(first_item != NULL);
+                        typval_T key_tv = *TV_LIST_ITEM_TV(first_item);
+                        char *const key = encode_tv2echo(&key_tv, NULL);
+                        vim_snprintf((char *)IObuff, IOSIZE, key_pair_msg, key, idx);
+                        xfree(key);
+                        ga_concat(&msg_ga, (char *)IObuff);
+                    }
+                    break;
+                    }
+                    case kMPConvPartial:
+                    switch (v.data.p.stage) {
+                    case kMPConvPartialArgs:
+                        abort();
+                        break;
+                    case kMPConvPartialSelf:
+                        ga_concat(&msg_ga, partial_arg_msg);
+                        break;
+                    case kMPConvPartialEnd:
+                        ga_concat(&msg_ga, partial_self_msg);
+                        break;
+                    }
+                    break;
+                    case kMPConvPartialList: {
+                    const int idx = (int)(v.data.a.arg - v.data.a.argv) - 1;
+                    vim_snprintf((char *)IObuff, IOSIZE, partial_arg_i_msg, idx);
+                    ga_concat(&msg_ga, (char *)IObuff);
+                    break;
+                    }
+                    }
+                }
+                semsg(msg, _(objname), (kv_size(*mpstack) == 0
+                                        ? _("itself")
+                                        : (char *)msg_ga.ga_data));
+                ga_clear(&msg_ga);
+                return FAIL;
+                }
+             """
+            ),
+            # https://github.com/neovim/neovim
+            ("program_3","""
+                static int get_function_args(char_u **argp, char_u endchar, garray_T *newargs, int *varargs,
+                                            garray_T *default_args, bool skip)
+                {
+                bool mustend = false;
+                char_u *arg = *argp;
+                char_u *p = arg;
+                int c;
+                int i;
+
+                if (newargs != NULL) {
+                    ga_init(newargs, (int)sizeof(char_u *), 3);
+                }
+                if (default_args != NULL) {
+                    ga_init(default_args, (int)sizeof(char_u *), 3);
+                }
+
+                if (varargs != NULL) {
+                    *varargs = false;
+                }
+
+                // Isolate the arguments: "arg1, arg2, ...)"
+                bool any_default = false;
+                while (*p != endchar) {
+                    if (p[0] == '.' && p[1] == '.' && p[2] == '.') {
+                    if (varargs != NULL) {
+                        *varargs = true;
+                    }
+                    p += 3;
+                    mustend = true;
+                    } else {
+                    arg = p;
+                    while (ASCII_ISALNUM(*p) || *p == '_') {
+                        p++;
+                    }
+                    if (arg == p || isdigit(*arg)
+                        || (p - arg == 9 && STRNCMP(arg, "firstline", 9) == 0)
+                        || (p - arg == 8 && STRNCMP(arg, "lastline", 8) == 0)) {
+                        if (!skip) {
+                        semsg(_("E125: Illegal argument: %s"), arg);
+                        }
+                        break;
+                    }
+                    if (newargs != NULL) {
+                        ga_grow(newargs, 1);
+                        c = *p;
+                        *p = NUL;
+                        arg = vim_strsave(arg);
+
+                        // Check for duplicate argument name.
+                        for (i = 0; i < newargs->ga_len; i++) {
+                        if (STRCMP(((char_u **)(newargs->ga_data))[i], arg) == 0) {
+                            semsg(_("E853: Duplicate argument name: %s"), arg);
+                            xfree(arg);
+                            goto err_ret;
+                        }
+                        }
+                        ((char_u **)(newargs->ga_data))[newargs->ga_len] = arg;
+                        newargs->ga_len++;
+
+                        *p = c;
+                    }
+                    if (*skipwhite(p) == '=' && default_args != NULL) {
+                        typval_T rettv;
+
+                        any_default = true;
+                        p = skipwhite(p) + 1;
+                        p = skipwhite(p);
+                        char_u *expr = p;
+                        if (eval1(&p, &rettv, false) != FAIL) {
+                        ga_grow(default_args, 1);
+
+                        // trim trailing whitespace
+                        while (p > expr && ascii_iswhite(p[-1])) {
+                            p--;
+                        }
+                        c = *p;
+                        *p = NUL;
+                        expr = vim_strsave(expr);
+                        ((char_u **)(default_args->ga_data))
+                        [default_args->ga_len] = expr;
+                        default_args->ga_len++;
+                        *p = c;
+                        } else {
+                        mustend = true;
+                        }
+                    } else if (any_default) {
+                        emsg(_("E989: Non-default argument follows default argument"));
+                        mustend = true;
+                    }
+                    if (*p == ',') {
+                        p++;
+                    } else {
+                        mustend = true;
+                    }
+                    }
+                    p = skipwhite(p);
+                    if (mustend && *p != endchar) {
+                    if (!skip) {
+                        semsg(_(e_invarg2), *argp);
+                    }
+                    break;
+                    }
+                }
+                if (*p != endchar) {
+                    goto err_ret;
+                }
+                p++;  // skip "endchar"
+
+                *argp = p;
+                return OK;
+
+                err_ret:
+                if (newargs != NULL) {
+                    ga_clear_strings(newargs);
+                }
+                if (default_args != NULL) {
+                    ga_clear_strings(default_args);
+                }
+                return FAIL;
+                }
              """)
         ]
 
@@ -276,8 +533,8 @@ class TestGraphsGraphics(unittest.TestCase):
                 infested_cfa: CFA = infested_visitor.create(root, False)
                 infested_dot: Digraph = infested_cfa.draw(infested_tree, f'{name}_infested')
                 infested_dot.save(directory="graphs")
-            except: pass
-                # self.assertEqual(name, "", "Infestation failed for this program")
+            except:
+                self.assertEqual(name, "", "Infestation failed for this program")
 
         for program in programs:
             name: str = program[0]

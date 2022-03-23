@@ -113,6 +113,14 @@ class TreeCFAVisitor():
         if node.type in self._visits:
             return self._visits[node.type](node)
 
+    def accept_siblings(self, node: Node) -> CFANode:
+        last: CFANode = None
+        sibling: Node = node.next_named_sibling
+        while sibling is not None:
+            last = self.accept(sibling)
+            sibling = sibling.next_named_sibling
+        return last
+
     def visit_translation_unit(self, node: Node) -> CFANode:
         last: CFANode = None
         for child in node.named_children:
@@ -202,28 +210,30 @@ class TreeCFAVisitor():
 
         body: Node = node.child_by_field_name("body")
         # A child will always be a "case_statement"
-        for child in body.named_children:
-            value: Node = child.child_by_field_name("value")
+        for case_stmt in body.named_children:
+            value: Node = case_stmt.child_by_field_name("value")
             v: CFANode = CFANode(value)
             c: CFANode = CFANode(None)
 
             # Case 1: No body "case 1:"
-            if child.named_child_count == 1 and value is not None:
+            if case_stmt.named_child_count == 1 and value is not None:
                 c = self.branch(p, v, "C")
-            # Case 2: Has body "case 1: a=1;"
-            elif child.named_child_count == 2:
+            # Case 2: Has body "case 1: a=1;" or "case 1: a=1; a=2" or "case 1: { a=1; }"
+            elif case_stmt.named_child_count > 1 and value is not None:
                 c = self.branch(p, v, "C")
-                # The next named sibling could eg. be 
-                #   "expression_statement" and "compound_statement"
-                c = self.accept(
-                    value.next_named_sibling
-                )
-            # Case 3: Default "default: a=3;"
-            elif child.named_child_count == 1 and value is None:
+                # We have to visit all siblings because it might not be a "compound_statement"
+                #   and just a sequence of expression statements.
+                c = self.accept_siblings(value)
+            # Case 3: Default which has no value, but has a body "default: a=1;"
+            elif case_stmt.named_child_count >= 1 and value is None:
                 c = self.branch(p, v, "D")
-                c = self.accept(
-                    child.named_children[0]
-                )
+                c = self.accept(case_stmt.named_children[0])
+            # Case 4: Default but without a body "default:"
+            elif case_stmt.named_child_count == 0 and value is None:
+                v = CFANode(case_stmt)
+                c = self.branch(p, v, "D")
+
+            # We always add the current case, this helps discover bugs
             cases.append((v, c))
 
         # Connect fall throughs
@@ -233,10 +243,9 @@ class TreeCFAVisitor():
             self.branch(prev_end, next_start)
 
         # Connect breaks
-        for idx in range(0, len(cases)):
-            prev_end: CFANode = cases[idx][1]
+        for case in cases:
+            prev_end: CFANode = case[1]
             self.branch(prev_end, s)
-
         return s
 
     def visit_while_statement(self, node: Node) -> CFANode:
