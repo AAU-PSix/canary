@@ -82,14 +82,11 @@ class TreeCFAVisitor():
                 break
         self._set_active(current)
 
-    def _current(self) -> CFANode:
-        return self._current
-
     def _next(self, d: CFANode) -> CFANode:
         # s
         # |
         # d
-        s: CFANode = self._current()
+        s: CFANode = self._current
         if s is None:
             self._current = d
             return d
@@ -325,13 +322,13 @@ class TreeCFAVisitor():
         #   be found in the tree and evaluated to TRUE constantly.
         if has_cond and has_update:
             j: CFANode = CFANode(None)
-            self._branch(self._current(), j, "T")
+            self._branch(self._current, j, "T")
             self._accept(last_child)
             self._next(u)
             self._next(c)
         elif has_cond and not has_update:
             j: CFANode = CFANode(None)
-            self._branch(self._current(), j, "T")
+            self._branch(self._current, j, "T")
             self._accept(last_child)
             self._next(c)
         elif not has_cond and not has_update:
@@ -359,14 +356,14 @@ class TreeCFAVisitor():
 
     def _visit_break_statement(self, node: Node) -> CFANode:
         break_node: CFANode = CFANode(node)
-        current: CFANode = self._current()
+        current: CFANode = self._current
         self._break(break_node)
         self._set_active(current)
         return self._next(break_node)
 
     def _visit_continue_statement(self, node: Node) -> CFANode:
         continue_node: CFANode = CFANode(node)
-        current: CFANode = self._current()
+        current: CFANode = self._current
         self._continue(continue_node)
         self._set_active(current)
         return self._next(continue_node)
