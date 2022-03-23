@@ -140,7 +140,8 @@ class CFA:
             node: Node = cfa_node.node
             if node is None: return f'None'
             location: int = cfa_node.node.end_byte
-            return f'l{location} {tree.contents_of(node).replace(":", "")} \n {node.type}'
+            sanitized_contents: str = tree.contents_of(node).replace(":", "")
+            return f'l{location} {sanitized_contents} \n {node.type}, child of {node.parent.type}'
 
         dot.node("initial", shape="point")
         dot.edge("initial", node_name(self.root))

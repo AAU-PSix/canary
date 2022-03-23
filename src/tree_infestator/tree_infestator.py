@@ -32,6 +32,22 @@ class TreeInfestator:
         # We take the parent because the node for a "while"-loop
         #   will always be of type "parenthesized_expression"
         #   as the immediate "child" of the "while_statement"
+        # TODO: Assumes that the body is always a block.
+        while_statement: Node = condition.parent
+        return [ while_statement.child_by_field_name("body") ]
+
+    def is_condition_of_do_while(self, node: Node) -> bool:
+        do_while_statement: Node = node.parent
+        if do_while_statement is None or do_while_statement.type != "do_statement":
+            return False
+        condition: Node = do_while_statement.child_by_field_name("condition")
+        return condition is not None and node == condition
+
+    def nests_of_do_while_condition(self, condition: Node) -> List[Node]:
+        # We take the parent because the node for a "do while"-loop
+        #   will always be of type "parenthesized_expression"
+        #   as the immediate "child" of the "while_statement"
+        # TODO: Assumes that the body is always a block.
         while_statement: Node = condition.parent
         return [ while_statement.child_by_field_name("body") ]
 
@@ -39,12 +55,15 @@ class TreeInfestator:
         nests: List[Node] = list()
         for cfa_node in cfa.nodes:
             node: Node = cfa_node.node
-            # Case 1: If-statements (Including "else if" and "else")
+            # Case 1: if-statements (Including "else if" and "else")
             if self.is_condition_of_if(node):
                 nests.extend(self.nests_of_if_condition(node))
-            # Case 2: While-loops
+            # Case 2: while-loops
             elif self.is_condition_of_while(node):
                 nests.extend(self.nests_of_while_condition(node))
+            # Case 3: do-while-loops
+            elif self.is_condition_of_do_while(node):
+                nests.extend(self.nests_of_do_while_condition(node))
         nests.sort(key=lambda x: x.start_byte, reverse=True)
         return nests
 
