@@ -15,20 +15,20 @@ class TreeCFAVisitor():
     def __init__(self, tree: Tree) -> None:
         # We dont have the "translation_unit" because it will always be the root
         self._visits: Dict[str, Callable[[Node], CFANode]] = {
-            "expression_statement": self.visit_node,
-            "declaration": self.visit_node,
-            "if_statement": self.visit_if_statement,
-            "while_statement": self.visit_while_statement,
-            "translation_unit": self.visit_translation_unit,
-            "compound_statement": self.visit_compound_statement,
-            "do_statement": self.visit_do_statement,
-            "for_statement": self.visit_for_statement,
-            "switch_statement": self.visit_switch_statement,
-            "break_statement": self.visit_break_statement,
-            "continue_statement": self.visit_continue_statement,
-            "return_statement": self.visit_return_statement,
-            "labeled_statement": self.visit_labeled_statement,
-            "goto_statement": self.visit_goto_statement,
+            "expression_statement": self._visit_node,
+            "declaration": self._visit_node,
+            "if_statement": self._visit_if_statement,
+            "while_statement": self._visit_while_statement,
+            "translation_unit": self._visit_translation_unit,
+            "compound_statement": self._visit_compound_statement,
+            "do_statement": self._visit_do_statement,
+            "for_statement": self._visit_for_statement,
+            "switch_statement": self._visit_switch_statement,
+            "break_statement": self._visit_break_statement,
+            "continue_statement": self._visit_continue_statement,
+            "return_statement": self._visit_return_statement,
+            "labeled_statement": self._visit_labeled_statement,
+            "goto_statement": self._visit_goto_statement,
         }
         self._current = None
         self._tree = tree
@@ -39,9 +39,9 @@ class TreeCFAVisitor():
         self._gotos = list()
         cfa_root: CFANode = CFANode(root if include_root else None)
         self._cfa = CFA(cfa_root)
-        self.next(cfa_root)
+        self._next(cfa_root)
 
-        self.accept(root)
+        self._accept(root)
 
         if self._current is not None and self._current.node is None:
             self._cfa.remove(self._current)
@@ -51,12 +51,12 @@ class TreeCFAVisitor():
     def _continue(self, source: CFANode) -> CFANode:
         continue_break: Tuple[CFANode, CFANode] = self._continue_break_stack.pop()
         self._continue_break_stack.append(continue_break)
-        return self.branch(source, continue_break[0], "C")
+        return self._branch(source, continue_break[0], "C")
 
     def _break(self, source: CFANode) -> CFANode:
         continue_break: Tuple[CFANode, CFANode] = self._continue_break_stack.pop()
         self._continue_break_stack.append(continue_break)
-        return self.branch(source, continue_break[1], "B")
+        return self._branch(source, continue_break[1], "B")
 
     def _add_label(self, label: Node, label_stmt: CFANode) -> None:
         label_str: str = self._tree.contents_of(label)
@@ -66,9 +66,9 @@ class TreeCFAVisitor():
             goto_stmt: CFANode = goto[0]
             goto_label_str: str = goto[1]
             if goto_label_str == label_str:
-                self.branch(goto_stmt, label_stmt, "G")
+                self._branch(goto_stmt, label_stmt, "G")
                 break
-        self.set_active(current)
+        self._set_active(current)
 
     def _add_goto(self, label: Node, goto_stmt: CFANode) -> None:
         goto_label_str: str = self._tree.contents_of(label)
@@ -78,27 +78,27 @@ class TreeCFAVisitor():
             label_stmt: CFANode = label[0]
             label_str: str = label[1]
             if label_str == goto_label_str:
-                self.branch(goto_stmt, label_stmt, "G")
+                self._branch(goto_stmt, label_stmt, "G")
                 break
-        self.set_active(current)
+        self._set_active(current)
 
-    def current(self) -> CFANode:
+    def _current(self) -> CFANode:
         return self._current
 
-    def next(self, d: CFANode) -> CFANode:
+    def _next(self, d: CFANode) -> CFANode:
         # s
         # |
         # d
-        s: CFANode = self.current()
+        s: CFANode = self._current()
         if s is None:
             self._current = d
             return d
         elif s.node is None:
             s.node = d.node
             return s
-        return self.branch(s, d)
+        return self._branch(s, d)
 
-    def branch(self, s: CFANode, d: CFANode, label: str = None) -> CFANode:
+    def _branch(self, s: CFANode, d: CFANode, label: str = None) -> CFANode:
         # s
         # |
         # d
@@ -106,43 +106,45 @@ class TreeCFAVisitor():
         self._current = d
         return d
 
-    def set_active(self, node: CFANode) -> None:
+    def _set_active(self, node: CFANode) -> None:
         self._current = node
 
-    def accept(self, node: Node) -> CFANode:
+    def _accept(self, node: Node) -> CFANode:
         if node.type in self._visits:
             return self._visits[node.type](node)
 
-    def accept_siblings(self, node: Node) -> CFANode:
+    def _accept_siblings(self, node: Node) -> CFANode:
         last: CFANode = None
         sibling: Node = node.next_named_sibling
         while sibling is not None:
-            last = self.accept(sibling)
+            last = self._accept(sibling)
             sibling = sibling.next_named_sibling
         return last
-
-    def visit_translation_unit(self, node: Node) -> CFANode:
+    
+    def _accept_children(self, node: Node) -> CFANode:
         last: CFANode = None
         for child in node.named_children:
-            last = self.accept(child)
+            last = self._accept(child)
         return last
 
-    def visit_compound_statement(self, node: Node) -> CFANode:
-        # Only is the 
+    def _visit_translation_unit(self, node: Node) -> CFANode:
+        return self._accept_children(node)
+
+    def _visit_compound_statement(self, node: Node) -> CFANode:
+        # If the compound statement is empty, then we create a node for it.
+        #   The reason for this is that the CFA loses too much detail if
+        #   they are excluded completely.
         if node.named_child_count == 0:
-            return self.next(CFANode(node))
-        last: CFANode = None
-        for child in node.named_children:
-            last = self.accept(child)
-        return last
+            return self._next(CFANode(node))
+        return self._accept_children(node)
 
-    def visit_node(self, d: Node) -> CFANode:
+    def _visit_node(self, d: Node) -> CFANode:
         # p
         # |
         # d
-        return self.next(CFANode(d))
+        return self._next(CFANode(d))
 
-    def visit_if_statement(self, node: Node) -> CFANode:
+    def _visit_if_statement(self, node: Node) -> CFANode:
         # if with alternative
         # "j", "i" and "s" are None because we dont know whether they
         #   are required in the flow, it could be that there are
@@ -157,20 +159,20 @@ class TreeCFAVisitor():
         #   s
 
         condition: Node = node.child_by_field_name("condition")
-        p: CFANode = self.next(CFANode(condition))
+        p: CFANode = self._next(CFANode(condition))
         s: CFANode = CFANode(None)
 
         consequence: Node = node.child_by_field_name("consequence")
         if consequence is not None:
             j: CFANode = CFANode(None)
             # By doing this branch the next to be replaced will be "j"
-            j = self.branch(p, j, "T")
-            c: CFANode = self.accept(consequence)
+            j = self._branch(p, j, "T")
+            c: CFANode = self._accept(consequence)
             if j.node is not None:
-                self.branch(c, s)
+                self._branch(c, s)
             else:
                 self._cfa.remove(j)
-                self.branch(p, s, "T")
+                self._branch(p, s, "T")
             if c is not None and c.node is None:
                 self._cfa.remove(c)
 
@@ -178,20 +180,20 @@ class TreeCFAVisitor():
         if alternative is not None:
             i: CFANode = CFANode(None)
             # By doing this branch the next to be replaced will be "i"
-            i = self.branch(p, i, "F")
-            a: CFANode = self.accept(alternative)
+            i = self._branch(p, i, "F")
+            a: CFANode = self._accept(alternative)
             if i.node is not None:
-                self.branch(a, s)
+                self._branch(a, s)
             else:
                 self._cfa.remove(i)
-                self.branch(p, s, "F")
+                self._branch(p, s, "F")
             if a is not None and a.node is None:
                 self._cfa.remove(a)
         else:
-            self.branch(p, s, "F")
+            self._branch(p, s, "F")
         return s
 
-    def visit_switch_statement(self, node: Node) -> CFANode:
+    def _visit_switch_statement(self, node: Node) -> CFANode:
         # Because of fallthrough for now we assume that the end of
         #   the first case is connected with the start of the next.
         #   p
@@ -203,7 +205,7 @@ class TreeCFAVisitor():
         #   s
 
         p: CFANode = CFANode(node.child_by_field_name("condition"))
-        p = self.next(p)
+        p = self._next(p)
         s: CFANode = CFANode(None)
 
         cases: List[Tuple[CFANode, CFANode]] = list()
@@ -217,21 +219,21 @@ class TreeCFAVisitor():
 
             # Case 1: No body "case 1:"
             if case_stmt.named_child_count == 1 and value is not None:
-                c = self.branch(p, v, "C")
+                c = self._branch(p, v, "C")
             # Case 2: Has body "case 1: a=1;" or "case 1: a=1; a=2" or "case 1: { a=1; }"
             elif case_stmt.named_child_count > 1 and value is not None:
-                c = self.branch(p, v, "C")
+                c = self._branch(p, v, "C")
                 # We have to visit all siblings because it might not be a "compound_statement"
                 #   and just a sequence of expression statements.
-                c = self.accept_siblings(value)
+                c = self._accept_siblings(value)
             # Case 3: Default which has no value, but has a body "default: a=1;"
             elif case_stmt.named_child_count >= 1 and value is None:
-                c = self.branch(p, v, "D")
-                c = self.accept(case_stmt.named_children[0])
+                c = self._branch(p, v, "D")
+                c = self._accept(case_stmt.named_children[0])
             # Case 4: Default but without a body "default:"
             elif case_stmt.named_child_count == 0 and value is None:
                 v = CFANode(case_stmt)
-                c = self.branch(p, v, "D")
+                c = self._branch(p, v, "D")
 
             # We always add the current case, this helps discover bugs
             cases.append((v, c))
@@ -240,15 +242,15 @@ class TreeCFAVisitor():
         for idx in range(0, len(cases) - 1):
             prev_end: CFANode = cases[idx][1]
             next_start: CFANode = cases[idx + 1][0]
-            self.branch(prev_end, next_start)
+            self._branch(prev_end, next_start)
 
         # Connect breaks
         for case in cases:
             prev_end: CFANode = case[1]
-            self.branch(prev_end, s)
+            self._branch(prev_end, s)
         return s
 
-    def visit_while_statement(self, node: Node) -> CFANode:
+    def _visit_while_statement(self, node: Node) -> CFANode:
         # While-loop with "p" condition, and "b" body which when "c"
         #   is true is then executed. Otherwise, we exit and advance to "s"
         # --p--
@@ -258,37 +260,37 @@ class TreeCFAVisitor():
         # --b
 
         condition: Node = node.child_by_field_name("condition")
-        p: CFANode = self.next(CFANode(condition))
+        p: CFANode = self._next(CFANode(condition))
         s: CFANode = CFANode(None)
 
         self._continue_break_stack.append((p, s))
 
         j: CFANode = CFANode(None)
-        self.branch(p, j, "T")
+        self._branch(p, j, "T")
         b: Node = node.child_by_field_name("body")
-        self.accept(b)
-        self.next(p)
+        self._accept(b)
+        self._next(p)
 
         self._continue_break_stack.pop()
 
-        return self.branch(p, s, "F")
+        return self._branch(p, s, "F")
 
-    def visit_do_statement(self, node: Node) -> CFANode:
+    def _visit_do_statement(self, node: Node) -> CFANode:
         #   i
         #   |
         # --b
         # | |
         # --c-s
         i: CFANode = CFANode(None)
-        i = self.next(i)
-        b: CFANode = self.accept(node.child_by_field_name("body"))
+        i = self._next(i)
+        b: CFANode = self._accept(node.child_by_field_name("body"))
         c: CFANode = CFANode(node.child_by_field_name("condition"))
-        self.next(c)
+        self._next(c)
         s: CFANode = CFANode(None)
-        self.branch(c, i, "T")
-        return self.branch(c, s, "F")
+        self._branch(c, i, "T")
+        return self._branch(c, s, "F")
 
-    def visit_for_statement(self, node: Node) -> CFANode:
+    def _visit_for_statement(self, node: Node) -> CFANode:
         #   i
         #   |
         # --c--
@@ -308,77 +310,68 @@ class TreeCFAVisitor():
         has_update: bool = u.node is not None
 
         last_child: Node = node.named_children[-1]
-        l: CFANode = CFANode(last_child)
-        is_expression: bool = last_child.type == "expression_statement"
-        is_compound: bool = last_child.type == "compound_statement"
-        is_empty: bool = is_expression or is_compound and last_child.named_child_count is 0
 
         self._continue_break_stack.append((u, f))
 
         if has_init:
-            self.next(i)
+            self._next(i)
         if has_cond:
-            self.next(c)
+            self._next(c)
 
         # The following are the various configurations which can be made
         #   with the "condition", "update", and "body". However, the
         #   biggest problems lies when there are no "condition" beucase
         #   implicitly it means that there is a "condition" which cant
         #   be found in the tree and evaluated to TRUE constantly.
-        if has_cond and not has_update and is_empty:
-            self.branch(c, c, "T")
-        elif not has_cond and not has_update and is_empty:
-            c = self.next(l)
-            self.branch(c, c, "T")
-        elif has_cond and has_update and is_empty:
-            self.next(u)
-            self.branch(self.current(), c, "T")
-        elif has_cond and has_update and not is_empty:
+        if has_cond and has_update:
             j: CFANode = CFANode(None)
-            self.branch(self.current(), j, "T")
-            self.accept(last_child)
-            self.next(u)
-            self.next(c)
-        elif has_cond and not has_update and not is_empty:
+            self._branch(self._current(), j, "T")
+            self._accept(last_child)
+            self._next(u)
+            self._next(c)
+        elif has_cond and not has_update:
             j: CFANode = CFANode(None)
-            self.branch(self.current(), j, "T")
-            self.accept(last_child)
-            self.next(c)
-        elif not has_cond and not has_update and not is_empty:
-            c = self.accept(last_child)
-            self.branch(c, c, "T")
+            self._branch(self._current(), j, "T")
+            self._accept(last_child)
+            self._next(c)
+        elif not has_cond and not has_update:
+            c = self._accept(last_child)
+            self._branch(c, c)
 
         self._continue_break_stack.pop()
 
-        return self.branch(c, f, "F")
+        # If we dont have a conditional, then we should not
+        #   denote the transition with "F" marking the "false"
+        #   branch, ebcause there are no predicate to be "false"
+        return self._branch(c, f, "F" if has_cond else "")
 
-    def visit_labeled_statement(self, node: Node) -> CFANode:
+    def _visit_labeled_statement(self, node: Node) -> CFANode:
         label: Node = node.child_by_field_name("label")
-        stmt: CFANode = self.next(CFANode(node))
+        stmt: CFANode = self._next(CFANode(node))
         self._add_label(label, stmt)
         return stmt
 
-    def visit_goto_statement(self, node: Node) -> CFANode:
+    def _visit_goto_statement(self, node: Node) -> CFANode:
         label: Node = node.child_by_field_name("label")
         stmt: CFANode = CFANode(node)
         self._add_goto(label, stmt)
-        return self.next(stmt)
+        return self._next(stmt)
 
-    def visit_break_statement(self, node: Node) -> CFANode:
+    def _visit_break_statement(self, node: Node) -> CFANode:
         break_node: CFANode = CFANode(node)
-        current: CFANode = self.current()
+        current: CFANode = self._current()
         self._break(break_node)
-        self.set_active(current)
-        return self.next(break_node)
+        self._set_active(current)
+        return self._next(break_node)
 
-    def visit_continue_statement(self, node: Node) -> CFANode:
+    def _visit_continue_statement(self, node: Node) -> CFANode:
         continue_node: CFANode = CFANode(node)
-        current: CFANode = self.current()
+        current: CFANode = self._current()
         self._continue(continue_node)
-        self.set_active(current)
-        return self.next(continue_node)
+        self._set_active(current)
+        return self._next(continue_node)
 
-    def visit_return_statement(self, node: Node) -> CFANode:
-        return_node = self.next(CFANode(node))
+    def _visit_return_statement(self, node: Node) -> CFANode:
+        return_node = self._next(CFANode(node))
         self._cfa.add_final(return_node)
         return return_node
