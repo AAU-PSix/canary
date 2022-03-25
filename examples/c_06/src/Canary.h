@@ -44,40 +44,117 @@
 /* LONG DOUBLE */
 #define CANARY_PRIMITIVE_LONG_DOUBLE            (27)
 
-#define CANARY_TYPECHECK(T)             \
-(_Generic( (T),                         \
-    char: CANARY_PRIMITIVE_CHAR,        \
-    int: CANARY_PRIMITIVE_INT,          \
-    long: CANARY_PRIMITIVE_LONG,        \
-    float: CANARY_PRIMITIVE_FLOAT,      \
-    default: CANARY_PRIMITIVE_DEFAULT   \
+#define CANARY_TYPECHECK(T)                         \
+(_Generic((T),                                      \
+    char: CANARY_PRIMITIVE_CHAR,                    \
+    signed char: CANARY_PRIMITIVE_SIGNED_CHAR,      \
+    unsigned char: CANARY_PRIMITIVE_UNSIGNED_CHAR,  \
+    short: CANARY_PRIMITIVE_SHORT,                  \
+    int: CANARY_PRIMITIVE_INT,                      \
+    long: CANARY_PRIMITIVE_LONG,                    \
+    float: CANARY_PRIMITIVE_FLOAT,                  \
+    default: CANARY_PRIMITIVE_DEFAULT               \
 ))
 
-#define CANARY_INT_FORMAT "%d"
-#define CANARY_FLOAT_FORMAT "%f"
-#define CANARY_DOUBLE_FORMAT "%lf"
-#define CANARY_LL_FORMAT "%lld"
+#define CANARY_PRIMITIVE_CHAR_PLACEHOLDER                   "%c"
+#define CANARY_PRIMITIVE_SIGNED_CHAR_PLACEHOLDER            "%c"
+#define CANARY_PRIMITIVE_UNSIGNED_CHAR_PLACEHOLDER          "%c"
+#define CANARY_PRIMITIVE_SHORT_PLACEHOLDER                  "%hi"
+#define CANARY_PRIMITIVE_SHORT_INT_PLACEHOLDER              "%hi"
+#define CANARY_PRIMITIVE_SIGNED_SHORT_PLACEHOLDER           "%hi"
+#define CANARY_PRIMITIVE_SIGNED_SHORT_INT_PLACEHOLDER       "%hi"
+#define CANARY_PRIMITIVE_UNSIGNED_SHORT_PLACEHOLDER         "%hu"
+#define CANARY_PRIMITIVE_UNSIGNED_SHORT_INT_PLACEHOLDER     "%hu"
+#define CANARY_PRIMITIVE_INT_PLACEHOLDER                    "%i"
+#define CANARY_PRIMITIVE_SIGNED_PLACEHOLDER                 "%i"
+#define CANARY_PRIMITIVE_SIGNED_INT_PLACEHOLDER             "%i"
+#define CANARY_PRIMITIVE_UNSIGNED_PLACEHOLDER               "%u"
+#define CANARY_PRIMITIVE_UNSIGNED_INT_PLACEHOLDER           "%u"
+#define CANARY_PRIMITIVE_LONG_PLACEHOLDER                   "%li"
+#define CANARY_PRIMITIVE_LONG_INT_PLACEHOLDER               "%li"
+#define CANARY_PRIMITIVE_SIGNED_LONG_PLACEHOLDER            "%li"
+#define CANARY_PRIMITIVE_SIGNED_LONG_INT_PLACEHOLDER        "%li"
+#define CANARY_PRIMITIVE_LONG_LONG_PLACEHOLDER              "%lli"
+#define CANARY_PRIMITIVE_LONG_LONG_INT_PLACEHOLDER          "%lli"
+#define CANARY_PRIMITIVE_SIGNED_LONG_LONG_PLACEHOLDER       "%lli"
+#define CANARY_PRIMITIVE_SIGNED_LONG_LONG_INT_PLACEHOLDER   "%lli"
+#define CANARY_PRIMITIVE_UNSIGNED_LONG_LONG_PLACEHOLDER     "%llu"
+#define CANARY_PRIMITIVE_UNSIGNED_LONG_LONG_INT_PLACEHOLDER "%llu"
+#define CANARY_PRIMITIVE_FLOAT_PLACEHOLDER                  "%f"
+#define CANARY_PRIMITIVE_DOUBLE_PLACEHOLDER                 "%lf"
+#define CANARY_PRIMITIVE_LONG_DOUBLE_PLACEHOLDER            "%Lf"
 
 #define CANARY_TWEET_LOCATION(l)\
-do {                            \
-    printf("location="l"\n");   \
+do { printf("location="l"\n"); } while(0)
+
+char *PrimitivePlaceholder(int type) {
+    switch (type) {
+        case CANARY_PRIMITIVE_CHAR: 
+            return CANARY_PRIMITIVE_CHAR_PLACEHOLDER;
+        case CANARY_PRIMITIVE_SIGNED_CHAR: 
+            return CANARY_PRIMITIVE_SIGNED_CHAR_PLACEHOLDER;
+        case CANARY_PRIMITIVE_UNSIGNED_CHAR: 
+            return CANARY_PRIMITIVE_UNSIGNED_CHAR_PLACEHOLDER;
+        case CANARY_PRIMITIVE_SHORT: 
+            return CANARY_PRIMITIVE_SHORT_PLACEHOLDER;
+        case CANARY_PRIMITIVE_SHORT_INT: 
+            return CANARY_PRIMITIVE_SHORT_INT_PLACEHOLDER;
+        case CANARY_PRIMITIVE_SIGNED_SHORT: 
+            return CANARY_PRIMITIVE_SIGNED_SHORT_PLACEHOLDER;
+        case CANARY_PRIMITIVE_SIGNED_SHORT_INT: 
+            return CANARY_PRIMITIVE_SIGNED_SHORT_INT_PLACEHOLDER;
+        case CANARY_PRIMITIVE_UNSIGNED_SHORT: 
+            return CANARY_PRIMITIVE_UNSIGNED_SHORT_PLACEHOLDER;
+        case CANARY_PRIMITIVE_UNSIGNED_SHORT_INT: 
+            return CANARY_PRIMITIVE_UNSIGNED_SHORT_INT_PLACEHOLDER;
+        case CANARY_PRIMITIVE_INT: 
+            return CANARY_PRIMITIVE_INT_PLACEHOLDER;
+        case CANARY_PRIMITIVE_SIGNED: 
+            return CANARY_PRIMITIVE_SIGNED_PLACEHOLDER;
+        case CANARY_PRIMITIVE_SIGNED_INT: 
+            return CANARY_PRIMITIVE_SIGNED_INT_PLACEHOLDER;
+        case CANARY_PRIMITIVE_UNSIGNED: 
+            return CANARY_PRIMITIVE_UNSIGNED_PLACEHOLDER;
+        case CANARY_PRIMITIVE_UNSIGNED_INT: 
+            return CANARY_PRIMITIVE_UNSIGNED_INT_PLACEHOLDER;
+        case CANARY_PRIMITIVE_LONG: 
+            return CANARY_PRIMITIVE_LONG_PLACEHOLDER;
+        case CANARY_PRIMITIVE_LONG_INT: 
+            return CANARY_PRIMITIVE_LONG_INT_PLACEHOLDER;
+        case CANARY_PRIMITIVE_SIGNED_LONG: 
+            return CANARY_PRIMITIVE_SIGNED_LONG_PLACEHOLDER;
+        case CANARY_PRIMITIVE_SIGNED_LONG_INT: 
+            return CANARY_PRIMITIVE_SIGNED_LONG_INT_PLACEHOLDER;
+        case CANARY_PRIMITIVE_LONG_LONG: 
+            return CANARY_PRIMITIVE_LONG_LONG_PLACEHOLDER;
+        case CANARY_PRIMITIVE_LONG_LONG_INT: 
+            return CANARY_PRIMITIVE_LONG_LONG_INT_PLACEHOLDER;
+        case CANARY_PRIMITIVE_SIGNED_LONG_LONG: 
+            return CANARY_PRIMITIVE_SIGNED_LONG_LONG_PLACEHOLDER;
+        case CANARY_PRIMITIVE_SIGNED_LONG_LONG_INT: 
+            return CANARY_PRIMITIVE_SIGNED_LONG_LONG_INT_PLACEHOLDER;
+        case CANARY_PRIMITIVE_UNSIGNED_LONG_LONG: 
+            return CANARY_PRIMITIVE_UNSIGNED_LONG_LONG_PLACEHOLDER;
+        case CANARY_PRIMITIVE_UNSIGNED_LONG_LONG_INT: 
+            return CANARY_PRIMITIVE_UNSIGNED_LONG_LONG_INT_PLACEHOLDER;
+        case CANARY_PRIMITIVE_FLOAT: 
+            return CANARY_PRIMITIVE_FLOAT_PLACEHOLDER;
+        case CANARY_PRIMITIVE_DOUBLE: 
+            return CANARY_PRIMITIVE_DOUBLE_PLACEHOLDER;
+        case CANARY_PRIMITIVE_LONG_DOUBLE: 
+            return CANARY_PRIMITIVE_LONG_DOUBLE_PLACEHOLDER;
+    }
+    return CANARY_PRIMITIVE_DEFAULT;
+}
+
+#define CANARY_TWEET_PRIMITIVE(VAR)                             \
+do {                                                            \
+    int type__canary_primitive__ = CANARY_TYPECHECK(VAR);       \
+    printf("ID=%s\n", CANARY_STR(VAR));                         \
+    printf("State=");                                           \
+    printf(PrimitivePlaceholder(type__canary_primitive__), VAR);\
+    printf("\n");                                               \
 } while(0)
 
-
-#define CANARY_TWEET_PRIMITIVE(VAR)                         \
-do {                                                        \
-    switch (CANARY_TYPECHECK(VAR)) {                        \
-        case CANARY_PRIMITIVE_INT:                          \
-            CANARY_TWEET_VARIABLE(VAR, CANARY_INT_FORMAT);  \
-            break;                                          \
-    }                                                       \
-} while(0)
-
-#define CANARY_TWEET_VARIABLE(VAR, FORMAT)          \
-    CANARY_TWEET_STATE(CANARY_STR(VAR), VAR, FORMAT)
-
-#define CANARY_TWEET_STATE(ID, VAL, FORMAT) \
-do {                                        \
-    printf("state="ID"\n");                 \
-    printf("value="FORMAT"\n", VAL);        \
-} while(0)
+#define CANARY_TWEET_ERROR_STATE() \
+do { printf("ERROR STATE\n"); } while (0)

@@ -1,3 +1,17 @@
 {
-    "makefile.extensionOutputFolder": "./.vscode"
+    "makefile.extensionOutputFolder": "./.vscode",
+    "files.associations": {
+        "array": "c",
+        "functional": "c",
+        "istream": "c",
+        "ostream": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c",
+        "*.tcc": "c",
+        "optional": "c",
+        "numeric": "c",
+        "cmath": "c",
+        "cstdarg": "cpp"
+    }
 }
