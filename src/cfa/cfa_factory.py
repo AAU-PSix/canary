@@ -67,7 +67,6 @@ class TreeCFAVisitor():
             goto_label_str: str = goto[1]
             if goto_label_str == label_str:
                 self._branch(goto_stmt, label_stmt, "G")
-                break
         self._set_active(current)
 
     def _add_goto(self, label: Node, goto_stmt: CFANode) -> None:
@@ -79,7 +78,6 @@ class TreeCFAVisitor():
             label_str: str = label[1]
             if label_str == goto_label_str:
                 self._branch(goto_stmt, label_stmt, "G")
-                break
         self._set_active(current)
 
     def _next(self, d: CFANode) -> CFANode:
@@ -306,14 +304,12 @@ class TreeCFAVisitor():
         has_cond: bool = c.node is not None
         has_update: bool = u.node is not None
 
-        last_child: Node = node.named_children[-1]
+        body: Node = node.named_children[-1]
 
         self._continue_break_stack.append((u, f))
 
-        if has_init:
-            self._next(i)
-        if has_cond:
-            self._next(c)
+        if has_init: self._next(i)
+        if has_cond: self._next(c)
 
         # The following are the various configurations which can be made
         #   with the "condition", "update", and "body". However, the
@@ -322,18 +318,20 @@ class TreeCFAVisitor():
         #   be found in the tree and evaluated to TRUE constantly.
         if has_cond and has_update:
             j: CFANode = CFANode(None)
-            self._branch(self._current, j, "T")
-            self._accept(last_child)
+            j = self._branch(self._current, j, "T")
+            self._accept(body)
             self._next(u)
             self._next(c)
         elif has_cond and not has_update:
             j: CFANode = CFANode(None)
-            self._branch(self._current, j, "T")
-            self._accept(last_child)
+            j = self._branch(self._current, j, "T")
+            self._accept(body)
             self._next(c)
         elif not has_cond and not has_update:
-            c = self._accept(last_child)
-            self._branch(c, c)
+            j: CFANode = CFANode(None)
+            j = self._next(j)
+            c = self._accept(body)
+            self._branch(c, j)
 
         self._continue_break_stack.pop()
 
