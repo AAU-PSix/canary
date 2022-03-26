@@ -1,29 +1,41 @@
+from abc import ABC, abstractmethod
+
 from src.ts import *
 from src.cfa import *
 
-class TreeInfection:
+class TreeInfection(ABC):
+    def __init__(self, last_byte_index: int) -> None:
+        self._last_byte_index = last_byte_index
+        super().__init__()
+
+    @property
+    def last_byte_index(self) -> int:
+        return self._last_byte_index
+
+    @abstractmethod
+    def do(self, parser: Parser, tree: Tree) -> Tree: pass
+
+class TreeInfectionAppend(TreeInfection):
     def __init__(self, node: Node, nest: str) -> None:
         self._node = node
         self._nest = nest
+        # We add the length of the nest because the sum
+        #   should be th eindex of the furthest (greates)
+        #   affected byte of the source in order to be
+        #   able to sort the TreeInfection(s) correctly.
+        super().__init__(node.start_byte + len(nest))
 
     def do(self, parser: Parser, tree: Tree) -> Tree:
-        return parser.append(tree, self.node, self.nest)
+        return parser.append(tree, self._node, self._nest)
 
-    @property
-    def node(self) -> Node:
-        return self._node
+class TreeInfectionInsert(TreeInfection):
+    def __init__(self, node: Node, nest: str) -> None:
+        self._node = node
+        self._nest = nest
+        super().__init__(node.start_byte)
 
-    @property
-    def nest(self) -> str:
-        return self._nest
-
-    def __eq__(self, other: "TreeInfection") -> bool:
-        if other is None: return False
-        return self.node == other.node and \
-            self.nest == other.nest
-
-    def __ne__(self, other: "TreeInfection") -> bool:
-        return not (self == other)
+    def do(self, parser: Parser, tree: Tree) -> Tree:
+        return parser.insert(tree, self._node, self._nest)
 
 class TreeInfestator:
     def __init__(self, parser: Parser) -> None:
@@ -120,34 +132,68 @@ class TreeInfestator:
         return nests
 
     def infection_spore_for_expression_statement(self, node: Node) -> List[TreeInfection]:
-        return [ TreeInfection(node.children[0], "TWEET();") ]
+        return [ TreeInfectionAppend(node.children[0], "TWEET();") ]
 
     def infection_spore_for_declaration(self, node: Node) -> List[TreeInfection]:
-        return [ TreeInfection(node.children[0], "TWEET();") ]
+        return [ TreeInfectionAppend(node.children[0], "TWEET();") ]
 
     def infection_spore_if_statement(self, if_stmt: Node) -> List[TreeInfection]:
         infections: List[TreeInfection] = [ ]
         consequence: Node = if_stmt.child_by_field_name("consequence")
         if consequence is not None:
-            infections.append(TreeInfection(consequence.children[0], "TWEET();"))
+            if consequence.type == "compound_statement":
+                infections.append(TreeInfectionAppend(consequence.children[0], "TWEET();"))
+            # The consequence of the "if_statement" is not wrapped in a "compound_statement"
+            #   For this reason we have to do it in order to not modify the execution path.
+            elif consequence.type == "expression_statement":
+                infections.append(TreeInfectionInsert(consequence.children[0], "{TWEET();"))
+                infections.append(TreeInfectionAppend(consequence.children[-1], "}"))
 
         alternative: Node = if_stmt.child_by_field_name("alternative")
         # If the alternative is a "if_statement" then it is an "else if(...)"
         if alternative is not None and alternative.type != "if_statement":
-            infections.append(TreeInfection(alternative.children[0], "TWEET();"))
+            if alternative.type == "compound_statement":
+                infections.append(TreeInfectionAppend(alternative.children[0], "TWEET();"))
+            # The alternative of the "if_statement" is not wrapped in a "compound_statement"
+            #   For this reason we have to do it in order to not modify the execution path.
+            elif alternative.type == "expression_statement":
+                # The fourth child of the "if_statement" (index 3) is the "else".
+                infections.append(TreeInfectionInsert(alternative.children[0], "{TWEET();"))
+                infections.append(TreeInfectionAppend(alternative.children[-1], "}"))
         return infections
 
     def infection_spore_while_statement(self, while_stmt: Node) -> List[TreeInfection]:
         body: Node = while_stmt.child_by_field_name("body")
-        return [ TreeInfection(body.children[0], "TWEET();") ]
+        if body.type == "compound_statement":
+            return [ TreeInfectionAppend(body.children[0], "TWEET();") ]
+        elif body.type == "expression_statement":
+            return [
+                TreeInfectionInsert(body, "{TWEET();"),
+                TreeInfectionAppend(body, "}")
+            ]
+        return None
 
     def infection_spore_do_statement(self, do_stmt: Node) -> List[TreeInfection]:
         body: Node = do_stmt.child_by_field_name("body")
-        return [ TreeInfection(body.children[0], "TWEET();") ]
+        if body.type == "compound_statement":
+            return [ TreeInfectionAppend(body.children[0], "TWEET();") ]
+        elif body.type == "expression_statement":
+            return [
+                TreeInfectionInsert(body, "{TWEET();"),
+                TreeInfectionAppend(body, "}")
+            ]
+        return None
 
     def infection_spore_for_statement(self, for_stmt: Node) -> List[TreeInfection]:
         body: Node = for_stmt.named_children[-1]
-        return [ TreeInfection(body.children[0], "TWEET();") ]
+        if body.type == "compound_statement":
+            return [ TreeInfectionAppend(body.children[0], "TWEET();") ]
+        elif body.type == "expression_statement":
+            return [
+                TreeInfectionInsert(body, "{TWEET();"),
+                TreeInfectionAppend(body, "}")
+            ]
+        return None
 
     def infection_spore_switch_statement(self, switch_stmt: Node) -> List[TreeInfection]:
         infections: List[TreeInfection] = [ ]
@@ -156,14 +202,14 @@ class TreeInfestator:
         for case in body.named_children:
             is_default: bool = case.child_by_field_name("value") is None
             if is_default:
-                infections.append(TreeInfection(case.children[1], "TWEET();"))
+                infections.append(TreeInfectionAppend(case.children[1], "TWEET();"))
             else:
-                infections.append(TreeInfection(case.children[2], "TWEET();"))
+                infections.append(TreeInfectionAppend(case.children[2], "TWEET();"))
         return infections
 
     def infection_spore_labeled_statement(self, node: Node) -> List[TreeInfection]:
         # For a "labeled_statement" the second child (index 1) is the ":"
-        return [ TreeInfection(node.children[1], "TWEET();") ]
+        return [ TreeInfectionAppend(node.children[1], "TWEET();") ]
 
     def infect(self, tree: Tree, cfa: CFA) -> Tree:
         probes: Dict[str, Callable[[Node], List[TreeInfection]]] = {
@@ -187,7 +233,7 @@ class TreeInfestator:
                 infections.extend(probes[nest.type](nest))
 
         # Step 2: Infect the tree from end to start
-        infections.sort(key=lambda x: x.node.start_byte, reverse=True)
+        infections.sort(key=lambda x: x.last_byte_index, reverse=True)
         for infection in infections:
             tree = infection.do(self._parser, tree)
 

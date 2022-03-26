@@ -412,6 +412,7 @@ class TestTreeInfestator(unittest.TestCase):
         program: str = """
             switch(a) {
                 case 3: { }
+                default:
             }
         """
         tree: Tree = self._parser.parse(program)
@@ -420,6 +421,7 @@ class TestTreeInfestator(unittest.TestCase):
         expected =  """
             switch(a) {
                 case 3:TWEET(); { }
+                default:TWEET();
             }
         """
         actual = self._infestator.infect(tree, cfa).text
@@ -437,3 +439,23 @@ class TestTreeInfestator(unittest.TestCase):
 
     def test_infect_labeled_statement(self) -> None:
         pass
+
+    def test_infect_if_consequence_no_compund_statement(self) -> None:
+        program: str = "if (a) a=2;"
+        tree: Tree = self._parser.parse(program)
+        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        
+        expected: str = "if (a) {TWEET();a=2;}"
+        actual = self._infestator.infect(tree, cfa).text
+
+        self.assertEqual(expected, actual)
+
+    def test_infect_if_alternative_no_compund_statement(self) -> None:
+        program: str = "if (a) a=2; else a=3;"
+        tree: Tree = self._parser.parse(program)
+        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        
+        expected: str = "if (a) {TWEET();a=2;} else {TWEET();a=3;}"
+        actual = self._infestator.infect(tree, cfa).text
+
+        self.assertEqual(expected, actual)

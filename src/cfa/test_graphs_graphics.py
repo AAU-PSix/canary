@@ -74,11 +74,13 @@ class TestGraphsGraphics(unittest.TestCase):
             ("while_13", "while(a==1) { if(a==1) { a=1; } else if(a==2) { a=2; } else { a=3; return; } a=4; } a=5;"),
             ("while_14", "while(a==1) { if(a==1) { a=1; break; } else if(a==2) { a=2; } else { a=3; return; } a=4; } a=5;"),
             ("while_15", "while(a==1) { if(a==1) { a=1; break; } else if(a==2) { continue; a=2; } else { a=3; return; } a=4; } a=5;"),
+            ("while_16", "while(a);"),
             ("do_while_1", "do { a=1; } while(a==1); a=2;"),
             ("do_while_2", "do { if(a==1) f{ a=1; } a=2; } while(a==1); a=2;"),
             ("do_while_3", "do { a=0; if(a==1) { a=1; } a=2; } while(a==1); a=2;"),
             ("do_while_4", "do { a=2; } while(a==1); a=2;"),
             ("do_while_5", "do { TWEET(\"A\"); a=2; } while(a==1); TWEET(\"B\"); a=2;"),
+            ("do_while_6", "do ; while(a);"),
             ("for_1", "for(int i = 0;;) { } a=3;"),
             ("for_2", "for(int i = 0; i<5;) { } a=3;"),
             ("for_3", "for(int i = 0; i<5; ++i) { } a=3;"),
@@ -113,6 +115,7 @@ class TestGraphsGraphics(unittest.TestCase):
             ("for_31", "a=1; for(; i<0; ++i) { a=2; } a=2;"),
             ("for_32", "a=1; for(; i<0; ) { a=2; } a=2;"),
             ("for_33", "a=1; for(; ; ) { a=2; } a=2;"),
+            ("for_34", "for(;;) { a=1; a=2; }"),
             ("switch_1", """
             switch (a)
             {
