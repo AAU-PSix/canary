@@ -411,7 +411,7 @@ class TestTreeInfestator(unittest.TestCase):
     def test_infect_switch(self) -> None:
         program: str = """
             switch(a) {
-                case 3: { }
+                case 3: { int a=3; }
                 default:
             }
         """
@@ -420,7 +420,7 @@ class TestTreeInfestator(unittest.TestCase):
 
         expected =  """
             switch(a) {
-                case 3:TWEET(); { }
+                case 3:TWEET(); { int a=3;TWEET(); }
                 default:TWEET();
             }
         """
@@ -445,7 +445,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
         
-        expected: str = "if (a) {TWEET();a=2;}"
+        expected: str = "if (a) {TWEET();a=2;TWEET();}"
         actual = self._infestator.infect(tree, cfa).text
 
         self.assertEqual(expected, actual)
@@ -455,7 +455,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
         
-        expected: str = "if (a) {TWEET();a=2;} else {TWEET();a=3;}"
+        expected: str = "if (a) {TWEET();a=2;TWEET();} else {TWEET();a=3;TWEET();}"
         actual = self._infestator.infect(tree, cfa).text
 
         self.assertEqual(expected, actual)

@@ -23,7 +23,7 @@ class TreeInfectionAppend(TreeInfection):
         #   should be th eindex of the furthest (greates)
         #   affected byte of the source in order to be
         #   able to sort the TreeInfection(s) correctly.
-        super().__init__(node.start_byte + len(nest))
+        super().__init__(node.end_byte)
 
     def do(self, parser: Parser, tree: Tree) -> Tree:
         return parser.append(tree, self._node, self._nest)
@@ -116,6 +116,18 @@ class TreeInfestator:
     def nests_of_labeled_statement(self, label: Node) -> List[Node]:
         return [ label ]
 
+    def is_expression_statement(self, node: Node) -> bool:
+        return node.type == "expression_statement"
+
+    def nests_of_expression_statement(self, expression_stmt: Node) -> List[Node]:
+        return [ expression_stmt ]
+
+    def is_declaration(self, node: Node) -> bool:
+        return node.type == "declaration"
+
+    def nests_declaration(self, declaration: Node) -> List[Node]:
+        return [ declaration ]
+
     def nests(self, cfa: CFA) -> List[Node]:
         nests: List[Node] = list()
         for cfa_node in cfa.nodes:
@@ -140,13 +152,19 @@ class TreeInfestator:
             # Case 6: Labels
             elif self.is_labeled_statement(node):
                 nests.extend(self.nests_of_labeled_statement(node))
+            # Case 7: Expression statement
+            elif self.is_expression_statement(node):
+                nests.extend(self.nests_of_expression_statement(node))
+            # Case 8: Declaration
+            elif self.is_declaration(node):
+                nests.extend(self.nests_declaration(node))
         return nests
 
     def infection_spore_for_expression_statement(self, node: Node) -> List[TreeInfection]:
-        return [ TreeInfectionAppend(node.children[0], "TWEET();") ]
+        return [ TreeInfectionAppend(node, "TWEET();") ]
 
     def infection_spore_for_declaration(self, node: Node) -> List[TreeInfection]:
-        return [ TreeInfectionAppend(node.children[0], "TWEET();") ]
+        return [ TreeInfectionAppend(node, "TWEET();") ]
 
     def infection_spore_if_statement(self, if_stmt: Node) -> List[TreeInfection]:
         infections: List[TreeInfection] = [ ]
