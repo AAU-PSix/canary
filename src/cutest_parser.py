@@ -1,22 +1,13 @@
-from ast import Num
-from cgi import test
-from hashlib import new
-from imghdr import tests
-from nis import match
 import re
-from tokenize import Number
 from typing import Any, List
 
-from numpy import mat
-from utilities import FileHandler
-
-
 class FailedCuTest:
-    def __init__(self, testName: str, testSrc: str, expected: Any, actual: int):
+    def __init__(self, testName: str, testSrc: str):
         self.testName = testName
         self.testSrc = testSrc
-        self.expected = expected
-        self.actual = actual
+        self.expected : Any = None
+        self.actual: Any = None
+        self.assert_failed: str = None
     
 class CuTestParser:
     def __init__(self, source:str):
@@ -25,87 +16,132 @@ class CuTestParser:
     @staticmethod
     def parse(source : str) -> List[FailedCuTest]:
         file = open(source, "r")
-        fileStr : str = file.readlines()      
-        failedTests : List[FailedCuTest] = []
+        file_str : str = file.readlines()
+        failed_tests : List[FailedCuTest] = []
 
+        # Dictionary for handling CuTest Error messages in Regex
         regex_error_msg = {
-            'whole_err_line' : r'(\d+\) \w+): ([\/?\w?\/?]*\w+\.c.\d+): (.*)',
-            'test_name': r'\d+\) \w+:',
-            'test_src': r'[\/?\w?\/?]*\w+\.c.\d+',
-            'assert_failed': r'(assert failed)',
-            'expected_int': r'expected <(\d+)> ',
-            'actual_int': r'but was <(\d+)>',
-            'expected_double':  r'expected <(\d+\.\d+)>',
-            'actual_double': r'but was <(\d+\.?\d*)>',
-            'expected_pointer' : r'expected pointer <0x([a-zA-Z0-9]*)>',
-            'actual_pointer': r'but was <0x([a-zA-Z0-9]*)>',
-            'expected_string': r'expected <(.*?)>'
+            'whole_err_line' : r'(\d+\) \w+): ([\/?\w?\/?]*\w+\.c.\d+): (.*)',  # 5) addTest_StringTest: /input/tests/AllTests.c:72: expected <expected> but was <actual haha snydt>
+            'test_name': r'\d+\) \w+:',                                         # 5) addTest_StringTest:
+            'test_src': r'[\/?\w?\/?]*\w+\.c.\d+',                              # /input/tests/AllTests.c:72:
+            'assert_failed': r'(assert failed)',                                # assert failed
+            'expected_int': r'expected <(\d+)> ',                               # expected <2> 
+            'actual_int': r'but was <(\d+)>',                                   # but was <4>
+            'expected_double':  r'expected <(\d+\.\d+)>',                       # expected <2.00> 
+            'actual_double': r'but was <(\d+\.?\d*)>',                          # but was <4.00>
+            'expected_pointer' : r'expected pointer <0x([a-zA-Z0-9]*)>',        # expected pointer <0x0x7ffdbabe7b4c> 
+            'actual_pointer': r'but was <0x([a-zA-Z0-9]*)>',                    # but was <0x0x7ffdbabe7b48>
+            'expected_string': r'expected <(\w*)>',                             # expected <This is the expected string>
+            'actual_string': r'but was <(.+?)>'                                 # but was <This is a totally different string>
         }
 
-        for line in fileStr:
-            if (re.search(regex_error_msg['test_name'], line) is not None):
-                match = re.search(regex_error_msg['whole_err_line'], line)
-                if match:
-                    print("\n\n")
-                    print(match.group())
-                    print(match.group(1))
-                    print(match.group(2))
-                    print(match.group(3))
-                    test_name = re.findall(regex_error_msg['test_name'], line)
-                    test_src = re.findall(regex_error_msg['test_src'], line)
-                    testExplanation = match.group(3)
-                    if re.search(r'expected <',testExplanation):
-                        print("Chose Expected for number values")
-
-                        if re.search(regex_error_msg['expected_int'], testExplanation):
-                            int_expected_temp = re.search(regex_error_msg['expected_int'], testExplanation).group(1)
-                            int_actual_temp = re.search(regex_error_msg['actual_int'], testExplanation).group(1)
-                            int_expected = int(int_expected_temp)
-                            int_actual = int(int_actual_temp)
-                            print(str(type(int_expected)) + "Value is : " + str(int_expected))
-                            print(str(type(int_actual)) + "Value is : " + str(int_actual))
-                            print("INT HEREEEEE!!!!!!")
-
-                        elif re.search(regex_error_msg['expected_double'], testExplanation):
-                            double_expected_temp = re.search(regex_error_msg['expected_double'], testExplanation).group(1)
-                            double_actual_temp = re.search(regex_error_msg['actual_double'], testExplanation).group(1)
-                            double_actual = float(double_actual_temp)
-                            double_expected = float(double_expected_temp)  
-                            print(str(type(double_expected)) + "Value is : " + str(double_expected))
-                            print(str(type(double_actual)) + "Value is : " + str(double_actual))
-                            print("DOUBLEEEEEEEEEEEE HEREEEEE!!!!!!")
-
-                    elif re.search(r'expected pointer <', testExplanation):
-                        #Assuming that pointers will only be shown as ints at the moment
-                        pointer_expected = re.search(regex_error_msg['expected_pointer'], testExplanation).group(1)
-                        pointer_actual = re.search(regex_error_msg['actual_pointer'], testExplanation).group(1)
-
-                    elif re.search(regex_error_msg['assert_failed'], testExplanation):
-                        assert_failed = re.search(regex_error_msg['assert_failed'], testExplanation).group(1)
-
+        for line in file_str:
+            failure_message_appears: bool = re.search(regex_error_msg['whole_err_line'], line)
+            if failure_message_appears and failure_message_appears is not None:
+                test_name = re.findall(regex_error_msg['test_name'], line)
+                test_src = re.findall(regex_error_msg['test_src'], line)
+                failed_cutest = FailedCuTest(test_name, test_src)
                 
+                test_explanation = failure_message_appears.group(3)
 
+                is_int_error = re.search(regex_error_msg['expected_int'], test_explanation)
+                is_double_error = re.search(regex_error_msg['expected_double'], test_explanation)
+                is_pointer_error = re.search(regex_error_msg['expected_pointer'], test_explanation)
+                is_assert_error = re.search(regex_error_msg['assert_failed'], test_explanation)
+                is_string_error = re.search(regex_error_msg['expected_string'], test_explanation)
 
+                if is_int_error:
+                    failed_cutest = CuTestParser.parse_int_error(regex_error_msg, failed_cutest, test_explanation)
 
+                elif is_double_error:
+                    failed_cutest = CuTestParser.parse_double_error(regex_error_msg, failed_cutest, test_explanation)
 
-                        
-                    expected = re.findall(regex_error_msg['expected_int'], line)
-                    
-                    actual = re.findall(r"but was <\d+>", line)
+                elif is_pointer_error:
+                    failed_cutest = CuTestParser.parse_pointer_error(regex_error_msg, failed_cutest, test_explanation)
 
-
-            # if len(testName) > 0:
-            #     expectedTemp = re.findall(r'\d+', expected[0])
-            #     actualTemp = re.findall(r'\d+', actual[0])
-            #     expected = list(map(int, expectedTemp))[0]    
-            #     actual = list(map(int,actualTemp))[0]
-            #     failedTest = FailedCuTest(testName, testSrc, expected, actual)
-            #     failedTests.append(failedTest)
+                elif is_assert_error:
+                    failed_cutest = CuTestParser.parse_assert_true_error(regex_error_msg, failed_cutest, test_explanation)
+                elif is_string_error:
+                    failed_cutest = CuTestParser.parse_string_error(regex_error_msg, failed_cutest, test_explanation)
+                
+                failed_tests.append(failed_cutest)
             
         file.close()
-        # return failedTests  
+        return failed_tests  
+    
+    @staticmethod
+    def parse_int_error(regex_error_msg, failed_cutest: FailedCuTest, test_explanation: str) -> FailedCuTest:
+        int_expected_temp = re.search(regex_error_msg['expected_int'], test_explanation).group(1)
+        int_actual_temp = re.search(regex_error_msg['actual_int'], test_explanation).group(1)
+        int_expected = int(int_expected_temp)
+        int_actual = int(int_actual_temp)
+
+        failed_cutest.expected = int_expected
+        failed_cutest.actual = int_actual
+
+        return failed_cutest
+
+    @staticmethod
+    def parse_double_error(regex_error_msg, failed_cutest: FailedCuTest, test_explanation: str) -> FailedCuTest:
+        double_expected_temp = re.search(regex_error_msg['expected_double'], test_explanation).group(1)
+        double_actual_temp = re.search(regex_error_msg['actual_double'], test_explanation).group(1)
+        double_actual = float(double_actual_temp)
+        double_expected = float(double_expected_temp)  
+
+        failed_cutest.expected = double_expected
+        failed_cutest.actual = double_actual
+
+        return failed_cutest
+
+
+    @staticmethod
+    def parse_pointer_error(regex_error_msg, failed_cutest: FailedCuTest, test_explanation: str) -> FailedCuTest:
+        pointer_expected = re.search(regex_error_msg['expected_pointer'], test_explanation).group(1)
+        pointer_actual = re.search(regex_error_msg['actual_pointer'], test_explanation).group(1)
+
+        failed_cutest.expected = pointer_expected
+        failed_cutest.actual = pointer_actual
         
+        return failed_cutest
+
+    @staticmethod
+    def parse_assert_true_error(regex_error_msg, failed_cutest: FailedCuTest, test_explanation: str) -> FailedCuTest:
+        assert_failed = re.findall(regex_error_msg['assert_failed'], test_explanation)
+        failed_cutest.assert_failed = str(assert_failed)
+
+        return failed_cutest
+    
+    @staticmethod
+    def parse_string_error(regex_error_msg, failed_cutest: FailedCuTest, test_explanation: str) -> FailedCuTest:
+        string_expected = re.search(regex_error_msg['expected_string'], test_explanation).group(1)
+        string_actual = re.search(regex_error_msg['actual_string'], test_explanation).group(1)
+
+        failed_cutest.expected = string_expected
+        failed_cutest.actual = string_actual
+
+        return failed_cutest
 
 
+# When running this, remember to include correct asserts in your test suite :))) 
+# 
+# failed = CuTestParser.parse("../examples/c_06/src/original.h.mut.results")
 
-CuTestParser.parse("../examples/c_06/src/original.h.mut.results")
+# for fail in failed: 
+#     print(fail.testName)
+#     print("______________________________")
+#     print("Expected:")
+#     print(fail.expected)
+#     print(type(fail.expected))
+
+#     print("Actual:")
+#     print(fail.actual)
+#     print(type(fail.actual))
+
+#     print("Assert failed:")
+#     print(fail.assert_failed)
+#     print(type(fail.assert_failed))
+    
+
+
+#     print("\n\n")
+#     print("\n\n")
