@@ -72,7 +72,7 @@ class TestTreeInfestator(unittest.TestCase):
         nests = self._infestator.nests_of_while_condition(condition)
 
         self.assertEqual(len(nests), 1)
-        self.assertEqual(nests[0].type, "compound_statement")
+        self.assertEqual(nests[0].type, "while_statement")
 
     def test_infect_while(self) -> None:
         program: str = "while(a) { }"
@@ -91,19 +91,11 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
 
-        first_if_statement: Node = tree.root_node.named_children[0]
-        first_if_consequence: Node = first_if_statement.child_by_field_name("consequence")
-        second_if_statement: Node = first_if_consequence.named_children[0]
-        second_if_consequence: Node = second_if_statement.child_by_field_name("consequence")
-
         nests = self._infestator.nests(cfa)
 
-        self.assertEqual(2, len(nests))
-        self.assertEqual(first_if_consequence.type, "compound_statement")
-        self.assertEqual(second_if_consequence.type, "compound_statement")
-
-        self.assertEqual(nests[0].type, "compound_statement")
-        self.assertEqual(nests[1].type, "compound_statement")
+        self.assertEqual(len(nests), 2)
+        self.assertEqual(nests[0].type, "if_statement")
+        self.assertEqual(nests[1].type, "if_statement")
 
     def test_infect_if(self) -> None:
         program: str = "if(a) { }"
@@ -277,7 +269,7 @@ class TestTreeInfestator(unittest.TestCase):
         nests = self._infestator.nests_of_do_while_condition(condition)
 
         self.assertEqual(len(nests), 1)
-        self.assertEqual(nests[0].type, "compound_statement")
+        self.assertEqual(nests[0].type, "do_statement")
 
     def test_infect_do_while(self) -> None:
         program: str = "do { } while(a);"
@@ -326,7 +318,7 @@ class TestTreeInfestator(unittest.TestCase):
         nests = self._infestator.nests_of_for_loop_body(body)
 
         self.assertEqual(len(nests), 1)
-        self.assertEqual(nests[0].type, "compound_statement")
+        self.assertEqual(nests[0].type, "for_statement")
 
     def test_infect_for_statement(self) -> None:
         program: str = "for (;;) { }"
@@ -350,15 +342,15 @@ class TestTreeInfestator(unittest.TestCase):
         switch_node: Node = tree.root_node.named_children[0]
         body: Node = switch_node.child_by_field_name("body")
         case: Node = body.named_children[0]
-        case_value: Node = case.child_by_field_name("value")
+        switch_condition: Node = switch_node.child_by_field_name("condition")
         expected: bool = True
 
-        actual = self._infestator.is_case_value_of_switch(case_value)
+        actual = self._infestator.is_condition_of_switch(switch_condition)
 
         self.assertEqual(switch_node.type, "switch_statement")
         self.assertEqual(body.type, "compound_statement")
         self.assertEqual(case.type, "case_statement")
-        self.assertEqual(case_value.type, "number_literal")
+        self.assertEqual(switch_condition.type, "parenthesized_expression")
         self.assertEqual(actual, expected)
 
     def test_is_case_value_of_switch_false(self) -> None:
@@ -373,7 +365,7 @@ class TestTreeInfestator(unittest.TestCase):
         not_case_value: Node = body
         expected: bool = False
 
-        actual = self._infestator.is_case_value_of_switch(not_case_value)
+        actual = self._infestator.is_condition_of_switch(not_case_value)
 
         self.assertEqual(switch_node.type, "switch_statement")
         self.assertEqual(body.type, "compound_statement")
@@ -392,7 +384,7 @@ class TestTreeInfestator(unittest.TestCase):
         not_case: Node = body
         expected: bool = False
 
-        actual = self._infestator.is_case_value_of_switch(not_case)
+        actual = self._infestator.is_condition_of_switch(not_case)
 
         self.assertEqual(switch_node.type, "switch_statement")
         self.assertEqual(body.type, "compound_statement")

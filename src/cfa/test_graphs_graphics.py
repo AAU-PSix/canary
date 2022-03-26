@@ -253,7 +253,7 @@ class TestGraphsGraphics(unittest.TestCase):
             {
                 case 1: 
                 case 2: a=1;  a=1;
-                case 3: { a=2;  a=1; }
+                case 3: { }
                 default:
             }
             a=10;
