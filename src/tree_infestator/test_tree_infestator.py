@@ -344,3 +344,97 @@ class TestTreeInfestator(unittest.TestCase):
 
         self.assertEqual(len(nests), 1)
         self.assertEqual(expected, actual)
+
+    def test_is_case_value_of_switch_true(self) -> None:
+        program: str = """
+            switch(a) {
+                case 3: { }
+            }
+        """
+        tree: Tree = self._parser.parse(program)
+        switch_node: Node = tree.root_node.named_children[0]
+        body: Node = switch_node.child_by_field_name("body")
+        case: Node = body.named_children[0]
+        case_value: Node = case.child_by_field_name("value")
+        expected: bool = True
+
+        actual = self._infestator.is_case_value_of_switch(case_value)
+
+        self.assertEqual(switch_node.type, "switch_statement")
+        self.assertEqual(body.type, "compound_statement")
+        self.assertEqual(case.type, "case_statement")
+        self.assertEqual(case_value.type, "number_literal")
+        self.assertEqual(actual, expected)
+
+    def test_is_case_value_of_switch_false(self) -> None:
+        program: str = """
+            switch(a) {
+                case 3: { }
+            }
+        """
+        tree: Tree = self._parser.parse(program)
+        switch_node: Node = tree.root_node.named_children[0]
+        body: Node = switch_node.child_by_field_name("body")
+        not_case_value: Node = body
+        expected: bool = False
+
+        actual = self._infestator.is_case_value_of_switch(not_case_value)
+
+        self.assertEqual(switch_node.type, "switch_statement")
+        self.assertEqual(body.type, "compound_statement")
+        self.assertEqual(not_case_value.type, "compound_statement")
+        self.assertEqual(actual, expected)
+
+    def test_is_default_case_of_switch_false(self) -> None:
+        program: str = """
+            switch(a) {
+                case 3: { }
+            }
+        """
+        tree: Tree = self._parser.parse(program)
+        switch_node: Node = tree.root_node.named_children[0]
+        body: Node = switch_node.child_by_field_name("body")
+        not_case: Node = body
+        expected: bool = False
+
+        actual = self._infestator.is_case_value_of_switch(not_case)
+
+        self.assertEqual(switch_node.type, "switch_statement")
+        self.assertEqual(body.type, "compound_statement")
+        self.assertEqual(not_case.type, "compound_statement")
+        self.assertEqual(actual, expected)
+
+    def test_nests_of_case_value_for_switch(self) -> None:
+        program: str = """
+            switch(a) {
+                case 3: { }
+            }
+        """
+        tree: Tree = self._parser.parse(program)
+        switch_node: Node = tree.root_node.named_children[0]
+        body: Node = switch_node.child_by_field_name("body")
+        case: Node = body.named_children[0]
+        case_value: Node = case.child_by_field_name("value")
+
+        nests = self._infestator.nests_of_case_value_for_switch(case_value)
+
+        self.assertEqual(len(nests), 1)
+        self.assertEqual(nests[0].type, "case_statement")
+
+    def test_infect_switch(self) -> None:
+        program: str = """
+            switch(a) {
+                case 3: { }
+            }
+        """
+        tree: Tree = self._parser.parse(program)
+        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+
+        expected =  """
+            switch(a) {
+                case 3:TWEET(); { }
+            }
+        """
+        actual = self._infestator.infect(tree, cfa).text
+
+        self.assertEqual(expected, actual)

@@ -61,6 +61,18 @@ class TreeInfestator:
     def nests_of_for_loop_body(self, body: Node) -> List[Node]:
         return [ body ]
 
+    def is_case_value_of_switch(self, node: Node) -> bool:
+        case: Node = node.parent
+        if case is None or case.type != "case_statement":
+            return False
+        value: Node = case.child_by_field_name("value")
+        if value is None or value != node:
+            return False
+        return True
+    
+    def nests_of_case_value_for_switch(self, case_value: Node) -> List[Node]:
+        return [ case_value.parent ]
+
     def nests(self, cfa: CFA) -> List[Node]:
         nests: List[Node] = list()
         for cfa_node in cfa.nodes:
@@ -77,6 +89,9 @@ class TreeInfestator:
             # Case 4: for-loop
             elif self.is_body_of_for_loop(node):
                 nests.extend(self.nests_of_for_loop_body(node))
+            # Case 5: Switch (Cases and default)
+            elif self.is_case_value_of_switch(node):
+                nests.extend(self.nests_of_case_value_for_switch(node))
         nests.sort(key=lambda x: x.start_byte, reverse=True)
         return nests
 
@@ -90,11 +105,16 @@ class TreeInfestator:
     def infect_declaration(self, tree: Tree, node: Node) -> Tree:
         return self._parser.append(tree, node.children[0], "TWEET();")
 
+    def infect_case_statement(self, tree: Tree, node: Node) -> Tree:
+        # For a "case_statement" the third child (idex 2) is the ":"
+        return self._parser.append(tree, node.children[2], "TWEET();")
+
     def infect(self, tree: Tree, cfa: CFA) -> Tree:
         infections: Dict[str, Callable[[Tree, Node], Tree]] = {
             "compound_statement": self.infect_compound_statement,
             "expression_statement": self.infect_expression_statement,
             "declaration": self.infect_declaration,
+            "case_statement": self.infect_case_statement,
         }
         nests: List[Node] = self.nests(cfa)
         for nest in nests:
