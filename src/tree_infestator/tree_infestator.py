@@ -73,6 +73,12 @@ class TreeInfestator:
     def nests_of_case_value_for_switch(self, case_value: Node) -> List[Node]:
         return [ case_value.parent ]
 
+    def is_labeled_statement(self, node: Node) -> bool:
+        return node.type == "labeled_statement"
+
+    def nests_of_labeled_statement(self, label: Node) -> List[Node]:
+        return [ label ]
+
     def nests(self, cfa: CFA) -> List[Node]:
         nests: List[Node] = list()
         for cfa_node in cfa.nodes:
@@ -92,6 +98,9 @@ class TreeInfestator:
             # Case 5: Switch (Cases and default)
             elif self.is_case_value_of_switch(node):
                 nests.extend(self.nests_of_case_value_for_switch(node))
+            # Case 6: Labels
+            elif self.is_labeled_statement(node):
+                nests.extend(self.nests_of_labeled_statement(node))
         nests.sort(key=lambda x: x.start_byte, reverse=True)
         return nests
 
@@ -106,8 +115,12 @@ class TreeInfestator:
         return self._parser.append(tree, node.children[0], "TWEET();")
 
     def infect_case_statement(self, tree: Tree, node: Node) -> Tree:
-        # For a "case_statement" the third child (idex 2) is the ":"
+        # For a "case_statement" the third child (index 2) is the ":"
         return self._parser.append(tree, node.children[2], "TWEET();")
+
+    def infect_labeled_statement(self, tree: Tree, node: Node) -> Tree:
+        # For a "labeled_statement" the second child (index 1) is the ":"
+        return self._parser.append(tree, node.children[1], "TWEET();")
 
     def infect(self, tree: Tree, cfa: CFA) -> Tree:
         infections: Dict[str, Callable[[Tree, Node], Tree]] = {
@@ -115,6 +128,7 @@ class TreeInfestator:
             "expression_statement": self.infect_expression_statement,
             "declaration": self.infect_declaration,
             "case_statement": self.infect_case_statement,
+            "labeled_statement": self.infect_labeled_statement,
         }
         nests: List[Node] = self.nests(cfa)
         for nest in nests:
