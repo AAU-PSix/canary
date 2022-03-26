@@ -295,3 +295,52 @@ class TestTreeInfestator(unittest.TestCase):
 
         self.assertEqual(len(nests), 1)
         self.assertEqual(expected, actual)
+
+    def test_is_condition_of_for_true(self) -> None:
+        program: str = "for (;;) { }"
+        tree: Tree = self._parser.parse(program)
+        for_node: Node = tree.root_node.named_children[0]
+        body: Node = for_node.named_children[-1]
+        expected: bool = True
+
+        actual = self._infestator.is_body_of_for_loop(body)
+
+        self.assertEqual(for_node.type, "for_statement")
+        self.assertEqual(body.type, "compound_statement")
+        self.assertEqual(actual, expected)
+
+    def test_is_condition_of_for_false(self) -> None:
+        program: str = "for (;;) { }"
+        tree: Tree = self._parser.parse(program)
+        for_node: Node = tree.root_node.named_children[0]
+        not_body: Node = for_node
+        expected: bool = False
+
+        actual = self._infestator.is_body_of_for_loop(not_body)
+
+        self.assertEqual(for_node.type, "for_statement")
+        self.assertEqual(not_body.type, "for_statement")
+        self.assertEqual(actual, expected)
+
+    def test_nests_of_for_statement(self) -> None:
+        program: str = "for (;;) { }"
+        tree: Tree = self._parser.parse(program)
+        for_node: Node = tree.root_node.named_children[0]
+        body: Node = for_node.named_children[-1]
+
+        nests = self._infestator.nests_of_for_loop_body(body)
+
+        self.assertEqual(len(nests), 1)
+        self.assertEqual(nests[0].type, "compound_statement")
+
+    def test_infect_for_statement(self) -> None:
+        program: str = "for (;;) { }"
+        tree: Tree = self._parser.parse(program)
+        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+
+        expected =  "for (;;) {TWEET(); }"
+        actual = self._infestator.infect(tree, cfa).text
+        nests = self._infestator.nests(cfa)
+
+        self.assertEqual(len(nests), 1)
+        self.assertEqual(expected, actual)

@@ -51,6 +51,16 @@ class TreeInfestator:
         while_statement: Node = condition.parent
         return [ while_statement.child_by_field_name("body") ]
 
+    def is_body_of_for_loop(self, node: Node) -> bool:
+        for_statement: Node = node.parent
+        if for_statement is None or for_statement.type != "for_statement":
+            return False
+        body: Node = for_statement.named_children[-1]
+        return body is not None and node == body
+
+    def nests_of_for_loop_body(self, body: Node) -> List[Node]:
+        return [ body ]
+
     def nests(self, cfa: CFA) -> List[Node]:
         nests: List[Node] = list()
         for cfa_node in cfa.nodes:
@@ -64,6 +74,9 @@ class TreeInfestator:
             # Case 3: do-while-loops
             elif self.is_condition_of_do_while(node):
                 nests.extend(self.nests_of_do_while_condition(node))
+            # Case 4: for-loop
+            elif self.is_body_of_for_loop(node):
+                nests.extend(self.nests_of_for_loop_body(node))
         nests.sort(key=lambda x: x.start_byte, reverse=True)
         return nests
 
