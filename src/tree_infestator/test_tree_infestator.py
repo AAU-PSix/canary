@@ -76,7 +76,7 @@ class TestTreeInfestator(unittest.TestCase):
         self.assertEqual(len(nests), 1)
         self.assertEqual(nests[0].type, "compound_statement")
 
-    def test_infext_while(self) -> None:
+    def test_infect_while(self) -> None:
         program: str = "while(a) { }"
         tree: Tree = self._parser.parse(program)
         cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
@@ -160,12 +160,12 @@ class TestTreeInfestator(unittest.TestCase):
 
         self.assertEqual(expected, actual)
 
-    def test_infect(self) -> None:
-        program: str = "if(a) { } else if(a) { } else { }"
+    def test_infect_if_elseif_elseif(self) -> None:
+        program: str = "if(a) { } else if(a) { } else if(a) { }"
         tree: Tree = self._parser.parse(program)
         cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
         actual: Tree = self._infestator.infect(tree, cfa)
-        self.assertEqual(actual.text, "if(a) {TWEET(); } else if(a) {TWEET(); } else {TWEET(); }")
+        self.assertEqual(actual.text, "if(a) {TWEET(); } else if(a) {TWEET(); } else if(a) {TWEET(); }")
 
     def test_can_add_tweet_for_if_statement(self):
         program: str = "if(a) { }"
@@ -246,3 +246,52 @@ class TestTreeInfestator(unittest.TestCase):
         actual = self._infestator.infect(tree, cfa)
         expected = "if(a) {TWEET(); if(a) {TWEET(); } else if(a) {TWEET(); } else {TWEET(); } }"
         self.assertEqual(expected, actual.text)
+
+    def test_is_condition_of_do_while_true(self) -> None:
+        program: str = "do { } while(a);"
+        tree: Tree = self._parser.parse(program)
+        do_node: Node = tree.root_node.named_children[0]
+        condition: Node = do_node.child_by_field_name("condition")
+        expected: bool = True
+
+        actual = self._infestator.is_condition_of_do_while(condition)
+
+        self.assertEqual(do_node.type, "do_statement")
+        self.assertEqual(condition.type, "parenthesized_expression")
+        self.assertEqual(actual, expected)
+
+    def test_is_condition_of_do_while_false(self) -> None:
+        program: str = "do { } while(a);"
+        tree: Tree = self._parser.parse(program)
+        do_node: Node = tree.root_node.named_children[0]
+        not_condition: Node = do_node
+        expected: bool = False
+
+        actual = self._infestator.is_condition_of_do_while(not_condition)
+
+        self.assertEqual(do_node.type, "do_statement")
+        self.assertEqual(not_condition.type, "do_statement")
+        self.assertEqual(actual, expected)
+
+    def test_nests_of_do_while(self) -> None:
+        program: str = "do { } while(a);"
+        tree: Tree = self._parser.parse(program)
+        do_node: Node = tree.root_node.named_children[0]
+        condition: Node = do_node.child_by_field_name("condition")
+
+        nests = self._infestator.nests_of_do_while_condition(condition)
+
+        self.assertEqual(len(nests), 1)
+        self.assertEqual(nests[0].type, "compound_statement")
+
+    def test_infect_do_while(self) -> None:
+        program: str = "do { } while(a);"
+        tree: Tree = self._parser.parse(program)
+        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+
+        expected =  "do {TWEET(); } while(a);"
+        actual = self._infestator.infect(tree, cfa).text
+        nests = self._infestator.nests(cfa)
+
+        self.assertEqual(len(nests), 1)
+        self.assertEqual(expected, actual)
