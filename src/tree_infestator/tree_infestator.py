@@ -1,6 +1,22 @@
 from src.ts import *
 from src.cfa import *
 
+class TreeInfection:
+    def __init__(self, node: Node, nest: str) -> None:
+        self._node = node
+        self._nest = nest
+
+    def do(self, parser: Parser, tree: Tree) -> Tree:
+        return parser.append(tree, self.node, self.nest)
+
+    @property
+    def node(self) -> Node:
+        return self._node
+
+    @property
+    def nest(self) -> str:
+        return self._nest
+
 class TreeInfestator:
     def __init__(self, parser: Parser) -> None:
         self._parser = parser
@@ -101,37 +117,44 @@ class TreeInfestator:
             # Case 6: Labels
             elif self.is_labeled_statement(node):
                 nests.extend(self.nests_of_labeled_statement(node))
-        nests.sort(key=lambda x: x.start_byte, reverse=True)
         return nests
 
-    def infect_compound_statement(self, tree: Tree, node: Node) -> Tree:
+    def infection_probe_for_compound_statement(self, node: Node) -> List[TreeInfection]:
         # For a "compound_statement" the "child 0" will alwaysbe the "{"
-        return self._parser.append(tree, node.children[0], "TWEET();")
+        return [ TreeInfection(node.children[0], "TWEET();") ]
 
-    def infect_expression_statement(self, tree: Tree, node: Node) -> Tree:
-        return self._parser.append(tree, node.children[0], "TWEET();")
+    def infection_probe_for_expression_statement(self, node: Node) -> List[TreeInfection]:
+        return [ TreeInfection(node.children[0], "TWEET();") ]
 
-    def infect_declaration(self, tree: Tree, node: Node) -> Tree:
-        return self._parser.append(tree, node.children[0], "TWEET();")
+    def infection_probe_for_declaration(self, node: Node) -> List[TreeInfection]:
+        return [ TreeInfection(node.children[0], "TWEET();") ]
 
-    def infect_case_statement(self, tree: Tree, node: Node) -> Tree:
+    def infection_probe_for_case_statement(self, node: Node) -> List[TreeInfection]:
         # For a "case_statement" the third child (index 2) is the ":"
-        return self._parser.append(tree, node.children[2], "TWEET();")
+        return [ TreeInfection(node.children[2], "TWEET();") ]
 
-    def infect_labeled_statement(self, tree: Tree, node: Node) -> Tree:
+    def infection_probe_for_labeled_statement(self, node: Node) -> List[TreeInfection]:
         # For a "labeled_statement" the second child (index 1) is the ":"
-        return self._parser.append(tree, node.children[1], "TWEET();")
+        return [ TreeInfection(node.children[1], "TWEET();") ]
 
     def infect(self, tree: Tree, cfa: CFA) -> Tree:
-        infections: Dict[str, Callable[[Tree, Node], Tree]] = {
-            "compound_statement": self.infect_compound_statement,
-            "expression_statement": self.infect_expression_statement,
-            "declaration": self.infect_declaration,
-            "case_statement": self.infect_case_statement,
-            "labeled_statement": self.infect_labeled_statement,
+        probes: Dict[str, Callable[[Node], List[TreeInfection]]] = {
+            "compound_statement": self.infection_probe_for_compound_statement,
+            "expression_statement": self.infection_probe_for_expression_statement,
+            "declaration": self.infection_probe_for_declaration,
+            "case_statement": self.infection_probe_for_case_statement,
+            "labeled_statement": self.infection_probe_for_labeled_statement,
         }
-        nests: List[Node] = self.nests(cfa)
-        for nest in nests:
-            if nest.type in infections:
-                tree = infections[nest.type](tree, nest)
+
+        # Step 1: Find the infections
+        infections: List[TreeInfection] = [ ]
+        for nest in self.nests(cfa):
+            if nest.type in probes:
+                infections.extend(probes[nest.type](nest))
+
+        # Step 2: Infect the tree from end to start
+        infections.sort(key=lambda x: x.node.start_byte, reverse=True)
+        for infection in infections:
+            tree = infection.do(self._parser, tree)
+
         return tree

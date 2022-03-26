@@ -1,6 +1,4 @@
-from importlib.resources import path
 import unittest
-import graphviz
 
 from src.ts import *
 from src.cfa import *
@@ -105,10 +103,7 @@ class TestTreeInfestator(unittest.TestCase):
         self.assertEqual(second_if_consequence.type, "compound_statement")
 
         self.assertEqual(nests[0].type, "compound_statement")
-        self.assertEqual(nests[0].start_byte, second_if_consequence.start_byte)
-
         self.assertEqual(nests[1].type, "compound_statement")
-        self.assertEqual(nests[1].start_byte, first_if_consequence.start_byte)
 
     def test_infect_if(self) -> None:
         program: str = "if(a) { }"
@@ -438,3 +433,15 @@ class TestTreeInfestator(unittest.TestCase):
         actual = self._infestator.infect(tree, cfa).text
 
         self.assertEqual(expected, actual)
+
+    def test_is_labeled_statement_true(self) -> None:
+        pass
+
+    def test_is_labeled_statement_false(self) -> None:
+        pass
+
+    def test_nests_of_labeled_statement(self) -> None:
+        pass
+
+    def test_infect_labeled_statement(self) -> None:
+        pass
