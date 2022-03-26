@@ -86,6 +86,11 @@ class Node:
         return self.children[0]
 
     @property
+    def first_named_child(self) -> "Node":
+        if self.named_child_count == 0: return None
+        return self.named_children[0]
+
+    @property
     def prev_sibling(self) -> "Node":
         result = self._node.prev_sibling
         if result is None:
@@ -132,10 +137,26 @@ class Node:
             current = current.parent
         return False
 
-    def is_descendent_of_types(self, types: List[str]) -> str:
+    def is_immediate_descendt_of_type(self, type: str) -> bool:
         current: Node = self
         while current.parent is not None:
-            if current.parent.type in types: return current.parent.type
+            if current.parent.named_children[0] != current: return False
+            if current.parent.type == type: return True
+            current = current.parent
+        return False
+
+    def is_descendent_of_types(self, types: List[str]) -> "Node":
+        current: Node = self
+        while current.parent is not None:
+            if current.parent.type in types: return current.parent
+            current = current.parent
+        return None
+
+    def is_immediate_descendent_of_types(self, types: List[str]) -> "Node":
+        current: Node = self
+        while current.parent is not None:
+            if current.parent.named_children[0] != current: return None
+            if current.parent.type in types: return current.parent
             current = current.parent
         return None
 

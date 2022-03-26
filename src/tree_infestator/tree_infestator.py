@@ -41,6 +41,16 @@ class TreeInfestator:
     def __init__(self, parser: Parser) -> None:
         self._parser = parser
 
+    def immediate_structure_descendent(self, node: Node) -> Node:
+        types: List[str] = [
+            "if_statement",
+            "while_statement",
+            "do_statement",
+            "for_statement",
+            "switch_statement",
+        ]
+        return node.is_immediate_descendent_of_types(types)
+
     def is_condition_of_if(self, node: Node) -> bool:
         if_statement: Node = node.parent
         if if_statement is None or if_statement.type != "if_statement":
@@ -79,11 +89,12 @@ class TreeInfestator:
         return [ condition.parent ]
 
     def is_body_of_for_loop(self, node: Node) -> bool:
-        for_statement: Node = node.parent
-        if for_statement is None or for_statement.type != "for_statement":
+        # Immediate descendent will only return the "for_statement"
+        #   if the "node" is the first child up until one of the structures.
+        immediate_structure: Node = self.immediate_structure_descendent(node)
+        if immediate_structure is None or immediate_structure.type != "for_statement":
             return False
-        body: Node = for_statement.named_children[-1]
-        return body is not None and node == body
+        return True
 
     def nests_of_for_loop_body(self, body: Node) -> List[Node]:
         return [ body.parent ]
