@@ -1,7 +1,15 @@
 import unittest
 
-from src.ts import *
-from src.cfa import *
+from ts import (
+    LanguageLibrary,
+    Tree,
+    Node,
+    Parser
+)
+from cfa import (
+    CFA,
+    TreeCFAVisitor
+)
 from . import TreeInfestator
 
 class TestTreeInfestator(unittest.TestCase):

@@ -3,17 +3,16 @@ from typing import List, Tuple
 
 from graphviz import Digraph
 
-from src.cfa import CFA
-from src.tree_infestator.tree_infestator import TreeInfestator
-
-from src.ts import (
+from cfa import CFA
+from tree_infestator import TreeInfestator
+from ts import (
     LanguageLibrary,
     Parser,
     Query,
     Tree,
+    Node,
 )
 from . import TreeCFAVisitor
-from src.ts.node import Node
 
 
 class TestGraphsGraphics(unittest.TestCase):

@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
+from typing import List, Dict, Callable
 
-from src.ts import *
-from src.cfa import *
+from ts import Node, Parser, Tree
+from cfa import CFA
 
 class TreeInfection(ABC):
     def __init__(self, last_byte_index: int) -> None:

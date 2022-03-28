@@ -5,7 +5,7 @@ from . import (
     Node,
     Capture,
 )
-from src.ts import (
+from ts import (
     LanguageLibrary, Query
 )
 from typing import List

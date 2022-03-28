@@ -1,6 +1,6 @@
 import unittest
 
-from src.ts import (
+from ts import (
     LanguageLibrary,
     Parser,
     Query,

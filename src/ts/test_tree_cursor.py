@@ -1,7 +1,7 @@
 from typing import Iterable
 import unittest
 
-from src.ts.node import Node
+from ts import Node
 from . import (
     LanguageLibrary,
     Parser,
