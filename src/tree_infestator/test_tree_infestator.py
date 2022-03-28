@@ -10,14 +10,14 @@ from cfa import (
     CFA,
     TreeCFAVisitor
 )
-from . import TreeInfestator
+from . import TreeInfestator, SimpleTestCanaryFactory
 
 class TestTreeInfestator(unittest.TestCase):
     def setUp(self) -> None:
         LanguageLibrary.build()
         self._language = LanguageLibrary.c()
         self._parser = Parser.create_with_language(self._language)
-        self._infestator = TreeInfestator(self._parser)
+        self._infestator = TreeInfestator(self._parser, SimpleTestCanaryFactory())
 
     def test_is_condition_of_if_true(self) -> None:
         program: str = "if(a) { } else { }"

@@ -38,9 +38,55 @@ class TreeInfectionInsert(TreeInfection):
     def do(self, parser: Parser, tree: Tree) -> Tree:
         return parser.insert(tree, self._node, self._nest)
 
+class CanaryFactory(ABC):
+    @abstractmethod
+    def create_location_tweet(self, prefix: str = "", postfix: str = "") -> str:
+        pass
+
+    @abstractmethod
+    def create_state_tweet(self, prefix: str = "", postfix: str = "") -> str:
+        pass
+
+    def append(self, node: Node, text: str) -> TreeInfection:
+        return TreeInfectionAppend(node, text)
+
+    def insert(self, node: Node, text: str) -> TreeInfection:
+        return TreeInfectionInsert(node, text)
+
+    def append_location_tweet(self, node: Node, prefix: str = "", postfix: str = "") -> TreeInfection:
+        tweet: str = self.create_location_tweet(prefix, postfix)
+        return self.append(node, tweet)
+
+    def insert_location_tweet(self, node: Node, prefix: str = "", postfix: str = "") -> TreeInfection:
+        tweet: str = self.create_location_tweet(prefix, postfix)
+        return self.insert(node, tweet)
+
+    def append_state_tweet(self, node: Node, prefix: str = "", postfix: str = "") -> TreeInfection:
+        tweet: str = self.create_state_tweet(prefix, postfix)
+        return self.append(node, tweet)
+
+    def insert_state_tweet(self, node: Node, prefix: str = "", postfix: str = "") -> TreeInfection:
+        tweet: str = self.create_state_tweet(prefix, postfix)
+        return self.insert(node, tweet)
+
+class SimpleTestCanaryFactory(CanaryFactory):
+    def create_location_tweet(self, prefix: str = "", postfix: str = "") -> str:
+        return f"{prefix}TWEET();{postfix}"
+
+    def create_state_tweet(self, prefix: str = "", postfix: str = "") -> str:
+        return f"{prefix}TWEET();{postfix}"
+
+class CCanaryFactory(CanaryFactory):
+    def create_location_tweet(self, prefix: str = "", postfix: str = "") -> str:
+        return f"{prefix}CANARY_TWEET_LOCATION(l);{postfix}"
+
+    def create_state_tweet(self, prefix: str = "", postfix: str = "") -> str:
+        return f"{prefix}CANARY_TWEET_LOCATION(l);{postfix}"
+
 class TreeInfestator:
-    def __init__(self, parser: Parser) -> None:
+    def __init__(self, parser: Parser, canary_factory: CanaryFactory) -> None:
         self._parser = parser
+        self._canary_factory = canary_factory
 
     def immediate_structure_descendent(self, node: Node) -> Node:
         types: List[str] = [
@@ -162,66 +208,73 @@ class TreeInfestator:
         return nests
 
     def infection_spore_for_expression_statement(self, node: Node) -> List[TreeInfection]:
-        return [ TreeInfectionAppend(node, "TWEET();") ]
+        return [ self._canary_factory.append_state_tweet(node) ]
 
     def infection_spore_for_declaration(self, node: Node) -> List[TreeInfection]:
-        return [ TreeInfectionAppend(node, "TWEET();") ]
+        return [ self._canary_factory.append_location_tweet(node) ]
 
     def infection_spore_if_statement(self, if_stmt: Node) -> List[TreeInfection]:
         infections: List[TreeInfection] = [ ]
         consequence: Node = if_stmt.child_by_field_name("consequence")
         if consequence is not None:
             if consequence.type == "compound_statement":
-                infections.append(TreeInfectionAppend(consequence.children[0], "TWEET();"))
+                infections.append(
+                    self._canary_factory.append_location_tweet(consequence.children[0])
+                )
             # The consequence of the "if_statement" is not wrapped in a "compound_statement"
             #   For this reason we have to do it in order to not modify the execution path.
             elif consequence.type == "expression_statement":
-                infections.append(TreeInfectionInsert(consequence.children[0], "{TWEET();"))
-                infections.append(TreeInfectionAppend(consequence.children[-1], "}"))
+                infections.extend([
+                    self._canary_factory.insert_location_tweet(consequence.children[0], "{"),
+                    self._canary_factory.append(consequence.children[-1], "}")
+                ])
 
         alternative: Node = if_stmt.child_by_field_name("alternative")
         # If the alternative is a "if_statement" then it is an "else if(...)"
         if alternative is not None and alternative.type != "if_statement":
             if alternative.type == "compound_statement":
-                infections.append(TreeInfectionAppend(alternative.children[0], "TWEET();"))
+                infections.append(
+                    self._canary_factory.append_location_tweet(alternative.children[0])
+                )
             # The alternative of the "if_statement" is not wrapped in a "compound_statement"
             #   For this reason we have to do it in order to not modify the execution path.
             elif alternative.type == "expression_statement":
-                # The fourth child of the "if_statement" (index 3) is the "else".
-                infections.append(TreeInfectionInsert(alternative.children[0], "{TWEET();"))
-                infections.append(TreeInfectionAppend(alternative.children[-1], "}"))
+                infections.extend([
+                    self._canary_factory.insert_location_tweet(alternative.children[0], "{"),
+                    self._canary_factory.append(alternative.children[-1], "}")
+                ])
         return infections
 
     def infection_spore_while_statement(self, while_stmt: Node) -> List[TreeInfection]:
         body: Node = while_stmt.child_by_field_name("body")
         if body.type == "compound_statement":
-            return [ TreeInfectionAppend(body.children[0], "TWEET();") ]
+            return [ self._canary_factory.append_location_tweet(body.children[0]) ]
         elif body.type == "expression_statement":
             return [
-                TreeInfectionInsert(body, "{TWEET();"),
-                TreeInfectionAppend(body, "}")
+                self._canary_factory.insert_location_tweet(body, "{"),
+                self._canary_factory.append(body, "}")
             ]
         return None
 
     def infection_spore_do_statement(self, do_stmt: Node) -> List[TreeInfection]:
         body: Node = do_stmt.child_by_field_name("body")
         if body.type == "compound_statement":
-            return [ TreeInfectionAppend(body.children[0], "TWEET();") ]
+            return [ self._canary_factory.append_location_tweet(body.children[0]) ]
         elif body.type == "expression_statement":
             return [
-                TreeInfectionInsert(body, "{TWEET();"),
-                TreeInfectionAppend(body, "}")
+                self._canary_factory.insert_location_tweet(body, "{"),
+                self._canary_factory.append(body, "}")
             ]
         return None
 
     def infection_spore_for_statement(self, for_stmt: Node) -> List[TreeInfection]:
         body: Node = for_stmt.named_children[-1]
         if body.type == "compound_statement":
-            return [ TreeInfectionAppend(body.children[0], "TWEET();") ]
+            return [ self._canary_factory.append_location_tweet(body.children[0]) ]
         elif body.type == "expression_statement":
             return [
-                TreeInfectionInsert(body, "{TWEET();"),
-                TreeInfectionAppend(body, "}")
+                self._canary_factory.insert_location_tweet(body, "{"),
+                self._canary_factory.append(body, "}")
             ]
         return None
 
@@ -232,14 +285,18 @@ class TreeInfestator:
         for case in body.named_children:
             is_default: bool = case.child_by_field_name("value") is None
             if is_default:
-                infections.append(TreeInfectionAppend(case.children[1], "TWEET();"))
+                infections.append(
+                    self._canary_factory.append_location_tweet(case.children[1])
+                )
             else:
-                infections.append(TreeInfectionAppend(case.children[2], "TWEET();"))
+                infections.append(
+                    self._canary_factory.append_location_tweet(case.children[2])
+                )
         return infections
 
     def infection_spore_labeled_statement(self, node: Node) -> List[TreeInfection]:
         # For a "labeled_statement" the second child (index 1) is the ":"
-        return [ TreeInfectionAppend(node.children[1], "TWEET();") ]
+        return [ self._canary_factory.append_location_tweet(node.children[1]) ]
 
     def infect(self, tree: Tree, cfa: CFA) -> Tree:
         probes: Dict[str, Callable[[Node], List[TreeInfection]]] = {
