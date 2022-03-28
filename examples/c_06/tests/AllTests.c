@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "CuTest.h"
 #include "CanaryCuTest.h"
@@ -31,11 +32,44 @@ CuSuite *AddSuite() {
 	return suite;
 }
 
+void Test_CuAssertIntEquals(CuTest *ct) {
+	int expected = 0;
+	int actual = 2;
+	CuAssertIntEquals(ct, expected, actual);
+}
+
+void Test_CuAssertDblEquals(CuTest *ct) {
+	double expected = 0.0f;
+	double actual = 0.2f;
+	double delta = 0.1f;
+	CuAssertDblEquals(ct, expected, actual, delta);
+}
+
+void Test_CuAssertTrue(CuTest *ct) {
+	CuAssertTrue(ct, 0);
+}
+
+void Test_CuAssertPtrEquals(CuTest *ct) {
+	void *expected = malloc(1);
+	void *actual = malloc(1);
+	CuAssertPtrEquals(ct, expected, actual);
+}
+
+CuSuite *CuTestSuite() {
+	CuSuite *suite = CuSuiteNew();
+	SUITE_ADD_TEST(suite, Test_CuAssertIntEquals);
+	SUITE_ADD_TEST(suite, Test_CuAssertDblEquals);
+	SUITE_ADD_TEST(suite, Test_CuAssertTrue);
+	SUITE_ADD_TEST(suite, Test_CuAssertPtrEquals);
+	return suite;
+}
+
 void RunAllTests(void) {
 	CuString *output = CuStringNew();
 	CuSuite* suite = CuSuiteNew();
 
 	CuSuiteAddSuite(suite, AddSuite());
+	CuSuiteAddSuite(suite, CuTestSuite());
 	CuSuiteAddSuite(suite, CanarySuites());
 
 	CuSuiteRun(suite);
