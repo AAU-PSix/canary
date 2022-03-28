@@ -1,47 +1,6 @@
 from tree_sitter import Language as _Language
-from .query import Query
-from .syntax import Syntax
-
-
-class Language:
-    def __init__(self, syntax: Syntax, language: _Language) -> None:
-        self._language = language
-        self._syntax = syntax
-
-    @property
-    def syntax(self) -> Syntax:
-        return self._syntax
-
-    @property
-    def id(self) -> int:
-        return self._language.language_id
-
-    @property
-    def name(self):
-        return self._language.name
-
-    def field_id_for_name(self, name: str) -> int:
-        """Returns the id of a field found in 'grammer.js' as a 'field' function call
-
-        Args:
-            name (str): The name of the field, also the first parameter in the function call
-
-        Returns:
-            int: The int id of the field
-        """
-        return self._language.field_id_for_name(name)
-
-    def query(self, source: str) -> Query:
-        """Creates a query from the soruce for a given language
-
-        Args:
-            source (str): The query source
-
-        Returns:
-            Query: A query for the given language
-        """
-        return Query(self._language.query(source))
-
+from .c_syntax import CSyntax
+from .language import Language
 
 class LanguageLibrary:
     @staticmethod
@@ -75,9 +34,9 @@ class LanguageLibrary:
         )
 
     @staticmethod
-    def c() -> Language:
-        return Language(
-            Syntax.c(),
+    def c() -> Language[CSyntax]:
+        return Language[CSyntax](
+            CSyntax(),
             _Language(LanguageLibrary.full_build_path(), 'c')
         )
 

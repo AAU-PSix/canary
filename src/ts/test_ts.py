@@ -4,6 +4,8 @@ from tree_sitter.binding import Query as _Query
 from tree_sitter import Language as _Language
 from os import path
 
+from src.ts.c_syntax import CSyntax
+
 from . import FilePoint
 from .capture import Capture
 from .language_library import Language, LanguageLibrary
@@ -195,16 +197,16 @@ class TestSyntaxForC(unittest.TestCase):
     def setUp(self) -> None:
         LanguageLibrary.build()
         self._parser = Parser.c()
-        self._language = self._parser.language
+        self._language: Language[CSyntax] = self._parser.language
         self._query_function_declaration = self._language.query(
-            self._language.syntax.query_function_declaration
+            self._language.syntax.function_declaration_query
         )
         self._query_struct_declaration = self._language.query(
-            self._language.syntax.query_struct_declaration
+            self._language.syntax.struct_declaration_query
         )
 
         self._query_if_declaration = self._language.query(
-            self._language.syntax.query_if_statement
+            self._language.syntax.if_statement_query
         )
 
         return super().setUp()
@@ -263,7 +265,7 @@ class TestSyntaxForC(unittest.TestCase):
     def test_can_find_if_statement(self):
         root: Node = self._parser.parse("void iff(){if (a == 2){} return;}").root_node
         capture: Capture = self._query_if_declaration.captures(root)
-        results: List[Node] = capture.nodes(self._language.syntax._get_get_if_declaration)
+        results: List[Node] = capture.nodes(self._language.syntax.get_if_declaration)
 
         self.assertIsNotNone(results)
         self.assertEqual(len(results), 1)
@@ -272,7 +274,7 @@ class TestSyntaxForC(unittest.TestCase):
     def test_can_find_two_if_statement(self):
         root: Node = self._parser.parse("void iff(){if (a == 2){} if (a == 2){} return;}").root_node
         capture: Capture = self._query_if_declaration.captures(root)
-        results: List[Node] = capture.nodes(self._language.syntax._get_get_if_declaration)
+        results: List[Node] = capture.nodes(self._language.syntax.get_if_declaration)
 
         self.assertIsNotNone(results)
         self.assertEqual(len(results), 2)
@@ -281,7 +283,7 @@ class TestSyntaxForC(unittest.TestCase):
     def test_can_find_if_with_else(self):
         root: Node = self._parser.parse("void iff(){if (a == 2 ) {} else {} return;}").root_node
         capture: Capture = self._query_if_declaration.captures(root)
-        results: List[Node] = capture.nodes(self._language.syntax._get_get_if_declaration)
+        results: List[Node] = capture.nodes(self._language.syntax.get_if_declaration)
 
         self.assertIsNotNone(results)
         self.assertEqual(len(results), 1)
@@ -290,7 +292,7 @@ class TestSyntaxForC(unittest.TestCase):
     def test_can_find_if_without_brackets(self):
         root: Node = self._parser.parse("void iff(){if (a == 2 ) return; return;}").root_node
         capture: Capture = self._query_if_declaration.captures(root)
-        results: List[Node] = capture.nodes(self._language.syntax._get_get_if_declaration)
+        results: List[Node] = capture.nodes(self._language.syntax.get_if_declaration)
 
         self.assertIsNotNone(results)
         self.assertEqual(len(results), 1)
@@ -299,7 +301,7 @@ class TestSyntaxForC(unittest.TestCase):
     def test_can_find_if_with_else_without_brackets(self):
         root: Node = self._parser.parse("void iff(){if (a == 2 ) return; else return;}").root_node
         capture: Capture = self._query_if_declaration.captures(root)
-        results: List[Node] = capture.nodes(self._language.syntax._get_get_if_declaration)
+        results: List[Node] = capture.nodes(self._language.syntax.get_if_declaration)
 
         self.assertIsNotNone(results)
         self.assertEqual(len(results), 1)
@@ -308,7 +310,7 @@ class TestSyntaxForC(unittest.TestCase):
     def test_can_find_no_if_statement(self):
         root: Node = self._parser.parse("void iff(){return;}").root_node
         capture: Capture = self._query_if_declaration.captures(root)
-        results: List[Node] = capture.nodes(self._language.syntax._get_get_if_declaration)
+        results: List[Node] = capture.nodes(self._language.syntax.get_if_declaration)
 
         self.assertIsNotNone(results)
         self.assertEqual(len(results), 0)

@@ -6,7 +6,7 @@ from ts import (
     LanguageLibrary,
     Parser,
     Tree,
-    Syntax,
+    CSyntax,
     Language,
     Query,
     Capture,
@@ -20,7 +20,11 @@ from tree_infestator import (
     CanaryFactory,
     CCanaryFactory
 )
-from cfa import CFAFactory, CFA
+from cfa import (
+    CCFAFactory,
+    CFAFactory,
+    CFA,
+)
 import subprocess
 import os
 
@@ -49,8 +53,8 @@ def generate(
     unit_tree: Tree = unit_parser.parse(unit_original_contents)
     # Step 1.3: Get function definitions
     c_language: Language = LanguageLibrary.c()
-    c_syntax: Syntax = c_language.syntax
-    c_unit_query: Query = c_language.query(c_syntax.query_function_declaration)
+    c_syntax: CSyntax = c_language.syntax
+    c_unit_query: Query = c_language.query(c_syntax.function_declaration_query)
     unit_capture: Capture = c_unit_query.captures(unit_tree.root_node)
     unit_function_definitions: List[Node] = unit_capture.nodes(
         c_syntax.get_function_declaration
@@ -80,9 +84,9 @@ def generate(
     inf_parser: Parser = Parser.c()
     inf_tree: Tree = inf_parser.parse(inf_original_contents)
     # Step 2.3: Create CFA for the FUT
-    inf_cfa_factory: CFAFactory = CFAFactory(inf_tree)
+    inf_cfa_factory: CFAFactory = CCFAFactory(inf_tree)
     fut_body: Node = fut_root.child_by_field_name("body")
-    inf_cfa: CFA = inf_cfa_factory.create(fut_body, False)
+    inf_cfa: CFA = inf_cfa_factory.create(fut_body)
     inf_cfa_graph: Digraph = inf_cfa.draw(inf_tree, "cfa_fut_org")
     inf_cfa_graph.save(directory=f'{base}/')
     # Step 2.4: Infest
