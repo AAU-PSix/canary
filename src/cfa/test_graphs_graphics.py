@@ -3,7 +3,8 @@ from typing import List, Tuple
 from graphviz import Digraph
 from tree_infestator import (
     TreeInfestator,
-    SimpleTestCanaryFactory
+    CTreeInfestator,
+    CCanaryFactory
 )
 from ts import (
     LanguageLibrary,
@@ -774,7 +775,7 @@ class TestGraphsGraphics(TestCase):
 
         def draw_infected_cfa(name: str, tree: Tree, cfa: CFA):
             try:
-                infestator: TreeInfestator = TreeInfestator(self._parser, SimpleTestCanaryFactory())
+                infestator: TreeInfestator = CTreeInfestator(self._parser, CCanaryFactory())
                 infested_tree: Tree = infestator.infect(tree, cfa)
                 # TODO (IMPORTANT): Editing does not work correctly and for this
                 #   reason we have to re-parse with a COMPLETELY NEW PARSER!!!

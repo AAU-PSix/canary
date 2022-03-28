@@ -85,7 +85,7 @@ class Mutator:
         """
         
         # Domain: Arithmetic assignment
-        if self._syntax.in_fields(node.type, self._syntax.arithmetic_compound_assignment):
+        if self._syntax.in_types(node.type, self._syntax.arithmetic_compound_assignment):
             return self.random_operator_range(
                 [
                     # OABA: a {+,-,*,/,%}= b -> a {|,&,^}= b
@@ -99,7 +99,7 @@ class Mutator:
             )
 
         # Domain: Aritmetic operator
-        if self._syntax.in_fields(node.type, self._syntax.arithmetic_operators):
+        if self._syntax.in_types(node.type, self._syntax.arithmetic_operators):
             return self.random_operator_range(
                 [
                     # OABN: a {+,-,*,/,%} b -> a {|,&,^} b
@@ -115,7 +115,7 @@ class Mutator:
             )
 
         # Domain: Bitwise operator
-        if self._syntax.in_fields(node.type, self._syntax.bitwise_operators):
+        if self._syntax.in_types(node.type, self._syntax.bitwise_operators):
             return self.random_operator_range(
                 [
                     # OBAN: a {|,&,^} b -> a {+,-,*,/,%} b
@@ -131,7 +131,7 @@ class Mutator:
             )
 
         # Domain: Bitwise assignment
-        if self._syntax.in_fields(node.type, self._syntax.bitwise_compound_assignment):
+        if self._syntax.in_types(node.type, self._syntax.bitwise_compound_assignment):
             return self.random_operator_range(
                 [
                     # OBAA: a {|,&,^}= b -> a {+,-,*,/,%}= b
@@ -145,7 +145,7 @@ class Mutator:
             )
 
         # Domain: Plain assignment
-        if self._syntax.in_fields(node.type, self._syntax.plain_assignment):
+        if self._syntax.in_types(node.type, self._syntax.plain_assignment):
             return self.random_operator_range(
                 [
                     # OEAA: a = b -> a {+,-,*,/,%}= b
@@ -159,7 +159,7 @@ class Mutator:
             )
 
         # Domain: Logical operator
-        if self._syntax.in_fields(node.type, self._syntax.logical_operators):
+        if self._syntax.in_types(node.type, self._syntax.logical_operators):
             return self.random_operator_range(
                 [
                     # OLAN: a {&&,||} b -> a {+,-,*,/,%} b
@@ -177,7 +177,7 @@ class Mutator:
             )
 
         # Domain: Relational operator
-        if self._syntax.in_fields(node.type, self._syntax.relational_opearators):
+        if self._syntax.in_types(node.type, self._syntax.relational_opearators):
             return self.random_operator_range(
                 [
                     # ORAN: a {>,>=,<,<=,==,!=} b -> a {+,-,*,/,%} b
@@ -193,7 +193,7 @@ class Mutator:
             )
 
         # Domain: Shift assignment
-        if self._syntax.in_fields(node.type, self._syntax.shift_compound_assignment):
+        if self._syntax.in_types(node.type, self._syntax.shift_compound_assignment):
             return self.random_operator_range(
                 [
                     # OSAA: a {<<,>>}= b -> a {+,-,*,/,%}= b
@@ -207,7 +207,7 @@ class Mutator:
             )
 
         # Domain: Shift operator
-        if self._syntax.in_fields(node.type, self._syntax.shift_operators):
+        if self._syntax.in_types(node.type, self._syntax.shift_operators):
             return self.random_operator_range(
                 [
                     # OSAN: a {<<,>>} b -> a {+,-,*,/,%} b

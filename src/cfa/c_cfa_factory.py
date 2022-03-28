@@ -5,7 +5,13 @@ from typing import (
     List
 )
 from collections import deque
-from ts import Node, Tree, CNodeType, CField
+from ts import (
+    Node,
+    Tree,
+    CNodeType,
+    CField,
+    CSyntax
+)
 from .cfa_factory import CFAFactory
 from .cfa import CFA, CFANode
 
@@ -37,6 +43,7 @@ class CCFAFactory(CFAFactory):
         }
         self._current = None
         self._tree = tree
+        self._syntax = CSyntax()
 
     def create(self, root: Node) -> CFA:
         self._continue_break_stack = deque()
@@ -53,12 +60,12 @@ class CCFAFactory(CFAFactory):
 
         return self._cfa
 
-    def _continue(self, source: CFANode) -> CFANode:
+    def _add_continue(self, source: CFANode) -> CFANode:
         continue_break: Tuple[CFANode, CFANode] = self._continue_break_stack.pop()
         self._continue_break_stack.append(continue_break)
         return self._branch(source, continue_break[0], "C")
 
-    def _break(self, source: CFANode) -> CFANode:
+    def _add_break(self, source: CFANode) -> CFANode:
         continue_break: Tuple[CFANode, CFANode] = self._continue_break_stack.pop()
         self._continue_break_stack.append(continue_break)
         return self._branch(source, continue_break[1], "B")
@@ -93,6 +100,8 @@ class CCFAFactory(CFAFactory):
         if s is None:
             self._current = d
             return d
+        # if is possible for the TSNode to be None when we
+        #   want to start a branch from another CFANode.
         elif s.node is None:
             s.node = d.node
             return s
@@ -213,25 +222,28 @@ class CCFAFactory(CFAFactory):
         body: Node = node.child_by_field(CField.BODY)
         # A child will always be a "case_statement"
         for case_stmt in body.named_children:
+            is_default_case = self._syntax.is_default_switch_case(case_stmt)
+            is_empty_case = self._syntax.is_empty_switch_case(case_stmt)
             value: Node = case_stmt.child_by_field(CField.VALUE)
+
             v: CFANode = CFANode(value)
             c: CFANode = CFANode(None)
 
             # Case 1: No body "case 1:"
-            if case_stmt.named_child_count == 1 and value is not None:
+            if is_empty_case and not is_default_case:
                 c = self._branch(p, v, "C")
             # Case 2: Has body "case 1: a=1;" or "case 1: a=1; a=2" or "case 1: { a=1; }"
-            elif case_stmt.named_child_count > 1 and value is not None:
+            elif not is_empty_case and not is_default_case:
                 c = self._branch(p, v, "C")
                 # We have to visit all siblings because it might not be a "compound_statement"
                 #   and just a sequence of expression statements.
-                c = self._accept_siblings(value)
+                c = self._accept_siblings(v.node)
             # Case 3: Default which has no value, but has a body "default: a=1;"
-            elif case_stmt.named_child_count >= 1 and value is None:
+            elif not is_empty_case and is_default_case:
                 c = self._branch(p, v, "D")
-                c = self._accept(case_stmt.named_children[0])
+                c = self._accept_children(case_stmt)
             # Case 4: Default but without a body "default:"
-            elif case_stmt.named_child_count == 0 and value is None:
+            elif is_empty_case and is_default_case:
                 v = CFANode(case_stmt)
                 c = self._branch(p, v, "D")
 
@@ -309,7 +321,7 @@ class CCFAFactory(CFAFactory):
         has_cond: bool = c.node is not None
         has_update: bool = u.node is not None
 
-        body: Node = node.named_children[-1]
+        body: Node = self._syntax.get_for_loop_body(node)
 
         self._continue_break_stack.append((u, f))
 
@@ -360,14 +372,14 @@ class CCFAFactory(CFAFactory):
     def _visit_break_statement(self, node: Node) -> CFANode:
         break_node: CFANode = CFANode(node)
         current: CFANode = self._current
-        self._break(break_node)
+        self._add_break(break_node)
         self._set_active(current)
         return self._next(break_node)
 
     def _visit_continue_statement(self, node: Node) -> CFANode:
         continue_node: CFANode = CFANode(node)
         current: CFANode = self._current
-        self._continue(continue_node)
+        self._add_continue(continue_node)
         self._set_active(current)
         return self._next(continue_node)
 

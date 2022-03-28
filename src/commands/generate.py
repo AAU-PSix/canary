@@ -17,6 +17,7 @@ from utilities import (
 )
 from tree_infestator import (
     TreeInfestator,
+    CTreeInfestator,
     CanaryFactory,
     CCanaryFactory
 )
@@ -91,7 +92,7 @@ def generate(
     inf_cfa_graph.save(directory=f'{base}/')
     # Step 2.4: Infest
     canary_factory: CanaryFactory = CCanaryFactory()
-    infestator: TreeInfestator = TreeInfestator(inf_parser, canary_factory)
+    infestator: TreeInfestator = CTreeInfestator(inf_parser, canary_factory)
     inf_int_tree: Tree = infestator.infect(inf_tree, inf_cfa)
     # Step 2.5: Write the infestation
     new_inf_original_file: FileHandler = open(filepath, "w+")

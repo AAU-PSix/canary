@@ -22,7 +22,7 @@ class TestCSyntax2(TestCase):
             .named_children[0] \
             .children[1]
 
-        actual = self._syntax.is_field(
+        actual = self._syntax.is_type(
             node_plain_assignment.type,
             CNodeType.PLAIN_ASSIGNMENT
         )
@@ -36,7 +36,7 @@ class TestCSyntax2(TestCase):
             .named_children[0] \
             .children[1]
 
-        actual = self._syntax.is_field(
+        actual = self._syntax.is_type(
             node_plain_assignment.type,
             CNodeType.LOGICAL_AND
         )
@@ -50,7 +50,7 @@ class TestCSyntax2(TestCase):
             .named_children[0] \
             .children[1]
 
-        actual = self._syntax.in_fields(
+        actual = self._syntax.in_types(
             node_plain_assignment.type,
             [ CNodeType.PLAIN_ASSIGNMENT, CNodeType.LOGICAL_AND]
         )
@@ -64,7 +64,7 @@ class TestCSyntax2(TestCase):
             .named_children[0] \
             .children[1]
 
-        actual = self._syntax.in_fields(
+        actual = self._syntax.in_types(
             node_plain_assignment.type,
             [ CNodeType.LOGICAL_AND, CNodeType.LOGICAL_OR ]
         )

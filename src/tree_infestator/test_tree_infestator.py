@@ -1,23 +1,25 @@
 import unittest
-
+from src.tree_infestator.c_canary_factory import CCanaryFactory
 from ts import (
     LanguageLibrary,
     Tree,
     Node,
-    Parser
+    Parser,
+    CSyntax,
 )
 from cfa import (
     CFA,
     CCFAFactory
 )
-from . import TreeInfestator, SimpleTestCanaryFactory
+from . import CTreeInfestator
 
 class TestTreeInfestator(unittest.TestCase):
     def setUp(self) -> None:
         LanguageLibrary.build()
         self._language = LanguageLibrary.c()
         self._parser = Parser.create_with_language(self._language)
-        self._infestator = TreeInfestator(self._parser, SimpleTestCanaryFactory())
+        self._infestator = CTreeInfestator(self._parser, CCanaryFactory())
+        self._syntax = CSyntax()
 
     def test_is_condition_of_if_true(self) -> None:
         program: str = "if(a) { } else { }"
@@ -26,7 +28,7 @@ class TestTreeInfestator(unittest.TestCase):
         condition: Node = if_node.child_by_field_name("condition")
         expected: bool = True
 
-        actual = self._infestator.is_condition_of_if(condition)
+        actual = self._syntax.is_condition_of_if(condition)
 
         self.assertEqual(if_node.type, "if_statement")
         self.assertEqual(condition.type, "parenthesized_expression")
@@ -39,7 +41,7 @@ class TestTreeInfestator(unittest.TestCase):
         alternative: Node = if_node.child_by_field_name("alternative")
         expected: bool = False
 
-        actual = self._infestator.is_condition_of_if(alternative)
+        actual = self._syntax.is_condition_of_if(alternative)
 
         self.assertEqual(if_node.type, "if_statement")
         self.assertEqual(alternative.type, "compound_statement")
@@ -52,7 +54,7 @@ class TestTreeInfestator(unittest.TestCase):
         condition: Node = while_node.child_by_field_name("condition")
         expected: bool = True
 
-        actual = self._infestator.is_condition_of_while(condition)
+        actual = self._syntax.is_condition_of_while(condition)
 
         self.assertEqual(while_node.type, "while_statement")
         self.assertEqual(condition.type, "parenthesized_expression")
@@ -65,7 +67,7 @@ class TestTreeInfestator(unittest.TestCase):
         not_condition: Node = while_node
         expected: bool = False
 
-        actual = self._infestator.is_condition_of_while(not_condition)
+        actual = self._syntax.is_condition_of_while(not_condition)
 
         self.assertEqual(while_node.type, "while_statement")
         self.assertEqual(not_condition.type, "while_statement")
@@ -87,7 +89,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
-        expected = "while(a) {TWEET(); }"
+        expected = "while(a) {CANARY_TWEET_LOCATION(l); }"
         actual = self._infestator.infect(tree, cfa).text
         nests = self._infestator.nests(cfa)
 
@@ -110,7 +112,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
-        expected = "if(a) {TWEET(); }"
+        expected = "if(a) {CANARY_TWEET_LOCATION(l); }"
         actual = self._infestator.infect(tree, cfa).text
 
         self.assertEqual(expected, actual)
@@ -120,7 +122,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
-        expected = "if(a) {TWEET(); } else {TWEET(); }"
+        expected = "if(a) {CANARY_TWEET_LOCATION(l); } else {CANARY_TWEET_LOCATION(l); }"
         actual = self._infestator.infect(tree, cfa).text
 
         self.assertEqual(expected, actual)
@@ -130,7 +132,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
-        expected = "if(a) {TWEET(); } else if(a) {TWEET(); }"
+        expected = "if(a) {CANARY_TWEET_LOCATION(l); } else if(a) {CANARY_TWEET_LOCATION(l); }"
         actual = self._infestator.infect(tree, cfa).text
 
         self.assertEqual(expected, actual)
@@ -140,7 +142,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
-        expected = "if(a) {TWEET(); } else if(a) {TWEET(); } else {TWEET(); }"
+        expected = "if(a) {CANARY_TWEET_LOCATION(l); } else if(a) {CANARY_TWEET_LOCATION(l); } else {CANARY_TWEET_LOCATION(l); }"
         actual = self._infestator.infect(tree, cfa).text
 
         self.assertEqual(expected, actual)
@@ -150,7 +152,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
-        expected = "if(a) {TWEET(); if(a) {TWEET(); } }"
+        expected = "if(a) {CANARY_TWEET_LOCATION(l); if(a) {CANARY_TWEET_LOCATION(l); } }"
         actual = self._infestator.infect(tree, cfa).text
 
         self.assertEqual(expected, actual)
@@ -160,7 +162,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
         actual: Tree = self._infestator.infect(tree, cfa)
-        self.assertEqual(actual.text, "if(a) {TWEET(); } else if(a) {TWEET(); } else if(a) {TWEET(); }")
+        self.assertEqual(actual.text, "if(a) {CANARY_TWEET_LOCATION(l); } else if(a) {CANARY_TWEET_LOCATION(l); } else if(a) {CANARY_TWEET_LOCATION(l); }")
 
     def test_can_add_tweet_for_if_statement(self):
         program: str = "if(a) { }"
@@ -169,7 +171,7 @@ class TestTreeInfestator(unittest.TestCase):
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         actual = self._infestator.infect(tree, cfa).text
-        expected = "if(a) {TWEET(); }"
+        expected = "if(a) {CANARY_TWEET_LOCATION(l); }"
         self.assertEqual(expected, actual)
 
     def test_can_add_tweet_for_if_else_statement(self):
@@ -179,7 +181,7 @@ class TestTreeInfestator(unittest.TestCase):
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         actual = self._infestator.infect(tree, cfa).text
-        expected = "if(a) {TWEET(); } else {TWEET(); }"
+        expected = "if(a) {CANARY_TWEET_LOCATION(l); } else {CANARY_TWEET_LOCATION(l); }"
         self.assertEqual(expected, actual)
 
     def test_can_add_tweet_for_if_elseif_statement(self):
@@ -189,7 +191,7 @@ class TestTreeInfestator(unittest.TestCase):
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         actual = self._infestator.infect(tree, cfa).text
-        expected = "if(a) {TWEET(); } else if(a) {TWEET(); }"
+        expected = "if(a) {CANARY_TWEET_LOCATION(l); } else if(a) {CANARY_TWEET_LOCATION(l); }"
         self.assertEqual(expected, actual)
 
     def test_can_add_tweet_for_if_elseif_else_statement(self):
@@ -199,7 +201,7 @@ class TestTreeInfestator(unittest.TestCase):
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         actual = self._infestator.infect(tree, cfa).text
-        expected = "if(a) {TWEET(); } else if(a) {TWEET(); } else {TWEET(); }"
+        expected = "if(a) {CANARY_TWEET_LOCATION(l); } else if(a) {CANARY_TWEET_LOCATION(l); } else {CANARY_TWEET_LOCATION(l); }"
         self.assertEqual(expected, actual)
 
     def test_can_add_tweet_for_if_if_statement(self):
@@ -209,7 +211,7 @@ class TestTreeInfestator(unittest.TestCase):
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         actual = self._infestator.infect(tree, cfa).text
-        expected = "if(a) {TWEET(); if(a) {TWEET(); } }"
+        expected = "if(a) {CANARY_TWEET_LOCATION(l); if(a) {CANARY_TWEET_LOCATION(l); } }"
         self.assertEqual(expected, actual)
 
     def test_can_add_tweet_for_if_if_else_statement(self):
@@ -219,7 +221,7 @@ class TestTreeInfestator(unittest.TestCase):
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         actual = self._infestator.infect(tree, cfa).text
-        expected = "if(a) {TWEET(); if(a) {TWEET(); } else {TWEET(); } }"
+        expected = "if(a) {CANARY_TWEET_LOCATION(l); if(a) {CANARY_TWEET_LOCATION(l); } else {CANARY_TWEET_LOCATION(l); } }"
         self.assertEqual(expected, actual)
 
     def test_can_add_tweet_for_if_if_elseif_statement(self):
@@ -229,7 +231,7 @@ class TestTreeInfestator(unittest.TestCase):
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         actual = self._infestator.infect(tree, cfa).text
-        expected = "if(a) {TWEET(); if(a) {TWEET(); } else if(a) {TWEET(); } }"
+        expected = "if(a) {CANARY_TWEET_LOCATION(l); if(a) {CANARY_TWEET_LOCATION(l); } else if(a) {CANARY_TWEET_LOCATION(l); } }"
         self.assertEqual(expected, actual)
 
     def test_can_add_tweet_for_if_if_elseif_else_statement(self):
@@ -239,7 +241,7 @@ class TestTreeInfestator(unittest.TestCase):
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         actual = self._infestator.infect(tree, cfa)
-        expected = "if(a) {TWEET(); if(a) {TWEET(); } else if(a) {TWEET(); } else {TWEET(); } }"
+        expected = "if(a) {CANARY_TWEET_LOCATION(l); if(a) {CANARY_TWEET_LOCATION(l); } else if(a) {CANARY_TWEET_LOCATION(l); } else {CANARY_TWEET_LOCATION(l); } }"
         self.assertEqual(expected, actual.text)
 
     def test_is_condition_of_do_while_true(self) -> None:
@@ -249,7 +251,7 @@ class TestTreeInfestator(unittest.TestCase):
         condition: Node = do_node.child_by_field_name("condition")
         expected: bool = True
 
-        actual = self._infestator.is_condition_of_do_while(condition)
+        actual = self._syntax.is_condition_of_do_while(condition)
 
         self.assertEqual(do_node.type, "do_statement")
         self.assertEqual(condition.type, "parenthesized_expression")
@@ -262,7 +264,7 @@ class TestTreeInfestator(unittest.TestCase):
         not_condition: Node = do_node
         expected: bool = False
 
-        actual = self._infestator.is_condition_of_do_while(not_condition)
+        actual = self._syntax.is_condition_of_do_while(not_condition)
 
         self.assertEqual(do_node.type, "do_statement")
         self.assertEqual(not_condition.type, "do_statement")
@@ -284,7 +286,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
-        expected =  "do {TWEET(); } while(a);"
+        expected =  "do {CANARY_TWEET_LOCATION(l); } while(a);"
         actual = self._infestator.infect(tree, cfa).text
         nests = self._infestator.nests(cfa)
 
@@ -298,7 +300,7 @@ class TestTreeInfestator(unittest.TestCase):
         body: Node = for_node.named_children[-1]
         expected: bool = True
 
-        actual = self._infestator.is_body_of_for_loop(body)
+        actual = self._syntax.is_body_of_for_loop(body)
 
         self.assertEqual(for_node.type, "for_statement")
         self.assertEqual(body.type, "compound_statement")
@@ -311,7 +313,7 @@ class TestTreeInfestator(unittest.TestCase):
         not_body: Node = for_node
         expected: bool = False
 
-        actual = self._infestator.is_body_of_for_loop(not_body)
+        actual = self._syntax.is_body_of_for_loop(not_body)
 
         self.assertEqual(for_node.type, "for_statement")
         self.assertEqual(not_body.type, "for_statement")
@@ -333,7 +335,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
-        expected =  "for (;;) {TWEET(); }"
+        expected =  "for (;;) {CANARY_TWEET_LOCATION(l); }"
         actual = self._infestator.infect(tree, cfa).text
         nests = self._infestator.nests(cfa)
 
@@ -353,7 +355,7 @@ class TestTreeInfestator(unittest.TestCase):
         switch_condition: Node = switch_node.child_by_field_name("condition")
         expected: bool = True
 
-        actual = self._infestator.is_condition_of_switch(switch_condition)
+        actual = self._syntax.is_condition_of_switch(switch_condition)
 
         self.assertEqual(switch_node.type, "switch_statement")
         self.assertEqual(body.type, "compound_statement")
@@ -373,7 +375,7 @@ class TestTreeInfestator(unittest.TestCase):
         not_case_value: Node = body
         expected: bool = False
 
-        actual = self._infestator.is_condition_of_switch(not_case_value)
+        actual = self._syntax.is_condition_of_switch(not_case_value)
 
         self.assertEqual(switch_node.type, "switch_statement")
         self.assertEqual(body.type, "compound_statement")
@@ -392,7 +394,7 @@ class TestTreeInfestator(unittest.TestCase):
         not_case: Node = body
         expected: bool = False
 
-        actual = self._infestator.is_condition_of_switch(not_case)
+        actual = self._syntax.is_condition_of_switch(not_case)
 
         self.assertEqual(switch_node.type, "switch_statement")
         self.assertEqual(body.type, "compound_statement")
@@ -428,8 +430,8 @@ class TestTreeInfestator(unittest.TestCase):
 
         expected =  """
             switch(a) {
-                case 3:TWEET(); { int a=3;TWEET(); }
-                default:TWEET();
+                case 3:CANARY_TWEET_LOCATION(l); { int a=3;CANARY_TWEET_LOCATION(l); }
+                default:CANARY_TWEET_LOCATION(l);
             }
         """
         actual = self._infestator.infect(tree, cfa).text
@@ -453,7 +455,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
         
-        expected: str = "if (a) {TWEET();a=2;TWEET();}"
+        expected: str = "if (a) {CANARY_TWEET_LOCATION(l);a=2;CANARY_TWEET_LOCATION(l);}"
         actual = self._infestator.infect(tree, cfa).text
 
         self.assertEqual(expected, actual)
@@ -463,7 +465,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA = CCFAFactory(tree).create(tree.root_node)
         
-        expected: str = "if (a) {TWEET();a=2;TWEET();} else {TWEET();a=3;TWEET();}"
+        expected: str = "if (a) {CANARY_TWEET_LOCATION(l);a=2;CANARY_TWEET_LOCATION(l);} else {CANARY_TWEET_LOCATION(l);a=3;CANARY_TWEET_LOCATION(l);}"
         actual = self._infestator.infect(tree, cfa).text
 
         self.assertEqual(expected, actual)

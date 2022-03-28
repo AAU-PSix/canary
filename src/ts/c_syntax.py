@@ -1,4 +1,5 @@
-from typing import Iterable
+from fileinput import isfirstline
+from typing import Iterable, List
 from .syntax import Field, NodeType, Syntax
 from .node import Node
 
@@ -154,6 +155,16 @@ class CSyntax(Syntax):
         ]
 
     @property
+    def structures(self) -> Iterable[CNodeType]:
+        return [
+            CNodeType.IF_STATEMENT,
+            CNodeType.WHILE_STATEMENT,
+            CNodeType.DO_STATEMENT,
+            CNodeType.FOR_STATEMENT,
+            CNodeType.SWITCH_STATEMENT,
+        ]
+
+    @property
     def assignment_query(self) -> str:
         return "((assignment_expression) @exp)"
 
@@ -188,6 +199,93 @@ class CSyntax(Syntax):
 
     def get_if_declaration(self, node: Node) -> Node:
         return node
+
+    def get_for_loop_body(self, node: Node) -> Node:
+        return node.named_children[-1]
+
+    def get_immediate_structure_descendent(self, node: Node) -> Node:
+        if node is None: return None
+        types: List[str] = [ nodeType.value for nodeType in self.structures ]
+        return node.get_immediate_descendent_of_types(types)
+
+    def get_structure_descendent(self, node: Node) -> Node:
+        if node is None: return None
+        types: List[str] = [ nodeType.value for nodeType in self.structures ]
+        return node.get_descendent_of_types(types)
+
+    def is_immediate_structure_descendent(self, node: Node, type: CNodeType) -> bool:
+        if node is None: return False
+        immediate_structure: Node = self.get_immediate_structure_descendent(node)
+        if immediate_structure is None: return False
+        immediate_type: CNodeType = self.node_field(immediate_structure.type)
+        return type is immediate_type
+
+    def is_structure_descendent(self, node: Node, type: CNodeType) -> bool:
+        if node is None: return False
+        immediate_structure: Node = self.get_structure_descendent(node)
+        if immediate_structure is None: return False
+        immediate_type: CNodeType = self.node_field(immediate_structure.type)
+        return type is immediate_type
+
+    def is_default_switch_case(self, case: Node) -> bool:
+        if case is None: return False
+        return case.child_by_field(CField.VALUE) is None
+
+    def is_empty_switch_case(self, case: Node) -> bool:
+        if case is None: return False
+        if self.is_default_switch_case(case):
+            return case.named_child_count < 1
+        return case.named_child_count == 1
+
+    def is_field_of_type(self, node: Node, structure: CNodeType, field: CField) -> bool:
+        if node is None: return False
+        structure_node: Node = self.get_structure_descendent(node)
+        if structure_node is None or not structure_node.is_type(structure):
+            return False
+        field_node: Node = structure_node.child_by_field(field)
+        return field is not None and node == field_node
+
+    def is_condition_of_if(self, node: Node) -> bool:
+        return self.is_field_of_type(
+            node, CNodeType.IF_STATEMENT, CField.CONDITION
+        )
+
+    def is_condition_of_while(self, node: Node) -> bool:
+        return self.is_field_of_type(
+            node, CNodeType.WHILE_STATEMENT, CField.CONDITION
+        )
+
+    def is_condition_of_do_while(self, node: Node) -> bool:
+        return self.is_field_of_type(
+            node, CNodeType.DO_STATEMENT, CField.CONDITION
+        )
+
+    def is_body_of_for_loop(self, node: Node) -> bool:
+        # A for-loop does not have the "body" as a field.
+        #   for this reason we just have to check if the for-loop
+        #   is the first descendent of the structure.
+        for_statement: Node = self.get_structure_descendent(node)
+        if for_statement is None or not for_statement.is_type(CNodeType.FOR_STATEMENT):
+            return False
+        return for_statement.named_children[-1] == node
+
+    def is_condition_of_switch(self, node: Node) -> bool:
+        return self.is_field_of_type(
+            node, CNodeType.SWITCH_STATEMENT, CField.CONDITION
+        )
+
+    def is_else_if(self, node: Node) -> bool:
+        alternative: Node = node.child_by_field(CField.ALTERNATIVE)
+        return alternative is not None and alternative.is_type(CNodeType.IF_STATEMENT)
+
+    def is_labeled_statement(self, node: Node) -> bool:
+        return node is not None and node.is_type(CNodeType.LABELED_STATEMENT)
+
+    def is_expression_statement(self, node: Node) -> bool:
+        return node is not None and node.is_type(CNodeType.EXPRESSION_STATEMENT)
+
+    def is_declaration(self, node: Node) -> bool:
+        return node is not None and node.is_type(CNodeType.DECLARATION)
 
     def node_field(self, node_type: str) -> CNodeType:
         return CNodeType(node_type)
