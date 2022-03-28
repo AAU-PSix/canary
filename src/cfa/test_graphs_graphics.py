@@ -1,10 +1,10 @@
-import unittest
+from unittest import TestCase
 from typing import List, Tuple
-
 from graphviz import Digraph
-
-from cfa import CFA
-from tree_infestator import TreeInfestator, SimpleTestCanaryFactory
+from tree_infestator import (
+    TreeInfestator,
+    SimpleTestCanaryFactory
+)
 from ts import (
     LanguageLibrary,
     Parser,
@@ -12,9 +12,13 @@ from ts import (
     Tree,
     Node,
 )
-from . import TreeCFAVisitor
+from . import (
+    CFA,
+    CFAFactory,
+    CCFAFactory
+)
 
-class TestGraphsGraphics(unittest.TestCase):
+class TestGraphsGraphics(TestCase):
     def setUp(self) -> None:
         LanguageLibrary.build()
         self._language = LanguageLibrary.c()
@@ -757,13 +761,13 @@ class TestGraphsGraphics(unittest.TestCase):
 
         def draw_normal_cfa(name: str, program: str):
             tree: Tree = self._parser.parse(program)
-            visitor: TreeCFAVisitor = TreeCFAVisitor(tree)
+            visitor: CFAFactory = CCFAFactory(tree)
 
             root: Node = tree.root_node
             if root.named_children[0].type == "function_definition":
                 root = root.named_children[0].child_by_field_name("body")
 
-            cfa: CFA = visitor.create(root, False)
+            cfa: CFA = visitor.create(root)
             dot: Digraph = cfa.draw(tree, name)
             dot.save(directory="graphs")
             draw_infected_cfa(name, tree, cfa)
@@ -781,8 +785,8 @@ class TestGraphsGraphics(unittest.TestCase):
                     root = root.named_children[0].child_by_field_name("body")
 
 
-                infested_visitor: TreeCFAVisitor = TreeCFAVisitor(infested_tree)
-                infested_cfa: CFA = infested_visitor.create(root, False)
+                infested_visitor: CFAFactory = CCFAFactory(infested_tree)
+                infested_cfa: CFA = infested_visitor.create(root)
                 infested_dot: Digraph = infested_cfa.draw(infested_tree, f'{name}_infested')
                 infested_dot.save(directory="graphs")
             except:

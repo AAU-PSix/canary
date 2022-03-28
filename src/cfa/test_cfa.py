@@ -1,7 +1,7 @@
-import unittest
+from unittest import TestCase
 from . import *
 
-class TestCFA(unittest.TestCase):
+class TestCFA(TestCase):
     def test_outgoing(self) -> None:
         root: CFANode = CFANode(None)
         node_1: CFANode = CFANode(None)

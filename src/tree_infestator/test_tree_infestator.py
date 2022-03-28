@@ -8,7 +8,7 @@ from ts import (
 )
 from cfa import (
     CFA,
-    TreeCFAVisitor
+    CCFAFactory
 )
 from . import TreeInfestator, SimpleTestCanaryFactory
 
@@ -85,7 +85,7 @@ class TestTreeInfestator(unittest.TestCase):
     def test_infect_while(self) -> None:
         program: str = "while(a) { }"
         tree: Tree = self._parser.parse(program)
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         expected = "while(a) {TWEET(); }"
         actual = self._infestator.infect(tree, cfa).text
@@ -97,7 +97,7 @@ class TestTreeInfestator(unittest.TestCase):
     def test_nests_if_if(self) -> None:
         program: str = "if(a) { if(a) { } }"
         tree: Tree = self._parser.parse(program)
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         nests = self._infestator.nests(cfa)
 
@@ -108,7 +108,7 @@ class TestTreeInfestator(unittest.TestCase):
     def test_infect_if(self) -> None:
         program: str = "if(a) { }"
         tree: Tree = self._parser.parse(program)
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         expected = "if(a) {TWEET(); }"
         actual = self._infestator.infect(tree, cfa).text
@@ -118,7 +118,7 @@ class TestTreeInfestator(unittest.TestCase):
     def test_infect_if_else(self) -> None:
         program: str = "if(a) { } else { }"
         tree: Tree = self._parser.parse(program)
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         expected = "if(a) {TWEET(); } else {TWEET(); }"
         actual = self._infestator.infect(tree, cfa).text
@@ -128,7 +128,7 @@ class TestTreeInfestator(unittest.TestCase):
     def test_infect_if_elseif(self) -> None:
         program: str = "if(a) { } else if(a) { }"
         tree: Tree = self._parser.parse(program)
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         expected = "if(a) {TWEET(); } else if(a) {TWEET(); }"
         actual = self._infestator.infect(tree, cfa).text
@@ -138,7 +138,7 @@ class TestTreeInfestator(unittest.TestCase):
     def test_infect_if_elseif_else(self) -> None:
         program: str = "if(a) { } else if(a) { } else { }"
         tree: Tree = self._parser.parse(program)
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         expected = "if(a) {TWEET(); } else if(a) {TWEET(); } else {TWEET(); }"
         actual = self._infestator.infect(tree, cfa).text
@@ -148,7 +148,7 @@ class TestTreeInfestator(unittest.TestCase):
     def test_infect_if_if(self) -> None:
         program: str = "if(a) { if(a) { } }"
         tree: Tree = self._parser.parse(program)
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         expected = "if(a) {TWEET(); if(a) {TWEET(); } }"
         actual = self._infestator.infect(tree, cfa).text
@@ -158,7 +158,7 @@ class TestTreeInfestator(unittest.TestCase):
     def test_infect_if_elseif_elseif(self) -> None:
         program: str = "if(a) { } else if(a) { } else if(a) { }"
         tree: Tree = self._parser.parse(program)
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
         actual: Tree = self._infestator.infect(tree, cfa)
         self.assertEqual(actual.text, "if(a) {TWEET(); } else if(a) {TWEET(); } else if(a) {TWEET(); }")
 
@@ -166,7 +166,7 @@ class TestTreeInfestator(unittest.TestCase):
         program: str = "if(a) { }"
         tree: Tree = self._parser.parse(program)
 
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         actual = self._infestator.infect(tree, cfa).text
         expected = "if(a) {TWEET(); }"
@@ -176,7 +176,7 @@ class TestTreeInfestator(unittest.TestCase):
         program: str = "if(a) { } else { }"
         tree: Tree = self._parser.parse(program)
 
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         actual = self._infestator.infect(tree, cfa).text
         expected = "if(a) {TWEET(); } else {TWEET(); }"
@@ -186,7 +186,7 @@ class TestTreeInfestator(unittest.TestCase):
         program: str = "if(a) { } else if(a) { }"
         tree: Tree = self._parser.parse(program)
 
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         actual = self._infestator.infect(tree, cfa).text
         expected = "if(a) {TWEET(); } else if(a) {TWEET(); }"
@@ -196,7 +196,7 @@ class TestTreeInfestator(unittest.TestCase):
         program: str = "if(a) { } else if(a) { } else { }"
         tree: Tree = self._parser.parse(program)
 
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         actual = self._infestator.infect(tree, cfa).text
         expected = "if(a) {TWEET(); } else if(a) {TWEET(); } else {TWEET(); }"
@@ -206,7 +206,7 @@ class TestTreeInfestator(unittest.TestCase):
         program: str = "if(a) { if(a) { } }"
         tree: Tree = self._parser.parse(program)
 
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         actual = self._infestator.infect(tree, cfa).text
         expected = "if(a) {TWEET(); if(a) {TWEET(); } }"
@@ -216,7 +216,7 @@ class TestTreeInfestator(unittest.TestCase):
         program: str = "if(a) { if(a) { } else { } }"
         tree: Tree = self._parser.parse(program)
 
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         actual = self._infestator.infect(tree, cfa).text
         expected = "if(a) {TWEET(); if(a) {TWEET(); } else {TWEET(); } }"
@@ -226,7 +226,7 @@ class TestTreeInfestator(unittest.TestCase):
         program: str = "if(a) { if(a) { } else if(a) { } }"
         tree: Tree = self._parser.parse(program)
 
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         actual = self._infestator.infect(tree, cfa).text
         expected = "if(a) {TWEET(); if(a) {TWEET(); } else if(a) {TWEET(); } }"
@@ -236,7 +236,7 @@ class TestTreeInfestator(unittest.TestCase):
         program: str = "if(a) { if(a) { } else if(a) { } else { } }"
         tree: Tree = self._parser.parse(program)
 
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         actual = self._infestator.infect(tree, cfa)
         expected = "if(a) {TWEET(); if(a) {TWEET(); } else if(a) {TWEET(); } else {TWEET(); } }"
@@ -282,7 +282,7 @@ class TestTreeInfestator(unittest.TestCase):
     def test_infect_do_while(self) -> None:
         program: str = "do { } while(a);"
         tree: Tree = self._parser.parse(program)
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         expected =  "do {TWEET(); } while(a);"
         actual = self._infestator.infect(tree, cfa).text
@@ -331,7 +331,7 @@ class TestTreeInfestator(unittest.TestCase):
     def test_infect_for_statement(self) -> None:
         program: str = "for (;;) { }"
         tree: Tree = self._parser.parse(program)
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         expected =  "for (;;) {TWEET(); }"
         actual = self._infestator.infect(tree, cfa).text
@@ -424,7 +424,7 @@ class TestTreeInfestator(unittest.TestCase):
             }
         """
         tree: Tree = self._parser.parse(program)
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
 
         expected =  """
             switch(a) {
@@ -451,7 +451,7 @@ class TestTreeInfestator(unittest.TestCase):
     def test_infect_if_consequence_no_compund_statement(self) -> None:
         program: str = "if (a) a=2;"
         tree: Tree = self._parser.parse(program)
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
         
         expected: str = "if (a) {TWEET();a=2;TWEET();}"
         actual = self._infestator.infect(tree, cfa).text
@@ -461,7 +461,7 @@ class TestTreeInfestator(unittest.TestCase):
     def test_infect_if_alternative_no_compund_statement(self) -> None:
         program: str = "if (a) a=2; else a=3;"
         tree: Tree = self._parser.parse(program)
-        cfa: CFA = TreeCFAVisitor(tree).create(tree.root_node, False)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
         
         expected: str = "if (a) {TWEET();a=2;TWEET();} else {TWEET();a=3;TWEET();}"
         actual = self._infestator.infect(tree, cfa).text

@@ -20,7 +20,7 @@ from tree_infestator import (
     CanaryFactory,
     CCanaryFactory
 )
-from cfa import TreeCFAVisitor, CFA
+from cfa import CFAFactory, CFA
 import subprocess
 import os
 
@@ -80,7 +80,7 @@ def generate(
     inf_parser: Parser = Parser.c()
     inf_tree: Tree = inf_parser.parse(inf_original_contents)
     # Step 2.3: Create CFA for the FUT
-    inf_cfa_factory: TreeCFAVisitor = TreeCFAVisitor(inf_tree)
+    inf_cfa_factory: CFAFactory = CFAFactory(inf_tree)
     fut_body: Node = fut_root.child_by_field_name("body")
     inf_cfa: CFA = inf_cfa_factory.create(fut_body, False)
     inf_cfa_graph: Digraph = inf_cfa.draw(inf_tree, "cfa_fut_org")
