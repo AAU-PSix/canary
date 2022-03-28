@@ -1,5 +1,5 @@
+from typing import List, Tuple
 import unittest
-from src.tree_infestator.c_canary_factory import CCanaryFactory
 from ts import (
     LanguageLibrary,
     Tree,
@@ -11,7 +11,7 @@ from cfa import (
     CFA,
     CCFAFactory
 )
-from . import CTreeInfestator
+from . import CTreeInfestator, CCanaryFactory, SimpleTestCanaryFactory
 
 class TestTreeInfestator(unittest.TestCase):
     def setUp(self) -> None:
@@ -469,3 +469,104 @@ class TestTreeInfestator(unittest.TestCase):
         actual = self._infestator.infect(tree, cfa).text
 
         self.assertEqual(expected, actual)
+    
+    def test_infect_bunch(self) -> None:
+        programs: List[Tuple[str, str, str]] = [
+            ("if_1", 
+            "a=1; if(a==2) { }",
+            "a=1;TWEET(); if(a==2) {TWEET(); }"),
+            ("if_2", 
+            "if(a==2) { } else { }",
+            "if(a==2) {TWEET(); } else {TWEET(); }"),
+            ("if_3", 
+            "a=1; if(a==2) { } else { } a=2;",
+            "a=1;TWEET(); if(a==2) {TWEET(); } else {TWEET(); } a=2;TWEET();"),
+            ("if_4", 
+            "a=1; if(a==2) { } else if(a==3) { } else { }",
+            "a=1;TWEET(); if(a==2) {TWEET(); } else if(a==3) {TWEET(); } else {TWEET(); }"),
+            ("if_5", 
+            "a=1; if(a==2) { } else if(a==3) { } a=2;",
+            "a=1;TWEET(); if(a==2) {TWEET(); } else if(a==3) {TWEET(); } a=2;TWEET();"),
+            ("if_6", 
+            "a=1; if(a==1) { a=2; }",
+            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); }"),
+            ("if_7", 
+            "a=1; if(a==1) { a=2; } a=3;",
+            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } a=3;TWEET();"),
+            ("if_8", 
+            "a=1; if(a==1) { a=2; } else { a=3; }",
+            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } else {TWEET(); a=3;TWEET(); }"),
+            ("if_9", 
+            "a=1; if(a==1) { a=2; } else { a=3; } a=4;",
+            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } else {TWEET(); a=3;TWEET(); } a=4;TWEET();"),
+            ("if_10",
+            "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } a=4;",
+            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } else if(a==2) {TWEET(); a=3;TWEET(); } a=4;TWEET();"),
+            ("if_11",
+            "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } a=4;",
+            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } else if(a==2) {TWEET(); a=3;TWEET(); } a=4;TWEET();"),
+            ("if_12",
+            "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } else { a=4; } a=5; a=6;",
+            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } else if(a==2) {TWEET(); a=3;TWEET(); } else {TWEET(); a=4;TWEET(); } a=5;TWEET(); a=6;TWEET();"),
+            ("if_13",
+            "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } else if(a==3) { a=4; } a=5;",
+            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } else if(a==2) {TWEET(); a=3;TWEET(); } else if(a==3) {TWEET(); a=4;TWEET(); } a=5;TWEET();"),
+            ("if_14",
+            "a=1; if(a==1) { a=2; } else if(a==2) { } else if(a==3) { a=4; } else if(a==4) { a=5; } else { a=6; } a=7;",
+            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } else if(a==2) {TWEET(); } else if(a==3) {TWEET(); a=4;TWEET(); } else if(a==4) {TWEET(); a=5;TWEET(); } else {TWEET(); a=6;TWEET(); } a=7;TWEET();"),
+            ("if_15",
+            "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } else if(a==3) { a=4; } else if(a==4) { a=5; } else { a=6; } a=7;",
+            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } else if(a==2) {TWEET(); a=3;TWEET(); } else if(a==3) {TWEET(); a=4;TWEET(); } else if(a==4) {TWEET(); a=5;TWEET(); } else {TWEET(); a=6;TWEET(); } a=7;TWEET();"),
+            ("if_16",
+            "a=1; if(a==1) { a=2; } a=3; if(a==2) { a=2; } a=3; if(a==3) { a=2; } a=3;",
+            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } a=3;TWEET(); if(a==2) {TWEET(); a=2;TWEET(); } a=3;TWEET(); if(a==3) {TWEET(); a=2;TWEET(); } a=3;TWEET();"),
+            ("if_17",
+            "a=1; if((((a==1)))) { a=2; }",
+            "a=1;TWEET(); if((((a==1)))) {TWEET(); a=2;TWEET(); }"),
+            ("if_18",
+            "a=1; if(a==1) { } a=3;",
+            "a=1;TWEET(); if(a==1) {TWEET(); } a=3;TWEET();"),
+            ("if_18",
+            "a=1; if(a==1) { a=2; } else { } a=3;",
+            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } else {TWEET(); } a=3;TWEET();"),
+            ("if_19",
+            "if(a==1) { } if(a==3) { b=2; }",
+            "if(a==1) {TWEET(); } if(a==3) {TWEET(); b=2;TWEET(); }"),
+            ("if_20",
+            "if(a==1) { a=1; a=2; } if(a==3) { b=2; }",
+            "if(a==1) {TWEET(); a=1;TWEET(); a=2;TWEET(); } if(a==3) {TWEET(); b=2;TWEET(); }"),
+            ("if_21",
+            "if (a) { { { { { } } } } } else { a=2; } a=2;",
+            "if (a) {TWEET(); { { { { } } } } } else {TWEET(); a=2;TWEET(); } a=2;TWEET();"),
+            ("if_22",
+            "if (a) { { A=1; { { { } b=2; } } } } else { a=2; } a=2;",
+            "if (a) {TWEET(); { A=1;TWEET(); { { { } b=2;TWEET(); } } } } else {TWEET(); a=2;TWEET(); } a=2;TWEET();"),
+            ("if_23",
+            "if(a) { if(a) { } }",
+            "if(a) {TWEET(); if(a) {TWEET(); } }"),
+            ("if_24",
+            "if(a) a=1;",
+            "if(a) {TWEET();a=1;TWEET();}"),
+            ("if_25",
+            "if(a) a=1; else a=2;",
+            "if(a) {TWEET();a=1;TWEET();} else {TWEET();a=2;TWEET();}"),
+            ("if_26",
+            "if(a) a=1; else if(a) a=2;",
+            "if(a) {TWEET();a=1;TWEET();} else if(a) {TWEET();a=2;TWEET();}"),
+            ("if_27",
+            "if(a) a=1; else if(a) a=2; else a=3;",
+            "if(a) {TWEET();a=1;TWEET();} else if(a) {TWEET();a=2;TWEET();} else {TWEET();a=3;TWEET();}"),
+            ("if_28",
+            "if(a) { { { { { } } } } }",
+            "if(a) {TWEET(); { { { { } } } } }"),
+        ]
+
+        for program in programs:
+            name: str = program[0]
+            tree: Tree = self._parser.parse(program[1])
+            expected =  program[2]
+            cfa: CFA = CCFAFactory(tree).create(tree.root_node)
+            canary_factory = SimpleTestCanaryFactory()
+            infestator = CTreeInfestator(self._parser, canary_factory)
+            actual = infestator.infect(tree, cfa).text
+            self.assertEqual(actual, expected, f'Infestation for {name} failed')
