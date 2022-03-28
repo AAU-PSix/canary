@@ -1,4 +1,3 @@
-from fileinput import isfirstline
 from typing import Iterable, List
 from .syntax import Field, NodeType, Syntax
 from .node import Node
