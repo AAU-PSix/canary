@@ -9,3 +9,4 @@ from .syntax import *
 from .tree import *
 from .tree_cursor import *
 from .language import *
+from .c_syntax import *

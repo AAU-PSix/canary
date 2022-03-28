@@ -84,17 +84,3 @@ class TestCSyntax2(TestCase):
         )
 
         self.assertEqual(actual, expected)
-
-    def test_child_plain_assignment(self) -> None:
-        tree: Tree = self._parser.parse("a=1;")
-        node_assignment_expression: Node = tree.root_node \
-            .named_children[0] \
-            .named_children[0]
-        expected = CNodeType.IDENTIFIER.value
-
-        actual = self._syntax.child_by_field(
-            node_assignment_expression,
-            CField.LEFT
-        ).type
-
-        self.assertEqual(actual, expected)

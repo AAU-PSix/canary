@@ -3,7 +3,7 @@ from typing import List, Iterable
 from tree_sitter import Node as _Node
 
 from .file_point import FilePoint
-
+from .syntax import Field
 
 class Node:
     def __init__(self, node: _Node) -> None:
@@ -123,6 +123,9 @@ class Node:
         if result is None:
             return None
         return Node(result)
+
+    def child_by_field(self, field: Field) -> "Node":
+        return self.child_by_field_name(field.value)
 
     def child_by_field_name(self, name: str) -> "Node":
         result = self._node.child_by_field_name(name)

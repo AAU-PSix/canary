@@ -27,6 +27,7 @@ class CField(Field):
     INITIALIZER = "initializer"
     INDEX = "index"
     DESIGNATOR = "designator"
+    UPDATE = "update"
 
 class CNodeType(NodeType):
     # Binary expression operators
@@ -61,6 +62,21 @@ class CNodeType(NodeType):
     SHIFT_COMPOUND_RIGHT = ">>="
     # Literals
     IDENTIFIER = "identifier"
+    # Constructs
+    EXPRESSION_STATEMENT = "expression_statement"
+    DECLARATION = "declaration"
+    IF_STATEMENT = "if_statement"
+    WHILE_STATEMENT = "while_statement"
+    TRANSLATION_UNIT = "translation_unit"
+    COMPOUND_STATEMENT = "compound_statement"
+    DO_STATEMENT = "do_statement"
+    FOR_STATEMENT = "for_statement"
+    SWITCH_STATEMENT = "switch_statement"
+    BREAK_STATEMENT = "break_statement"
+    CONTINUE_STATEMENT = "continue_statement"
+    RETURN_STATEMENT = "return_statement"
+    LABELED_STATEMENT = "labeled_statement"
+    GOTO_STATEMENT = "goto_statement"
 
 class CSyntax(Syntax):
     @property
@@ -173,14 +189,5 @@ class CSyntax(Syntax):
     def get_if_declaration(self, node: Node) -> Node:
         return node
 
-    def is_field(self, node_type: str, field: CNodeType) -> bool:
-        return node_type is field.value
-
-    def in_fields(self, node_type: str, fields: Iterable[CNodeType]) -> bool:
-        return CNodeType(node_type) in fields
-
     def node_field(self, node_type: str) -> CNodeType:
         return CNodeType(node_type)
-
-    def child_by_field(self, node: Node, field: CField) -> Node:
-        return node.child_by_field_name(field.value)

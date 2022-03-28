@@ -5,7 +5,7 @@ from typing import (
     List
 )
 from collections import deque
-from ts import Node, Tree
+from ts import Node, Tree, CNodeType, CField
 from .cfa_factory import CFAFactory
 from .cfa import CFA, CFANode
 
@@ -20,20 +20,20 @@ class CCFAFactory(CFAFactory):
     def __init__(self, tree: Tree) -> None:
         # We dont have the "translation_unit" because it will always be the root
         self._visits: Dict[str, Callable[[Node], CFANode]] = {
-            "expression_statement": self._visit_node,
-            "declaration": self._visit_node,
-            "if_statement": self._visit_if_statement,
-            "while_statement": self._visit_while_statement,
-            "translation_unit": self._visit_translation_unit,
-            "compound_statement": self._visit_compound_statement,
-            "do_statement": self._visit_do_statement,
-            "for_statement": self._visit_for_statement,
-            "switch_statement": self._visit_switch_statement,
-            "break_statement": self._visit_break_statement,
-            "continue_statement": self._visit_continue_statement,
-            "return_statement": self._visit_return_statement,
-            "labeled_statement": self._visit_labeled_statement,
-            "goto_statement": self._visit_goto_statement,
+            CNodeType.EXPRESSION_STATEMENT.value: self._visit_node,
+            CNodeType.DECLARATION.value: self._visit_node,
+            CNodeType.IF_STATEMENT.value: self._visit_if_statement,
+            CNodeType.WHILE_STATEMENT.value: self._visit_while_statement,
+            CNodeType.TRANSLATION_UNIT.value: self._visit_translation_unit,
+            CNodeType.COMPOUND_STATEMENT.value: self._visit_compound_statement,
+            CNodeType.DO_STATEMENT.value: self._visit_do_statement,
+            CNodeType.FOR_STATEMENT.value: self._visit_for_statement,
+            CNodeType.SWITCH_STATEMENT.value: self._visit_switch_statement,
+            CNodeType.BREAK_STATEMENT.value: self._visit_break_statement,
+            CNodeType.CONTINUE_STATEMENT.value: self._visit_continue_statement,
+            CNodeType.RETURN_STATEMENT.value: self._visit_return_statement,
+            CNodeType.LABELED_STATEMENT.value: self._visit_labeled_statement,
+            CNodeType.GOTO_STATEMENT.value: self._visit_goto_statement,
         }
         self._current = None
         self._tree = tree
@@ -158,11 +158,11 @@ class CCFAFactory(CFAFactory):
         #  \ /
         #   s
 
-        condition: Node = node.child_by_field_name("condition")
+        condition: Node = node.child_by_field(CField.CONDITION)
         p: CFANode = self._next(CFANode(condition))
         s: CFANode = CFANode(None)
 
-        consequence: Node = node.child_by_field_name("consequence")
+        consequence: Node = node.child_by_field(CField.CONSEQUENCE)
         if consequence is not None:
             j: CFANode = CFANode(None)
             # By doing this branch the next to be replaced will be "j"
@@ -176,7 +176,7 @@ class CCFAFactory(CFAFactory):
             if c is not None and c.node is None:
                 self._cfa.remove(c)
 
-        alternative: Node = node.child_by_field_name("alternative")
+        alternative: Node = node.child_by_field(CField.ALTERNATIVE)
         if alternative is not None:
             i: CFANode = CFANode(None)
             # By doing this branch the next to be replaced will be "i"
@@ -204,16 +204,16 @@ class CCFAFactory(CFAFactory):
         #  \|/
         #   s
 
-        p: CFANode = CFANode(node.child_by_field_name("condition"))
+        p: CFANode = CFANode(node.child_by_field(CField.CONDITION))
         p = self._next(p)
         s: CFANode = CFANode(None)
 
         cases: List[Tuple[CFANode, CFANode]] = list()
 
-        body: Node = node.child_by_field_name("body")
+        body: Node = node.child_by_field(CField.BODY)
         # A child will always be a "case_statement"
         for case_stmt in body.named_children:
-            value: Node = case_stmt.child_by_field_name("value")
+            value: Node = case_stmt.child_by_field(CField.VALUE)
             v: CFANode = CFANode(value)
             c: CFANode = CFANode(None)
 
@@ -259,7 +259,7 @@ class CCFAFactory(CFAFactory):
         # | |
         # --b
 
-        condition: Node = node.child_by_field_name("condition")
+        condition: Node = node.child_by_field(CField.CONDITION)
         p: CFANode = self._next(CFANode(condition))
         s: CFANode = CFANode(None)
 
@@ -267,7 +267,7 @@ class CCFAFactory(CFAFactory):
 
         j: CFANode = CFANode(None)
         self._branch(p, j, "T")
-        b: Node = node.child_by_field_name("body")
+        b: Node = node.child_by_field(CField.BODY)
         self._accept(b)
         self._next(p)
 
@@ -283,8 +283,8 @@ class CCFAFactory(CFAFactory):
         # --c-s
         i: CFANode = CFANode(None)
         i = self._next(i)
-        b: CFANode = self._accept(node.child_by_field_name("body"))
-        c: CFANode = CFANode(node.child_by_field_name("condition"))
+        b: CFANode = self._accept(node.child_by_field(CField.BODY))
+        c: CFANode = CFANode(node.child_by_field(CField.CONDITION))
         self._next(c)
         s: CFANode = CFANode(None)
         self._branch(c, i, "T")
@@ -301,9 +301,9 @@ class CCFAFactory(CFAFactory):
         # | |
         # --u
         f: CFANode = CFANode(None)
-        i: CFANode = CFANode(node.child_by_field_name("initializer"))
-        c: CFANode = CFANode(node.child_by_field_name("condition"))
-        u: CFANode = CFANode(node.child_by_field_name("update"))
+        i: CFANode = CFANode(node.child_by_field(CField.INITIALIZER))
+        c: CFANode = CFANode(node.child_by_field(CField.CONDITION))
+        u: CFANode = CFANode(node.child_by_field(CField.UPDATE))
 
         has_init: bool = i.node is not None
         has_cond: bool = c.node is not None
@@ -346,13 +346,13 @@ class CCFAFactory(CFAFactory):
         return self._branch(c, f, "F" if has_cond else "")
 
     def _visit_labeled_statement(self, node: Node) -> CFANode:
-        label: Node = node.child_by_field_name("label")
+        label: Node = node.child_by_field(CField.LABEL)
         stmt: CFANode = self._next(CFANode(node))
         self._add_label(label, stmt)
         return stmt
 
     def _visit_goto_statement(self, node: Node) -> CFANode:
-        label: Node = node.child_by_field_name("label")
+        label: Node = node.child_by_field(CField.LABEL)
         stmt: CFANode = CFANode(node)
         self._add_goto(label, stmt)
         return self._next(stmt)
