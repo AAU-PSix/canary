@@ -1,9 +1,13 @@
+#ifndef CANARY_CUTEST
+#define CANARY_CUTEST
+
+#include "CuTest.h"
+
+#include "./test_add.h"
+
 CuSuite *CanarySuites() {
-    /* Canary
-     * - Gen 1
-     * - Gen 2
-     * - Gen 3
-     */
     CuSuite *suite = CuSuiteNew();
+    CuSuiteAddSuite(suite, CreateAddSuite());
     return suite;
 }
+#endif

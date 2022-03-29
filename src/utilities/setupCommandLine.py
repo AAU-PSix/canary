@@ -30,6 +30,11 @@ def setupCommandLine() -> ArgumentParser:
         help="The file to target"
     )
     parser.add_argument(
+        "-t", "--test",
+        type=str,
+        help="The directory to the tests"
+    )
+    parser.add_argument(
         "-u", "--unit",
         type=str,
         help="The unit to test"

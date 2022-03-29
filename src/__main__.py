@@ -12,7 +12,8 @@ def main():
         ["make", "-C", "/input/", "build"],
         "/input/build/c_06_test",
         base=args.base,
-        persist=args.persist
+        persist=args.persist,
+        test=args.test
     )
 
 if __name__ == "__main__":

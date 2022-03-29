@@ -10,4 +10,5 @@ services:
       - generate
       - --base=/input
       - --file=src/original.h
+      - --test=tests
       - --persist
