@@ -70,46 +70,13 @@ def generate(
     unit_analysis_response = UnitAnalyseFileUseCase().do(
         unit_analysis_request
     )
-    print(unit_analysis_response.success)
-    return
-    
-    
-    # Step 1.1: Read the file of the orginal program
-    unit_original_file: FileHandler = open(filepath, "r")
-    unit_original_contents: str = unit_original_file.read()
-    unit_original_file.close()
-    # Step 1.2: Parse the file
-    unit_parser: Parser = Parser.c()
-    unit_tree: Tree = unit_parser.parse(unit_original_contents)
-    # Step 1.3: Get function definitions
-    c_language: Language = LanguageLibrary.c()
-    c_syntax: CSyntax = c_language.syntax
-    c_unit_query: Query = c_language.query(c_syntax.function_declaration_query)
-    unit_capture: Capture = c_unit_query.captures(unit_tree.root_node)
-    unit_function_definitions: List[Node] = unit_capture.nodes(
-        c_syntax.get_function_definitions
-    )
-    # Step 1.4: Pick a FUT
-    fut_root: Node = None
-    fut_name: str = "add"
-    for func in unit_function_definitions:
-        func_declarator: Node = func \
-            .child_by_field_name("declarator") \
-            .child_by_field_name("declarator")
-        func_name: str = unit_tree.contents_of(func_declarator)
-        if func_name == fut_name:
-            fut_root = func
-            break
-
-    if fut_root is None:
-        print("Could not find FUT")
-        return
-
-    return
 
     # Step 2: Create Arrange and Acts for FUT
     # Step 2.1: Create Function Decaration for FUT
-    declartaion = FunctionDeclaration.create_c(unit_tree, fut_root)
+    declartaion = FunctionDeclaration.create_c(
+        unit_analysis_response.tree,
+        unit_analysis_response.unit_function
+    )
     test_filepath: str = f'{test_directory}/test_{declartaion.name}.h'
     # Step 2.2: Create Test Case
     resolver = DependencyResolver()
@@ -147,7 +114,7 @@ def generate(
     inf_tree: Tree = inf_parser.parse(inf_original_contents)
     # Step 3.3: Create CFA for the FUT
     inf_cfa_factory: CFAFactory = CCFAFactory(inf_tree)
-    fut_body: Node = fut_root.child_by_field_name("body")
+    fut_body: Node = unit_analysis_response.unit_function.child_by_field_name("body")
     inf_cfa: CFA = inf_cfa_factory.create(fut_body)
     inf_cfa_graph: Digraph = inf_cfa.draw(inf_tree, "cfa_fut_org")
     inf_cfa_graph.save(directory=f'{base}/')
@@ -199,5 +166,5 @@ def generate(
     # Step 9: Clean up
     # Step 9.1: Remove canaries in the original file
     new_inf_original_file: FileHandler = open(filepath, "w+")
-    new_inf_original_file.write(unit_original_contents)
+    new_inf_original_file.write(unit_analysis_response.tree.text)
     new_inf_original_file.close()

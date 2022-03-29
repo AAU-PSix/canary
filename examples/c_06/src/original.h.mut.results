@@ -1,12 +1,11 @@
 location=l
 location=l
 location=l
-FF.
+.F.
 
-There were 2 failures:
-1) addTest: /input/tests/AllTests.c:15: expected <1> but was <0>
-2) addTest_1_1: /input/tests/AllTests.c:25: expected <12> but was <0>
+There was 1 failure:
+1) addTest_1_1: /input/tests/AllTests.c:25: expected <12> but was <1>
 
 !!!FAILURES!!!
-Runs: 3 Passes: 1 Fails: 2
+Runs: 3 Passes: 2 Fails: 1
 
