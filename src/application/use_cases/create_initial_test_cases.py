@@ -1,5 +1,3 @@
-from .use_case import *
-
 from utilities import FileHandler
 from test_generator import (
     FunctionDeclaration,
@@ -13,6 +11,7 @@ from ts import (
     Node,
     Tree,
 )
+from .use_case import *
 
 class CreateInitialTestCasesRequest(UseCaseRequest):
     def __init__(

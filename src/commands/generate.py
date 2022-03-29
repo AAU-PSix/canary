@@ -4,46 +4,20 @@ from application import (
     InitializeSystemRequest,
     InitializeSystemUseCase,
     UnitAnalyseFileRequest,
-    UnitAnalyseFileResponse,
     UnitAnalyseFileUseCase,
     CreateInitialTestCasesRequest,
-    CreateInitialTestCasesResponse,
     CreateInitialTestCasesUseCase,
+    InfestProgramRequest,
+    InfestProgramUseCase,
 )
 
-from graphviz import Digraph
 from mutator import Mutator
 from ts import (
-    LanguageLibrary,
     Parser,
     Tree,
-    CSyntax,
-    Language,
-    Query,
-    Capture,
-    Node,
 )
 from utilities import (
     FileHandler
-)
-from tree_infestator import (
-    TreeInfestator,
-    CTreeInfestator,
-    CanaryFactory,
-    CCanaryFactory
-)
-from test_generator import (
-    FunctionDeclaration,
-    DependencyResolver,
-    CuTestSuiteCodeGenerator,
-    TestCase,
-    TestSuite,
-    CuTestLinker,
-)
-from cfa import (
-    CFAFactory,
-    CFA,
-    CCFAFactory
 )
 import subprocess
 import os
@@ -81,32 +55,20 @@ def generate(
         f'{test_directory}',
         f'{test_directory}/CanaryCuTest.h',
     )
-    create_initial_test_case_response = CreateInitialTestCasesUseCase().do(
+    CreateInitialTestCasesUseCase().do(
         create_initial_test_case_request
     )
 
     # Step 3: Infest the original file with canaries
-    # Step 3.1: Read the file of the orginal program
-    inf_original_file: FileHandler = open(filepath, "r")
-    inf_original_contents: str = inf_original_file.read()
-    inf_original_file.close()
-    # Step 3.2: Parse the file
-    inf_parser: Parser = Parser.c()
-    inf_tree: Tree = inf_parser.parse(inf_original_contents)
-    # Step 3.3: Create CFA for the FUT
-    inf_cfa_factory: CFAFactory = CCFAFactory(inf_tree)
-    fut_body: Node = unit_analysis_response.unit_function.child_by_field_name("body")
-    inf_cfa: CFA = inf_cfa_factory.create(fut_body)
-    inf_cfa_graph: Digraph = inf_cfa.draw(inf_tree, "cfa_fut_org")
-    inf_cfa_graph.save(directory=f'{base}/')
-    # Step 3.4: Infest
-    canary_factory: CanaryFactory = CCanaryFactory()
-    infestator: TreeInfestator = CTreeInfestator(inf_parser, canary_factory)
-    inf_int_tree: Tree = infestator.infect(inf_tree, inf_cfa)
-    # Step 3.5: Write the infestation
-    new_inf_original_file: FileHandler = open(filepath, "w+")
-    new_inf_original_file.write(inf_int_tree.text)
-    new_inf_original_file.close()
+    infest_program_request = InfestProgramRequest(
+        Parser.c(),
+        unit_analysis_response.tree,
+        unit_analysis_response.unit_function,
+        filepath
+    )
+    infest_program_response = InfestProgramUseCase().do(
+        infest_program_request
+    )
 
     # Step 4: Test the original program
     original_results_file: str = open(original_results_filepath, 'w')

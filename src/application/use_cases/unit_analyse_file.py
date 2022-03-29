@@ -1,5 +1,4 @@
 from typing import List
-from unittest import findTestCases
 from utilities import FileHandler
 from ts import (
     Parser,
