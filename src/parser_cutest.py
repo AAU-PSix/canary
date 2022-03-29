@@ -37,7 +37,7 @@ class CuTestParser:
     def __init__(self, source:str):
         self.src = source
 
-    def parse(source : str) -> List[str]:
+    def parse(source : str) -> List[FailedCuTest]:
         file = open(source, "r")
         file_str : str = file.readlines()
         CuTestList : List[FailedCuTest] = []
@@ -52,18 +52,18 @@ class CuTestParser:
                 
                 # Assert pointer
                 if "expected pointer" in error_line[2]:
-                    error_line = CuTestParser.trim_pointer_group(error_line, PointerFailedCutest(error_line[0], error_line[1]))
-                    CuTestList.append(error_line)
+                    error = CuTestParser.trim_pointer_group(error_line, PointerFailedCutest(error_line[0], error_line[1]))
+                    CuTestList.append(error)
 
                 # Assert bool
                 if "assert failed" in error_line[2]:
-                    error_line = CuTestParser.trim_bool_assert_group(error_line, BoolFailedCutest(error_line[0], error_line[1]))
-                    CuTestList.append(error_line)
+                    error = CuTestParser.trim_bool_assert_group(error_line, BoolFailedCutest(error_line[0], error_line[1]))
+                    CuTestList.append(error)
 
                 # Assert int
                 if "expected <" in error_line[2] and "but was <" in error_line[2] and "." not in error_line[2]:
-                    error_line = CuTestParser.trim_int_group(error_line, IntFailedCutest(error_line[0], error_line[1]))
-                    CuTestList.append(error_line)
+                    error = CuTestParser.trim_int_group(error_line, IntFailedCutest(error_line[0], error_line[1]))
+                    CuTestList.append(error)
                
                # Assert double
                 if "expected <" in error_line[2] and "but was <" in error_line[2] and "." in error_line[2]:
@@ -134,4 +134,4 @@ class CuTestParser:
 CuTestList = CuTestParser.parse("../examples/c_06/src/original.h.mut.results")
 
 for test in CuTestList:
-    print(test)
+    print(test.testName)
