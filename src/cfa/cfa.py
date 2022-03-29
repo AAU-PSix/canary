@@ -1,12 +1,9 @@
 from typing import Dict, List, Iterable
 from queue import Queue
-import graphviz
-
-from ts.tree import Tree
-from ts.node import Node
-
-from .cfa_edge import *
-from .cfa_node import *
+from graphviz import Digraph
+from ts import Tree, Node
+from .cfa_edge import CFAEdge
+from .cfa_node import CFANode
 
 
 class CFA:
@@ -132,8 +129,8 @@ class CFA:
         del self._ingoing_edges[before]
         del self._outgoing_edges[before]
 
-    def draw(self, tree: Tree, name: str, dot: graphviz.Digraph = None) -> graphviz.Digraph:
-        if dot is None: dot = graphviz.Digraph(name)
+    def draw(self, tree: Tree, name: str, dot: Digraph = None) -> Digraph:
+        if dot is None: dot = Digraph(name)
 
         def node_name(cfa_node: CFANode) -> str:
             if cfa_node is None: return f'None'

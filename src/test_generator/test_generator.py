@@ -1,7 +1,7 @@
 import unittest
 
 from . import *
-from src.ts import LanguageLibrary, Parser
+from ts import LanguageLibrary, Parser
 
 class TestFunctionDeclaration(unittest.TestCase):
     def setUp(self) -> None:

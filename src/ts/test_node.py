@@ -36,6 +36,6 @@ class TestNode(unittest.TestCase):
         ]
 
         expected: str = for_stmt
-        actual = expression_stmt.is_immediate_descendent_of_types(types)
+        actual = expression_stmt.get_immediate_descendent_of_types(types)
 
         self.assertEqual(actual, expected)

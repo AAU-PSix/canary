@@ -1,16 +1,17 @@
+from typing import List, Tuple
 from sys import float_info
+import unittest
 from . import (
     Mutator,
     Parser,
     Node,
     Capture,
 )
-from src.ts import (
-    LanguageLibrary, Query
+from ts import (
+    LanguageLibrary,
+    Query,
+    NodeType,
 )
-from typing import List
-
-import unittest
 
 class TestMutatorObom(unittest.TestCase):
     def setUp(self) -> None:
@@ -19,14 +20,16 @@ class TestMutatorObom(unittest.TestCase):
         self._parser = Parser.create_with_language(self._language)
         self._mutator: Mutator = Mutator(self._parser)
 
-        self._compound_assignment_query: Query = self._language.query(self._language.syntax.query_compound_assignment)
-        self._assignment_query: Query = self._language.query(self._language.syntax.query_assignment)
-        self._binary_expression_query: Query = self._language.query(self._language.syntax.query_binary_expression)
+        self._compound_assignment_query: Query = self._language.query(self._language.syntax.compound_assignment_query)
+        self._assignment_query: Query = self._language.query(self._language.syntax.assignment_query)
+        self._binary_expression_query: Query = self._language.query(self._language.syntax.binary_expression_query)
         return super().setUp()
 
-    def parse_first_binary_expression_operator(self, binary_infix_expression: Query, expression: str) -> Node:
+    def parse_first_binary_expression_operator(self, binary_query: Query, expression: str) -> Node:
             root: Node = self._parser.parse(expression).root_node
-            captures: Capture = binary_infix_expression.captures(root)
+            self.assertEqual(root.type, "translation_unit")
+            captures: Capture = binary_query.captures(root)
+            self.assertEqual(len(captures), 1)
             operator_node: Node = captures.first()[0]
             operator: Node = self._language.syntax.get_binary_expression_operator(operator_node)
             return operator
@@ -110,14 +113,14 @@ class TestMutatorObom(unittest.TestCase):
                 result.append((range_operator, range_upper, range_operator_upper))
         return result
 
-    def assert_domain_and_ranges(self, binary_infix_expression: Query, domain: List[str], range_checks: "List[tuple(str, float, float)]"):
+    def assert_domain_and_ranges(self, binary_query: Query, domain: List[NodeType], range_checks: List[Tuple[NodeType, float, float]]):
         for domain_operator in domain:
-            operator: Node = self.parse_first_binary_expression_operator(binary_infix_expression, f'a{domain_operator}b')
+            operator: Node = self.parse_first_binary_expression_operator(binary_query, f'a{domain_operator.value}b')
 
             for range_section in range_checks:
-                actual: str = self._mutator.obom(operator, range_section[1], range_section[2])
-                self.assertEqual(operator.type, domain_operator)
-                self.assertEqual(actual, range_section[0])
+                actual: NodeType = self._mutator.obom(operator, range_section[1], range_section[2])
+                self.assertEqual(operator.type, domain_operator.value)
+                self.assertEqual(actual.value, range_section[0].value)
 
     def test_obom_ranges_oaba_oaea_oasa(self) -> None:
         domain: List[str] = self._language.syntax.arithmetic_compound_assignment

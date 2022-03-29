@@ -1,12 +1,11 @@
-import unittest
-
-from src.ts import (
+from unittest import TestCase
+from ts import (
     LanguageLibrary,
     Parser,
     Query,
 )
 
-class TreeCursorTest(unittest.TestCase):
+class TreeCursorTest(TestCase):
     def setUp(self) -> None:
         LanguageLibrary.build()
         self._language = LanguageLibrary.c()

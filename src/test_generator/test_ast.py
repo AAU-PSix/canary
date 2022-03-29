@@ -1,6 +1,6 @@
 import unittest
 
-from src.test_generator.ast import FunctionDeclaration
+from test_generator import FunctionDeclaration
 from . import *
 from ts import (
     LanguageLibrary,
