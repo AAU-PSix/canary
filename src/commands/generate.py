@@ -1,5 +1,13 @@
 from typing import Union, List
 
+from application import (
+    InitializeSystemRequest,
+    InitializeSystemUseCase,
+    UnitAnalyseFileRequest,
+    UnitAnalyseFileResponse,
+    UnitAnalyseFileUseCase,
+)
+
 from graphviz import Digraph
 from mutator import Mutator
 from ts import (
@@ -52,9 +60,20 @@ def generate(
     test_directory: str = f'{base}/{test}'
 
     # Step 0: Initialize the system
-    LanguageLibrary.build()
+    initialize_system_request = InitializeSystemRequest()
+    InitializeSystemUseCase().do(initialize_system_request)
 
     # Step 1: Unit analysis to find FUT (Funtion Under Test)
+    unit_analysis_request = UnitAnalyseFileRequest(
+        filepath, Parser.c(), "add"
+    )
+    unit_analysis_response = UnitAnalyseFileUseCase().do(
+        unit_analysis_request
+    )
+    print(unit_analysis_response.success)
+    return
+    
+    
     # Step 1.1: Read the file of the orginal program
     unit_original_file: FileHandler = open(filepath, "r")
     unit_original_contents: str = unit_original_file.read()
@@ -68,7 +87,7 @@ def generate(
     c_unit_query: Query = c_language.query(c_syntax.function_declaration_query)
     unit_capture: Capture = c_unit_query.captures(unit_tree.root_node)
     unit_function_definitions: List[Node] = unit_capture.nodes(
-        c_syntax.get_function_declaration
+        c_syntax.get_function_definitions
     )
     # Step 1.4: Pick a FUT
     fut_root: Node = None
@@ -85,6 +104,8 @@ def generate(
     if fut_root is None:
         print("Could not find FUT")
         return
+
+    return
 
     # Step 2: Create Arrange and Acts for FUT
     # Step 2.1: Create Function Decaration for FUT
