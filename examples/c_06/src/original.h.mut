@@ -1,6 +1,10 @@
+#ifndef ORIGINAL
+#define ORIGINAL
+
 #include "Canary.h"
 
 int add(int a, int b) {
-    int sum = a <= b;CANARY_TWEET_LOCATION(l);
+    int sum = a >> b;CANARY_TWEET_LOCATION(l);
     return sum;
 }
+#endif

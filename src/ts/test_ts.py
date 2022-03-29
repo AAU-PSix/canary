@@ -217,7 +217,7 @@ class TestSyntaxForC(unittest.TestCase):
         ).root_node
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
-            self._language.syntax.get_function_declaration
+            self._language.syntax.get_function_definitions
         )
         self.assertIsNotNone(result)
         self.assertIs(len(result), 0)
@@ -229,7 +229,7 @@ class TestSyntaxForC(unittest.TestCase):
         ).root_node
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
-            self._language.syntax.get_function_declaration
+            self._language.syntax.get_function_definitions
         )
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 1)
@@ -244,7 +244,7 @@ class TestSyntaxForC(unittest.TestCase):
         ).root_node
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
-            self._language.syntax.get_function_declaration
+            self._language.syntax.get_function_definitions
         )
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 4)
@@ -256,7 +256,7 @@ class TestSyntaxForC(unittest.TestCase):
         ).root_node
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
-            self._language.syntax.get_function_declaration
+            self._language.syntax.get_function_definitions
         )
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 1)
@@ -321,7 +321,7 @@ class TestSyntaxForC(unittest.TestCase):
         ).root_node
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
-            self._language.syntax.get_function_declaration
+            self._language.syntax.get_function_definitions
         )
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 1)
@@ -333,7 +333,7 @@ class TestSyntaxForC(unittest.TestCase):
         ).root_node
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
-            self._language.syntax.get_function_declaration
+            self._language.syntax.get_function_definitions
         )
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 1)
@@ -345,7 +345,7 @@ class TestSyntaxForC(unittest.TestCase):
         ).root_node
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
-            self._language.syntax.get_function_declaration
+            self._language.syntax.get_function_definitions
         )
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 1)
@@ -357,7 +357,7 @@ class TestSyntaxForC(unittest.TestCase):
         ).root_node
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
-            self._language.syntax.get_function_declaration
+            self._language.syntax.get_function_definitions
         )
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 1)
@@ -369,7 +369,7 @@ class TestSyntaxForC(unittest.TestCase):
         ).root_node
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
-            self._language.syntax.get_function_declaration
+            self._language.syntax.get_function_definitions
         )
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 1)
@@ -381,7 +381,7 @@ class TestSyntaxForC(unittest.TestCase):
         ).root_node
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
-            self._language.syntax.get_function_declaration
+            self._language.syntax.get_function_definitions
         )
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 1)
@@ -395,7 +395,7 @@ class TestSyntaxForC(unittest.TestCase):
         ).root_node
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
-            self._language.syntax.get_function_declaration
+            self._language.syntax.get_function_definitions
         )
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 3)
@@ -407,7 +407,7 @@ class TestSyntaxForC(unittest.TestCase):
         ).root_node
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
-            self._language.syntax.get_function_declaration
+            self._language.syntax.get_function_definitions
         )
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 1)

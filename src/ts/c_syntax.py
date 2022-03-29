@@ -190,7 +190,7 @@ class CSyntax(Syntax):
     def get_binary_expression_operator(self, node: Node) -> Node:
         return node.children[1]
 
-    def get_function_declaration(self, node: Node) -> Node:
+    def get_function_definitions(self, node: Node) -> Node:
         return node
 
     def get_struct_declaration(self, node: Node) -> Node:
@@ -201,6 +201,11 @@ class CSyntax(Syntax):
 
     def get_for_loop_body(self, node: Node) -> Node:
         return node.named_children[-1]
+
+    def get_function_identifier(self, definition: Node) -> Node:
+        return definition \
+            .child_by_field_name("declarator") \
+            .child_by_field_name("declarator")
 
     def get_immediate_structure_descendent(self, node: Node) -> Node:
         if node is None: return None

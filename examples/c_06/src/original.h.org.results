@@ -1,13 +1,7 @@
 location=l
 location=l
-..FFFF
+location=l
+...
 
-There were 4 failures:
-1) Test_CuAssertIntEquals: /input/tests/AllTests.c:38: expected <0> but was <2>
-2) Test_CuAssertDblEquals: /input/tests/AllTests.c:45: expected <0.000000> but was <0.200000>
-3) Test_CuAssertTrue: /input/tests/AllTests.c:49: assert failed
-4) Test_CuAssertPtrEquals: /input/tests/AllTests.c:55: expected pointer <0x0x97f6d0> but was <0x0x97f6f0>
-
-!!!FAILURES!!!
-Runs: 6 Passes: 2 Fails: 4
+OK (3 tests)
 

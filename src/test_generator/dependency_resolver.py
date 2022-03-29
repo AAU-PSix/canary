@@ -10,7 +10,7 @@ class DependencyResolver:
         self,
         function: FunctionDeclaration,
         resolve_primitives_immediately: bool = False
-    ) -> Tuple[List[Statement], FunctionCall]:
+    ) -> Tuple[List[Statement], Statement]:
         arrange: List[Statement] = list()
         parameters: List[Expression] = list()
         used_names: Dict[str, int] = dict()

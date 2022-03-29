@@ -55,12 +55,19 @@ void Test_CuAssertPtrEquals(CuTest *ct) {
 	CuAssertPtrEquals(ct, expected, actual);
 }
 
+void Test_CuAssertStrEquals(CuTest *ct) {
+	char *str1 = "123";
+	char *str2 = "32";
+	CuAssertStrEquals(ct, str1, str2);
+}
+
 CuSuite *CuTestSuite() {
 	CuSuite *suite = CuSuiteNew();
 	SUITE_ADD_TEST(suite, Test_CuAssertIntEquals);
 	SUITE_ADD_TEST(suite, Test_CuAssertDblEquals);
 	SUITE_ADD_TEST(suite, Test_CuAssertTrue);
 	SUITE_ADD_TEST(suite, Test_CuAssertPtrEquals);
+	SUITE_ADD_TEST(suite, Test_CuAssertStrEquals);
 	return suite;
 }
 
@@ -69,7 +76,7 @@ void RunAllTests(void) {
 	CuSuite* suite = CuSuiteNew();
 
 	CuSuiteAddSuite(suite, AddSuite());
-	CuSuiteAddSuite(suite, CuTestSuite());
+	// CuSuiteAddSuite(suite, CuTestSuite());
 	CuSuiteAddSuite(suite, CanarySuites());
 
 	CuSuiteRun(suite);

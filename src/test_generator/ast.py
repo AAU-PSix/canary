@@ -233,3 +233,16 @@ class TestCase:
     @property
     def assertions(self) -> List[Assertion]:
         return self._assertions
+
+class TestSuite:
+    def __init__(self, name: str, test_cases: List[TestCase]) -> None:
+        self._name = name
+        self._test_cases = test_cases
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def test_cases(self) -> List[TestCase]:
+        return self._test_cases

@@ -1,3 +1,6 @@
+#ifndef CANARY
+#define CANARY
+
 #include <stdio.h>
 
 #define CANARY_STR_IMPL_(x) #x
@@ -158,3 +161,4 @@ do {                                                            \
 
 #define CANARY_TWEET_ERROR_STATE() \
 do { printf("ERROR STATE\n"); } while (0)
+#endif
