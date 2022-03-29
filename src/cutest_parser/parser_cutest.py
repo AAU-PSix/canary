@@ -1,7 +1,9 @@
 from abc import ABC
 from ctypes import pointer
+from curses.ascii import isdigit
 from distutils.log import error
 from ftplib import error_perm, error_reply
+from operator import contains
 import re
 from typing import Any, List
 from pprint import pprint
@@ -24,27 +26,36 @@ class FailedCuTestAss(FailedCuTest):
 
 
 class CuTestParser:
-    def __init__(self, source:str):
-        self.src = source
+    def __init__(self):
+        self.lines : List[str] = [] 
 
-    def parse(source : str) -> List[FailedCuTest]:
+    def read_parse_file(source : str) -> List[str]:
         file = open(source, "r")
         file_str : str = file.readlines()
+        
+        line_list = []
+        for line in file_str:
+            if line[0].isdigit() and ") " in line:
+                line_list.append(line)
+        file.close()
+
+        return line_list
+
+
+    def parse(lines : List[str]) -> List[FailedCuTest]:
+        
         CuTestList : List[FailedCuTest] = []
         
 
         # A line is split into 3 parts: name, source, assert result
-        for line in file_str:
+        for line in lines:
             
             if line[0].isdigit():
                 error_line = line.split(": ")
                 error_line[0] = CuTestParser.trim_function_name_group(error_line[0])
                 # fixes: expected< test: 1hest: > but was < hest : hesst>
                 if len(error_line) > 3:
-                    wanted_line = ""
-                    for unwanted_line_split in error_line[2:]:
-                        wanted_line += unwanted_line_split
-                    error_line[2] = wanted_line
+                    error_line[2] = ": ".join(error_line[2:])
                       
                 # Just a single assert_true
                 if "assert" in error_line[2]:
@@ -56,8 +67,7 @@ class CuTestParser:
                     error = CuTestParser.trim_expected_actual_group(error_line, FailedCuTestExpAss(error_line[0], error_line[1]))
                     CuTestList.append(error)
                     
-     
-        file.close()
+
         return CuTestList  
     
     @staticmethod
