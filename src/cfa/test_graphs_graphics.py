@@ -1,10 +1,11 @@
-import unittest
+from unittest import TestCase
 from typing import List, Tuple
-
 from graphviz import Digraph
-
-from cfa import CFA
-from tree_infestator import TreeInfestator, SimpleTestCanaryFactory
+from tree_infestator import (
+    TreeInfestator,
+    CTreeInfestator,
+    CCanaryFactory
+)
 from ts import (
     LanguageLibrary,
     Parser,
@@ -12,17 +13,21 @@ from ts import (
     Tree,
     Node,
 )
-from . import TreeCFAVisitor
+from . import (
+    CFA,
+    CFAFactory,
+    CCFAFactory
+)
 
-class TestGraphsGraphics(unittest.TestCase):
+class TestGraphsGraphics(TestCase):
     def setUp(self) -> None:
         LanguageLibrary.build()
         self._language = LanguageLibrary.c()
         self._parser = Parser.create_with_language(self._language)
 
-        self._compound_assignment_query: Query = self._language.query(self._language.syntax.query_compound_assignment)
-        self._assignment_query: Query = self._language.query(self._language.syntax.query_assignment)
-        self._binary_expression_query: Query = self._language.query(self._language.syntax.query_binary_expression)
+        self._compound_assignment_query: Query = self._language.query(self._language.syntax.compound_assignment_query)
+        self._assignment_query: Query = self._language.query(self._language.syntax.assignment_query)
+        self._binary_expression_query: Query = self._language.query(self._language.syntax.binary_expression_query)
         return super().setUp()
 
     def test_create_graphs_graphics(self) -> None:
@@ -757,20 +762,20 @@ class TestGraphsGraphics(unittest.TestCase):
 
         def draw_normal_cfa(name: str, program: str):
             tree: Tree = self._parser.parse(program)
-            visitor: TreeCFAVisitor = TreeCFAVisitor(tree)
+            visitor: CFAFactory = CCFAFactory(tree)
 
             root: Node = tree.root_node
             if root.named_children[0].type == "function_definition":
                 root = root.named_children[0].child_by_field_name("body")
 
-            cfa: CFA = visitor.create(root, False)
+            cfa: CFA = visitor.create(root)
             dot: Digraph = cfa.draw(tree, name)
             dot.save(directory="graphs")
             draw_infected_cfa(name, tree, cfa)
 
         def draw_infected_cfa(name: str, tree: Tree, cfa: CFA):
             try:
-                infestator: TreeInfestator = TreeInfestator(self._parser, SimpleTestCanaryFactory())
+                infestator: TreeInfestator = CTreeInfestator(self._parser, CCanaryFactory())
                 infested_tree: Tree = infestator.infect(tree, cfa)
                 # TODO (IMPORTANT): Editing does not work correctly and for this
                 #   reason we have to re-parse with a COMPLETELY NEW PARSER!!!
@@ -781,8 +786,8 @@ class TestGraphsGraphics(unittest.TestCase):
                     root = root.named_children[0].child_by_field_name("body")
 
 
-                infested_visitor: TreeCFAVisitor = TreeCFAVisitor(infested_tree)
-                infested_cfa: CFA = infested_visitor.create(root, False)
+                infested_visitor: CFAFactory = CCFAFactory(infested_tree)
+                infested_cfa: CFA = infested_visitor.create(root)
                 infested_dot: Digraph = infested_cfa.draw(infested_tree, f'{name}_infested')
                 infested_dot.save(directory="graphs")
             except:

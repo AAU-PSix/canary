@@ -3,7 +3,7 @@ from typing import List, Iterable
 from tree_sitter import Node as _Node
 
 from .file_point import FilePoint
-
+from .syntax import Field, NodeType
 
 class Node:
     def __init__(self, node: _Node) -> None:
@@ -118,11 +118,17 @@ class Node:
             return None
         return Node(result)
 
+    def is_type(self, nodeType: NodeType) -> bool:
+        return self.type == nodeType.value
+
     def child_by_field_id(self, id: int) -> "Node":
         result = self._node.child_by_field_id(id)
         if result is None:
             return None
         return Node(result)
+
+    def child_by_field(self, field: Field) -> "Node":
+        return self.child_by_field_name(field.value)
 
     def child_by_field_name(self, name: str) -> "Node":
         result = self._node.child_by_field_name(name)
@@ -145,14 +151,14 @@ class Node:
             current = current.parent
         return False
 
-    def is_descendent_of_types(self, types: List[str]) -> "Node":
+    def get_descendent_of_types(self, types: List[str]) -> "Node":
         current: Node = self
         while current.parent is not None:
             if current.parent.type in types: return current.parent
             current = current.parent
         return None
 
-    def is_immediate_descendent_of_types(self, types: List[str]) -> "Node":
+    def get_immediate_descendent_of_types(self, types: List[str]) -> "Node":
         current: Node = self
         while current.parent is not None:
             if current.parent.named_children[0] != current: return None

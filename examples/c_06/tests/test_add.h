@@ -9,8 +9,8 @@
 
 void test_add(CuTest *ct) {
     // Arrange
-    int a_0 = 5;
-    int b_0 = 33;
+    int a_0 = -79;
+    int b_0 = 10;
     // Act
     int actual = add(a_0, b_0);
     // Assert

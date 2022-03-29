@@ -6,7 +6,7 @@ from ts import (
     LanguageLibrary,
     Parser,
     Tree,
-    Syntax,
+    CSyntax,
     Language,
     Query,
     Capture,
@@ -17,6 +17,7 @@ from utilities import (
 )
 from tree_infestator import (
     TreeInfestator,
+    CTreeInfestator,
     CanaryFactory,
     CCanaryFactory
 )
@@ -28,7 +29,11 @@ from test_generator import (
     TestSuite,
     CuTestLinker,
 )
-from cfa import TreeCFAVisitor, CFA
+from cfa import (
+    CFAFactory,
+    CFA,
+    CCFAFactory
+)
 import subprocess
 import os
 
@@ -59,8 +64,8 @@ def generate(
     unit_tree: Tree = unit_parser.parse(unit_original_contents)
     # Step 1.3: Get function definitions
     c_language: Language = LanguageLibrary.c()
-    c_syntax: Syntax = c_language.syntax
-    c_unit_query: Query = c_language.query(c_syntax.query_function_declaration)
+    c_syntax: CSyntax = c_language.syntax
+    c_unit_query: Query = c_language.query(c_syntax.function_declaration_query)
     unit_capture: Capture = c_unit_query.captures(unit_tree.root_node)
     unit_function_definitions: List[Node] = unit_capture.nodes(
         c_syntax.get_function_declaration
@@ -120,14 +125,14 @@ def generate(
     inf_parser: Parser = Parser.c()
     inf_tree: Tree = inf_parser.parse(inf_original_contents)
     # Step 3.3: Create CFA for the FUT
-    inf_cfa_factory: TreeCFAVisitor = TreeCFAVisitor(inf_tree)
+    inf_cfa_factory: CFAFactory = CCFAFactory(inf_tree)
     fut_body: Node = fut_root.child_by_field_name("body")
-    inf_cfa: CFA = inf_cfa_factory.create(fut_body, False)
+    inf_cfa: CFA = inf_cfa_factory.create(fut_body)
     inf_cfa_graph: Digraph = inf_cfa.draw(inf_tree, "cfa_fut_org")
     inf_cfa_graph.save(directory=f'{base}/')
     # Step 3.4: Infest
     canary_factory: CanaryFactory = CCanaryFactory()
-    infestator: TreeInfestator = TreeInfestator(inf_parser, canary_factory)
+    infestator: TreeInfestator = CTreeInfestator(inf_parser, canary_factory)
     inf_int_tree: Tree = infestator.infect(inf_tree, inf_cfa)
     # Step 3.5: Write the infestation
     new_inf_original_file: FileHandler = open(filepath, "w+")
