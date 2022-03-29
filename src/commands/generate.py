@@ -6,6 +6,9 @@ from application import (
     UnitAnalyseFileRequest,
     UnitAnalyseFileResponse,
     UnitAnalyseFileUseCase,
+    CreateInitialTestCasesRequest,
+    CreateInitialTestCasesResponse,
+    CreateInitialTestCasesUseCase,
 )
 
 from graphviz import Digraph
@@ -71,38 +74,16 @@ def generate(
         unit_analysis_request
     )
 
-    # Step 2: Create Arrange and Acts for FUT
-    # Step 2.1: Create Function Decaration for FUT
-    declartaion = FunctionDeclaration.create_c(
+    # Step 2: Create initial test case for FUT
+    create_initial_test_case_request = CreateInitialTestCasesRequest(
         unit_analysis_response.tree,
-        unit_analysis_response.unit_function
+        unit_analysis_response.unit_function,
+        f'{test_directory}',
+        f'{test_directory}/CanaryCuTest.h',
     )
-    test_filepath: str = f'{test_directory}/test_{declartaion.name}.h'
-    # Step 2.2: Create Test Case
-    resolver = DependencyResolver()
-    arrange_act = resolver.resolve(declartaion)
-    test_case = TestCase(
-        f'test_{declartaion.name}',
-        arrange_act[0],
-        arrange_act[1],
-        list()
+    create_initial_test_case_response = CreateInitialTestCasesUseCase().do(
+        create_initial_test_case_request
     )
-    test_suite = TestSuite("Add", [ test_case ])
-    # Step 2.3: Generate code for test suite
-    code_generator = CuTestSuiteCodeGenerator()
-    test_code = code_generator.visit_test_suite(test_suite)
-    # Step 2.4: Write test suite
-    test_code_file: FileHandler = open(test_filepath, "w+")
-    test_code_file.write('\n'.join(test_code))
-    test_code_file.close()
-    # Step 2.5: Connect the test suite with CanaryCuTest
-    cutest_linker = CuTestLinker()
-    linker_code = cutest_linker.link([ test_suite ])
-    # Step 2.6: Write new linking file
-    linker_filepath = f'{test_directory}/CanaryCuTest.h'
-    test_linker_code_file: FileHandler = open(linker_filepath, "w+")
-    test_linker_code_file.write('\n'.join(linker_code))
-    test_linker_code_file.close()
 
     # Step 3: Infest the original file with canaries
     # Step 3.1: Read the file of the orginal program

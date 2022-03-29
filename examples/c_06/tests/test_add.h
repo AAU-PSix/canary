@@ -9,14 +9,14 @@
 
 void test_add(CuTest *ct) {
     // Arrange
-    int a_0 = 71;
-    int b_0 = -102;
+    int a_0 = -16;
+    int b_0 = -125;
     // Act
     int actual = add(a_0, b_0);
     // Assert
 }
 
-CuSuite *CreateAddSuite() {
+CuSuite *CreateaddSuite() {
     CuSuite *suite = CuSuiteNew();
     SUITE_ADD_TEST(suite, test_add);
     return suite;
