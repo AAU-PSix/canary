@@ -9,6 +9,10 @@ from application import (
     CreateInitialTestCasesUseCase,
     InfestProgramRequest,
     InfestProgramUseCase,
+    RunSubsystemRequest,
+    RunSubsystemUseCase,
+    RunTestRequest,
+    RunTestUseCase,
 )
 
 from mutator import Mutator
@@ -66,15 +70,13 @@ def generate(
         unit_analysis_response.unit_function,
         filepath
     )
-    infest_program_response = InfestProgramUseCase().do(
-        infest_program_request
-    )
+    InfestProgramUseCase().do(infest_program_request)
 
     # Step 4: Test the original program
-    original_results_file: str = open(original_results_filepath, 'w')
-    subprocess.run(build_cmd)
-    subprocess.run(test_cmd, stdout=original_results_file)
-    original_results_file.close()
+    original_test_request = RunTestRequest(
+        build_cmd, test_cmd, original_results_filepath
+    )
+    RunTestUseCase().do(original_test_request)
 
     # Step 5: Rename the original file to the temp
     os.rename(filepath, tmp_filepath)
@@ -96,10 +98,10 @@ def generate(
     mutant_file.close()
 
     # Step 7: Test the mutant program
-    mutant_results_file: str = open(f'{mutant_results_filepath}', 'w')
-    subprocess.run(build_cmd)
-    subprocess.run(test_cmd, stdout=mutant_results_file)
-    mutant_results_file.close()
+    mutant_test_request = RunTestRequest(
+        build_cmd, test_cmd, mutant_results_filepath
+    )
+    RunTestUseCase().do(mutant_test_request)
 
     # Step 8: Move the original program into the mutant
     #   If we want to persist then store the mutant another place
