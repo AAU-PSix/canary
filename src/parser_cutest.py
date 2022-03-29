@@ -1,35 +1,25 @@
 from abc import ABC
+from ctypes import pointer
 from distutils.log import error
 from ftplib import error_perm, error_reply
 import re
 from typing import Any, List
+from pprint import pprint
 
 class FailedCuTest(ABC):
     def __init__(self, testName: str, testSrc: str):
         self.testName = testName
         self.testSrc = testSrc
 
-class IntFailedCutest(FailedCuTest):
-    def __init__(self, testName: str, testSrc: str):
-        self.expected : int = None
-        self.actual : int = None
-        super().__init__(testName, testSrc)
-
-class DoubleFailedCutest(FailedCuTest):
-    def __init__(self, testName: str, testSrc: str):
-        self.expected : float = None
-        self.actual : float = None
-        super().__init__(testName, testSrc)
-
-class BoolFailedCutest(FailedCuTest):
-    def __init__(self, testName: str, testSrc: str):
-        self.assert_bool : str = None 
-        super().__init__(testName, testSrc)
-
-class PointerFailedCutest(FailedCuTest):
+class TwoAssertFailedCutest(FailedCuTest):
     def __init__(self, testName: str, testSrc: str):
         self.expected : str = None
         self.actual : str = None
+        super().__init__(testName, testSrc)
+
+class OneAssertFailedCutest(FailedCuTest):
+    def __init__(self, testName: str, testSrc: str):
+        self.assert_result : str = None 
         super().__init__(testName, testSrc)
 
 
@@ -51,23 +41,13 @@ class CuTestParser:
                 error_line[0] = CuTestParser.trim_function_name_group(error_line[0])
                 
                 # Assert pointer
-                if "expected pointer" in error_line[2]:
-                    error = CuTestParser.trim_pointer_group(error_line, PointerFailedCutest(error_line[0], error_line[1]))
-                    CuTestList.append(error)
-
-                # Assert bool
-                if "assert failed" in error_line[2]:
-                    error = CuTestParser.trim_bool_assert_group(error_line, BoolFailedCutest(error_line[0], error_line[1]))
-                    CuTestList.append(error)
-
-                # Assert int
-                if "expected <" in error_line[2] and "but was <" in error_line[2] and "." not in error_line[2]:
-                    error = CuTestParser.trim_int_group(error_line, IntFailedCutest(error_line[0], error_line[1]))
+                if "assert" in error_line[2]:
+                    error = CuTestParser.trim_single_assert_group(error_line, OneAssertFailedCutest(error_line[0], error_line[1]))
                     CuTestList.append(error)
                
-               # Assert double
-                if "expected <" in error_line[2] and "but was <" in error_line[2] and "." in error_line[2]:
-                    error = CuTestParser.trim_double_group(error_line, DoubleFailedCutest(error_line[0], error_line[1]))
+               # Assert with expected and actual 
+                if "expected <" in error_line[2] or "expected pointer <" in error_line[2] and "but was <" in error_line[2]:
+                    error = CuTestParser.trim_expected_actual_group(error_line, TwoAssertFailedCutest(error_line[0], error_line[1]))
                     CuTestList.append(error)
                     
      
@@ -75,55 +55,28 @@ class CuTestParser:
         return CuTestList  
     
     @staticmethod
-    def trim_int_group(error_line: str, intCuTest: IntFailedCutest) -> IntFailedCutest:
-        error_line[2] = error_line[2].replace("expected <", "")
+    def trim_expected_actual_group(error_line: str, expected_actual: TwoAssertFailedCutest) -> TwoAssertFailedCutest:
+        if "expected pointer <" in error_line[2]:
+            error_line[2] = error_line[2].replace("expected pointer <", "")
+        else:
+            error_line[2] = error_line[2].replace("expected <", "")
         error_line[2] = error_line[2].replace("> but was <", " ")
         error_line[2] = error_line[2].replace(">\n", "")
         
         error = error_line[2].split()
 
-        intCuTest.testName = error_line[0]
-        intCuTest.testSrc = error_line[1]
-        intCuTest.expected = int(error[0])
-        intCuTest.actual = int(error[1])
+        expected_actual.testName = error_line[0]
+        expected_actual.testSrc = error_line[1]
+        expected_actual.expected = error[0]
+        expected_actual.actual = error[1]
 
-        return intCuTest
-
-    @staticmethod
-    def trim_double_group(error_line: str, doubleCuTest: DoubleFailedCutest ) -> DoubleFailedCutest:
-        error_line[2] = error_line[2].replace("expected <", "")
-        error_line[2] = error_line[2].replace("> but was <", " ")
-        error_line[2] = error_line[2].replace(">\n", "")
-
-        error = error_line[2].split()
-
-        doubleCuTest.testName = error_line[0]
-        doubleCuTest.testSrc = error_line[1]
-        doubleCuTest.expected = float(error[0])
-        doubleCuTest.actual = float(error[1])
-
-        return doubleCuTest
+        return expected_actual
 
     @staticmethod
-    def trim_pointer_group(error_line: str, pointerCuTest: PointerFailedCutest) -> PointerFailedCutest:
-        error_line[2] = error_line[2].replace("expected pointer <", "")
-        error_line[2] = error_line[2].replace("> but was <", " ")
-        error_line[2] = error_line[2].replace(">\n", "")
-
-        error_line[2] = error_line[2].split(" ")
-        
-        pointerCuTest.testName = error_line[0]
-        pointerCuTest.testSrc = error_line[1]
-        pointerCuTest.expected = error_line[2][0]
-        pointerCuTest.actual = error_line[2][1]
-        
-        return error_line
-
-    @staticmethod
-    def trim_bool_assert_group(error_line: str, boolCuTest: BoolFailedCutest) -> BoolFailedCutest:
+    def trim_single_assert_group(error_line: str, single_assert: OneAssertFailedCutest) -> OneAssertFailedCutest:
         error_line[2] = error_line[2].replace("\n", "")
-        
-        return error_line
+        single_assert.assert_result = error_line[2]
+        return single_assert
 
     @staticmethod
     def trim_function_name_group(error_line: str) -> str:
@@ -134,4 +87,4 @@ class CuTestParser:
 CuTestList = CuTestParser.parse("../examples/c_06/src/original.h.mut.results")
 
 for test in CuTestList:
-    print(test.testName)
+    pprint(vars(test))
