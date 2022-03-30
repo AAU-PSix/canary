@@ -1,11 +1,29 @@
+ID=a
+State=0
 location=l
+ID=b
+State=1
+location=l
+location=l
+ID=a
+State=3
+location=l
+ID=b
+State=9
+location=l
+location=l
+ID=a
+State=-89
+location=l
+ID=b
+State=-75
 location=l
 location=l
 FF.
 
 There were 2 failures:
 1) addTest: /input/tests/AllTests.c:15: expected <1> but was <0>
-2) addTest_1_1: /input/tests/AllTests.c:25: expected <12> but was <1>
+2) addTest_1_1: /input/tests/AllTests.c:25: expected <12> but was <0>
 
 !!!FAILURES!!!
 Runs: 3 Passes: 1 Fails: 2

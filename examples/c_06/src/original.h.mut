@@ -4,7 +4,13 @@
 #include "Canary.h"
 
 int add(int a, int b) {
-    int sum = a && b;CANARY_TWEET_LOCATION(l);
+    CANARY_TWEET_PRIMITIVE(a);CANARY_TWEET_LOCATION(l);
+    CANARY_TWEET_PRIMITIVE(b);CANARY_TWEET_LOCATION(l);
+    if (a > b) {CANARY_TWEET_LOCATION(l);
+        int sum = b + a;CANARY_TWEET_LOCATION(l);
+        return sum;
+    }
+    int sum = a >> b;CANARY_TWEET_LOCATION(l);
     return sum;
 }
 #endif
