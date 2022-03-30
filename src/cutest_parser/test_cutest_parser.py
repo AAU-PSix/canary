@@ -97,6 +97,7 @@ class TestCutestParser(unittest.TestCase):
         self.assertEqual(expected_expected, actual_expected)
         self.assertEqual(actual_actual, expected_actual)
 
+    # TODO De her tests 
     # That it does not read wrongful line (no test_name)
     # That it does not read wrongful line (no test_src)
     # That it does not read wrongful line (no test_message)

@@ -3,9 +3,9 @@ from pprint import pprint
 import os
 
 class FailedCuTest():
-    def __init__(self, testName: str, testSrc: str):
-        self.testName = testName
-        self.testSrc = testSrc
+    def __init__(self, test_name: str, test_src: str):
+        self.test_name = test_name
+        self.test_src = test_src
         self.expected: str = None
         self.actual: str = None
 
@@ -27,33 +27,15 @@ class CuTestParser:
 
 
     def parse(self, lines : List[str]) -> List[FailedCuTest]:
-        
+
         CuTestList : List[FailedCuTest] = []
-        
 
         # A line is split into 3 parts: name, source, assert result
         for line in lines:
             
             if line[0].isdigit():
-                error_line = line.split(": ")
-                test_name = self.trim_function_name_group(error_line[0])
-                test_src = error_line[1]
-                test_message = error_line[2]
-
-                # fixes: expected< test: 1hest: > but was < hest : hesst>
-                if len(error_line) > 3:
-                    error_line[2] = ": ".join(error_line[2:])
-                      
-                # Just a single assert_true
-                if "assert " in test_message:
-                    error = self.trim_single_assert_group(error_line, FailedCuTest(test_name, test_src))
-                    CuTestList.append(error)
-               
-               # Assert with expected and actual 
-                if "expected <" in test_message or "expected pointer <" in test_message and "but was <" in test_message:
-                    error = self.trim_expected_actual_group(error_line, FailedCuTest(test_name, test_src))
-                    CuTestList.append(error)
-                    
+                error = self.parse_single_line(line)
+                CuTestList.append(error)  
 
         return CuTestList  
     
@@ -70,8 +52,8 @@ class CuTestParser:
         
         error = error_line[2].split("SplitActualStringThingBading")
 
-        exp_ass_cutest.testName = error_line[0]
-        exp_ass_cutest.testSrc = error_line[1]
+        exp_ass_cutest.test_name = error_line[0]
+        exp_ass_cutest.test_src = error_line[1]
         exp_ass_cutest.expected = error[0]
         exp_ass_cutest.actual = error[1]
 
@@ -87,8 +69,28 @@ class CuTestParser:
         error_line = error_line.split()
         return error_line[1]
 
+    def parse_single_line(self, line: str) -> FailedCuTest:
+        error_line = line.split(": ")
+        test_name = self.trim_function_name_group(error_line[0])
+        test_src = error_line[1]
+        test_message = error_line[2]
+
+        # fixes: expected< test: 1hest: > but was < hest : hesst>
+        if len(error_line) > 3:
+            error_line[2] = ": ".join(error_line[2:])
+                
+        # Just a single assert_true
+        if "assert " in test_message:
+            error = self.trim_single_assert_group(error_line, FailedCuTest(test_name, test_src))
+            return error
+        
+        # Assert with expected and actual 
+        if "expected <" in test_message or "expected pointer <" in test_message and "but was <" in test_message:
+            error = self.trim_expected_actual_group(error_line, FailedCuTest(test_name, test_src))
+            return error
+
 # parser = CuTestParser()
-# Run this from src/cutest_parser
+# # Run this from src/cutest_parser
 # cwd = os.getcwd()
 # parsed_lines = parser.read_parse_file(cwd + "/test_strings/original.h.mut.copy.results")
 # CuTestList = parser.parse(parsed_lines)
