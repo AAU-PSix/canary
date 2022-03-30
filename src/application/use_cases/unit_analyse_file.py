@@ -1,5 +1,4 @@
 from typing import List
-from unittest import findTestCases
 from utilities import FileHandler
 from ts import (
     Parser,
@@ -45,9 +44,14 @@ class UnitAnalyseFileRequest(UseCaseRequest):
         return self._parser.language
 
 class UnitAnalyseFileResponse(UseCaseResponse):
-    def __init__(self, unit_function: Node) -> None:
+    def __init__(self, tree: Tree, unit_function: Node) -> None:
+        self._tree = tree
         self._unit_function = unit_function
         super().__init__()
+
+    @property
+    def tree(self) -> Tree:
+        return self._tree
 
     @property
     def unit_function(self) -> Node:
@@ -55,7 +59,7 @@ class UnitAnalyseFileResponse(UseCaseResponse):
 
     @property
     def success(self) -> bool:
-        return self._unit_function != None
+        return self._unit_function is not None
 
 class UnitAnalyseFileUseCase(
     UseCase[UnitAnalyseFileRequest, UnitAnalyseFileResponse]
@@ -84,13 +88,15 @@ class UnitAnalyseFileUseCase(
         # Step 4: Find the Function Under Test (FUT) - unit_function
         unit_function: Node = None
         for definition in definitions:
-            identifier: str = request.syntax.get_function_identifier(
+            identifier: Node = request.syntax.get_function_identifier(
                 definition
             )
-            if identifier is request.unit:
+            name: str = tree.contents_of(identifier)
+            if name == request.unit:
                 unit_function = definition
                 break
 
         return UnitAnalyseFileResponse(
+            tree,
             unit_function
         )

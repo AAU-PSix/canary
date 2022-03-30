@@ -7,7 +7,7 @@
 
 CuSuite *CanarySuites() {
     CuSuite *suite = CuSuiteNew();
-    CuSuiteAddSuite(suite, CreateAddSuite());
+    CuSuiteAddSuite(suite, CreateaddSuite());
     return suite;
 }
 #endif
