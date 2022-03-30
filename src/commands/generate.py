@@ -9,8 +9,6 @@ from application import (
     CreateInitialTestCasesUseCase,
     InfestProgramRequest,
     InfestProgramUseCase,
-    RunSubsystemRequest,
-    RunSubsystemUseCase,
     RunTestRequest,
     RunTestUseCase,
 )

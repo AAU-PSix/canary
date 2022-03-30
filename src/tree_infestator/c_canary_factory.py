@@ -4,12 +4,22 @@ from .tree_infection import TreeInfection
 from .canary_factory import CanaryFactory
 
 class CCanaryFactory(CanaryFactory):
+    def __init__(self) -> None:
+        self._current_location = 0
+        super().__init__()
+
+    @property
+    def _next_location(self) -> int:
+        curr = self._current_location
+        self._current_location += 1
+        return curr
+
     def create_location_tweet(self, prefix: str = "", postfix: str = "") -> str:
-        return f"{prefix}CANARY_TWEET_LOCATION(l);{postfix}"
+        return f"{prefix}CANARY_TWEET_LOCATION({self._next_location});{postfix}"
 
     def create_state_tweet(self, prefix: str = "", postfix: str = "") -> str:
         return f"{prefix}CANARY_TWEET_LOCATION(l);{postfix}"
-    
+
     def create_location_tweets(self, node: Node) -> Iterable[TreeInfection]:
         if node.is_type(CNodeType.COMPOUND_STATEMENT):
             # Appends a location tweet after the "{" (index 0 child of the "consequence")
