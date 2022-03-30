@@ -311,6 +311,7 @@ class TestGraphsGraphics(TestCase):
                  }
                  b /= 2; a += 2; c = 42;
                  a = b = c;
+                 return;
              }
              """),
             # https://github.com/neovim/neovim

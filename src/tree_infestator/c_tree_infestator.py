@@ -19,9 +19,6 @@ class CTreeInfestator(TreeInfestator):
         self._syntax = CSyntax()
         super().__init__()
 
-    def immediate_structure_descendent(self, node: Node) -> Node:
-        return self._syntax.get_immediate_structure_descendent(node)
-
     def nests_of_if_condition(self, condition: Node) -> List[Node]:
         # The parent of the condition is the "if_statement" itself.
         return [ condition.parent ]
@@ -46,13 +43,21 @@ class CTreeInfestator(TreeInfestator):
         return [ condition.parent ]
 
     def nests_of_labeled_statement(self, label: Node) -> List[Node]:
-        return [ label ]
+        return [ label, label.named_children[1] ]
 
     def nests_of_expression_statement(self, expression_stmt: Node) -> List[Node]:
         return [ expression_stmt ]
 
-    def nests_declaration(self, declaration: Node) -> List[Node]:
+    def nests_of_return_statement(self, return_stmt: Node) -> List[Node]:
+        return [ return_stmt ]
+
+    def nests_of_declaration(self, declaration: Node) -> List[Node]:
         return [ declaration ]
+
+    def nests_of_function_definition(self, descendent: Node) -> List[Node]:
+        # descendent is a descendent of the "function_definition"
+        function_definition = descendent.get_descendent_of_types([ CNodeType.FUNCTION_DEFINITION.value ])
+        return [ function_definition ]
 
     def nests(self, cfa: CFA) -> List[Node]:
         nests: List[Node] = list()
@@ -83,14 +88,29 @@ class CTreeInfestator(TreeInfestator):
                 nests.extend(self.nests_of_expression_statement(node))
             # Case 8: Declaration
             elif self._syntax.is_declaration(node):
-                nests.extend(self.nests_declaration(node))
+                # TODO: Declarations nests should not be added,
+                #   if they are the intiialization of a for-loop.
+                nests.extend(self.nests_of_declaration(node))
+            # Case 8: Return statement
+            elif self._syntax.is_return_statement(node):
+                nests.extend(self.nests_of_return_statement(node))
+
+            # Case 1: First function definition (Begin/end unit)
+            if self._syntax.is_immediate_of_function_definition(node):
+                nests.extend(self.nests_of_function_definition(node))
         return nests
 
     def infection_spore_for_expression_statement(self, node: Node) -> List[TreeInfection]:
         return [ self._canary_factory.append_state_tweet(node) ]
 
+    def infection_spore_for_assignment_statement(self, node: Node) -> List[TreeInfection]:
+        return [ self._canary_factory.append_state_tweet(node) ]
+
+    def infection_spore_for_return_statement(self, node: Node) -> List[TreeInfection]:
+        return [ self._canary_factory.insert_end_unit_tweet("unit", node) ]
+
     def infection_spore_for_declaration(self, node: Node) -> List[TreeInfection]:
-        return [ self._canary_factory.append_location_tweet(node) ]
+        return [ self._canary_factory.append_state_tweet(node) ]
 
     def infection_spore_if_statement(self, if_stmt: Node) -> List[TreeInfection]:
         infections: List[TreeInfection] = [ ]
@@ -138,10 +158,21 @@ class CTreeInfestator(TreeInfestator):
         # For a "labeled_statement" the second child (index 1) is the ":"
         return [ self._canary_factory.append_location_tweet(node.children[1]) ]
 
+    def infection_spore_function_definition(self, node: Node) -> List[TreeInfection]:
+        body = node.child_by_field(CField.BODY)
+        left_paren = body.children[0]
+        right_parent = body.children[-1]
+        return [ 
+            self._canary_factory.append_begin_unit_tweet("unit", left_paren),
+            self._canary_factory.insert_end_unit_tweet("unit", right_parent)
+        ]
+
     def infect(self, tree: Tree, cfa: CFA) -> Tree:
         probes: Dict[str, Callable[[Node], List[TreeInfection]]] = {
             # Sequential statements
             CNodeType.EXPRESSION_STATEMENT.value: self.infection_spore_for_expression_statement,
+            CNodeType.ASSIGNMENT_EXPRESSION.value: self.infection_spore_for_expression_statement,
+            CNodeType.RETURN_STATEMENT.value: self.infection_spore_for_return_statement,
             CNodeType.DECLARATION.value: self.infection_spore_for_declaration,
             # Control structures
             CNodeType.IF_STATEMENT.value: self.infection_spore_if_statement,
@@ -151,6 +182,8 @@ class CTreeInfestator(TreeInfestator):
             CNodeType.SWITCH_STATEMENT.value: self.infection_spore_switch_statement,
             # Unconditional jump
             CNodeType.LABELED_STATEMENT.value: self.infection_spore_labeled_statement,
+            # Additional
+            CNodeType.FUNCTION_DEFINITION.value: self.infection_spore_function_definition,
         }
 
         # Step 1: Find the infections

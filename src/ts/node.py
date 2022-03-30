@@ -161,8 +161,20 @@ class Node:
     def get_immediate_descendent_of_types(self, types: List[str]) -> "Node":
         current: Node = self
         while current.parent is not None:
-            if current.parent.named_children[0] != current: return None
             if current.parent.type in types: return current.parent
+            if current.parent.named_children[0] != current: return None
+            current = current.parent
+        return None
+
+    def get_immediate_descendent_of_types_field(self, types: List[str], field: str) -> "Node":
+        current: Node = self
+        while current.parent is not None:
+            if current.parent.type in types:
+                field_node = current.parent.child_by_field(field)
+                if field_node is None: return None
+                if field_node == current: return current.parent
+            elif current.parent.named_children[0] != current:
+                return None
             current = current.parent
         return None
 

@@ -6,6 +6,7 @@ from ts import (
     Node,
     Parser,
     CSyntax,
+    CField,
 )
 from cfa import (
     CFA,
@@ -430,7 +431,7 @@ class TestTreeInfestator(unittest.TestCase):
 
         expected =  """
             switch(a) {
-                case 3:CANARY_TWEET_LOCATION(0); { int a=3;CANARY_TWEET_LOCATION(2); }
+                case 3:CANARY_TWEET_LOCATION(0); { int a=3;CANARY_TWEET_LOCATION(l); }
                 default:CANARY_TWEET_LOCATION(1);
             }
         """
@@ -448,7 +449,23 @@ class TestTreeInfestator(unittest.TestCase):
         pass
 
     def test_infect_labeled_statement(self) -> None:
-        pass
+        program: str = """
+            goto SUM;
+        SUM:
+            sum = a + b;
+        """
+        tree: Tree = self._parser.parse(program)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node)
+
+        expected: str = """
+            goto SUM;
+        SUM:CANARY_TWEET_LOCATION(0);
+            sum = a + b;CANARY_TWEET_LOCATION(l);
+        """
+        actual = self._infestator.infect(tree, cfa)
+
+        self.assertEqual(expected, actual.text)
+        self.assertTrue(True)
 
     def test_infect_if_consequence_no_compund_statement(self) -> None:
         program: str = "if (a) a=2;"
@@ -469,7 +486,28 @@ class TestTreeInfestator(unittest.TestCase):
         actual = self._infestator.infect(tree, cfa).text
 
         self.assertEqual(expected, actual)
-    
+
+    def test_infect_function_body_with_unit(self) -> None:
+        program: str = """
+        void Foo() {
+            a = b;
+            return;
+        }
+        """
+        tree: Tree = self._parser.parse(program)
+        cfa: CFA = CCFAFactory(tree).create(tree.root_node.named_children[0].child_by_field(CField.BODY))
+
+        expected: str = """
+        void Foo() {CANARY_TWEET_BEGIN_UNIT(unit);
+            a = b;CANARY_TWEET_LOCATION(l);
+            CANARY_TWEET_END_UNIT(unit);return;
+        CANARY_TWEET_END_UNIT(unit);}
+        """
+        actual = self._infestator.infect(tree, cfa)
+
+        self.assertEqual(expected, actual.text)
+        self.assertTrue(True)
+
     def test_infect_bunch(self) -> None:
         programs: List[Tuple[str, str, str]] = [
             ("if_1", 
