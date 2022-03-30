@@ -1,35 +1,19 @@
-from abc import ABC
-from ctypes import pointer
-from curses.ascii import isdigit
-from distutils.log import error
-from ftplib import error_perm, error_reply
-from operator import contains
-import re
-from typing import Any, List
+from typing import List
 from pprint import pprint
+import os
 
-class FailedCuTest(ABC):
-    def __init__(self, testName: str, testSrc: str):
-        self.testName = testName
-        self.testSrc = testSrc
-
-class FailedCuTestExpAss(FailedCuTest):
-    def __init__(self, testName: str, testSrc: str):
-        self.expected : str = None
-        self.actual : str = None
-        super().__init__(testName, testSrc)
-
-class FailedCuTestAss(FailedCuTest):
-    def __init__(self, testName: str, testSrc: str):
-        self.assert_result : str = None 
-        super().__init__(testName, testSrc)
-
+class FailedCuTest():
+    def __init__(self, test_name: str, test_src: str):
+        self.test_name = test_name
+        self.test_src = test_src
+        self.expected: str = None
+        self.actual: str = None
 
 class CuTestParser:
     def __init__(self):
         self.lines : List[str] = [] 
 
-    def read_parse_file(source : str) -> List[str]:
+    def read_parse_file(self, source : str) -> List[str]:
         file = open(source, "r")
         file_str : str = file.readlines()
         
@@ -42,65 +26,74 @@ class CuTestParser:
         return line_list
 
 
-    def parse(lines : List[str]) -> List[FailedCuTest]:
-        
+    def parse(self, lines : List[str]) -> List[FailedCuTest]:
+
         CuTestList : List[FailedCuTest] = []
-        
 
         # A line is split into 3 parts: name, source, assert result
         for line in lines:
             
             if line[0].isdigit():
-                error_line = line.split(": ")
-                error_line[0] = CuTestParser.trim_function_name_group(error_line[0])
-                # fixes: expected< test: 1hest: > but was < hest : hesst>
-                if len(error_line) > 3:
-                    error_line[2] = ": ".join(error_line[2:])
-                      
-                # Just a single assert_true
-                if "assert" in error_line[2]:
-                    error = CuTestParser.trim_single_assert_group(error_line, FailedCuTestAss(error_line[0], error_line[1]))
-                    CuTestList.append(error)
-               
-               # Assert with expected and actual 
-                if "expected <" in error_line[2] or "expected pointer <" in error_line[2] and "but was <" in error_line[2]:
-                    error = CuTestParser.trim_expected_actual_group(error_line, FailedCuTestExpAss(error_line[0], error_line[1]))
-                    CuTestList.append(error)
-                    
+                error = self.parse_single_line(line)
+                CuTestList.append(error)  
 
         return CuTestList  
     
-    @staticmethod
-    def trim_expected_actual_group(error_line: str, exp_ass_cutest: FailedCuTestExpAss) -> FailedCuTestExpAss:
+    def trim_expected_actual_group(self, error_line: str, exp_ass_cutest: FailedCuTest) -> FailedCuTest:
         if "expected pointer <" in error_line[2]:
             error_line[2] = error_line[2].replace("expected pointer <", "")
         else:
             error_line[2] = error_line[2].replace("expected <", "")
         error_line[2] = error_line[2].replace("> but was <", "SplitActualStringThingBading")
-        error_line[2] = error_line[2].replace(">\n", "")
+        error_line[2] = error_line[2].replace(">", "")
+        error_line[2] = error_line[2].replace("\n", "")
+
+
         
         error = error_line[2].split("SplitActualStringThingBading")
 
-        exp_ass_cutest.testName = error_line[0]
-        exp_ass_cutest.testSrc = error_line[1]
+        exp_ass_cutest.test_name = error_line[0]
+        exp_ass_cutest.test_src = error_line[1]
         exp_ass_cutest.expected = error[0]
         exp_ass_cutest.actual = error[1]
 
         return exp_ass_cutest
 
-    @staticmethod
-    def trim_single_assert_group(error_line: str, single_assert: FailedCuTestAss) -> FailedCuTestAss:
+    def trim_single_assert_group(self, error_line: str, failed_cutest: FailedCuTest) -> FailedCuTest:
         error_line[2] = error_line[2].replace("\n", "")
-        single_assert.assert_result = error_line[2]
-        return single_assert
+        failed_cutest.expected = "True"
+        failed_cutest.actual = error_line[2] # This might be a bit iffy, since the message is "assert failed"
+        return failed_cutest
 
-    @staticmethod
-    def trim_function_name_group(error_line: str) -> str:
+    def trim_function_name_group(self, error_line: str) -> str:
         error_line = error_line.split()
         return error_line[1]
 
-# When running this, remember to include correct asserts in your test suite :))) 
-CuTestList = CuTestParser.parse("/home/daniel/repos/canary/src/cutest_parser/test_strings/original.h.mut copy.results")
+    def parse_single_line(self, line: str) -> FailedCuTest:
+        error_line = line.split(": ")
+        test_name = self.trim_function_name_group(error_line[0])
+        test_src = error_line[1]
+        test_message = error_line[2]
 
-for test in CuTestList:
-    pprint(vars(test))
+        # fixes: expected< test: 1hest: > but was < hest : hesst>
+        if len(error_line) > 3:
+            error_line[2] = ": ".join(error_line[2:])
+                
+        # Just a single assert_true
+        if "assert " in test_message:
+            error = self.trim_single_assert_group(error_line, FailedCuTest(test_name, test_src))
+            return error
+        
+        # Assert with expected and actual 
+        if "expected <" in test_message or "expected pointer <" in test_message and "but was <" in test_message:
+            error = self.trim_expected_actual_group(error_line, FailedCuTest(test_name, test_src))
+            return error
+
+# parser = CuTestParser()
+# # Run this from src/cutest_parser
+# cwd = os.getcwd()
+# parsed_lines = parser.read_parse_file(cwd + "/test_strings/original.h.mut.copy.results")
+# CuTestList = parser.parse(parsed_lines)
+
+# for test in CuTestList:
+#     pprint(vars(test))
