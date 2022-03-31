@@ -9,6 +9,10 @@ There were 5 failures:
 4) Test_CuAssertTrue: /input/tests/AllTests.c:49: assert failed
 5) Test_CuAssertPtrEquals: /input/tests/AllTests.c:55: expected pointer <0x0x16c17e0> but was <0x0x16c1800>
 5) Test_CuAssertPtrEquals: /input/tests/AllTests.c:55: expected <Test Hest: Blæst> but was <Pøls : 1 2 3>
+1) Test_CuAssertPtrEquals: /input/tests/AllTests.c:55: Jaaaaaaaaa Taaaaaak
+1) Test_CuAssertPtrEquals: /input/tests/AllTests.c:55: 
+
+
 !!!FAILURES!!!
 Runs: 6 Passes: 1 Fails: 5
 

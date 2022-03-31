@@ -1,5 +1,6 @@
 import unittest
 from src.cutest_parser.parser_cutest import CuTestParser, FailedCuTest
+from typing import List
 
 from . import *
 
@@ -97,14 +98,47 @@ class TestCutestParser(unittest.TestCase):
         self.assertEqual(expected_expected, actual_expected)
         self.assertEqual(actual_actual, expected_actual)
 
-    # TODO De her tests 
-    # That it does not read wrongful line (no test_name)
-    # That it does not read wrongful line (no test_src)
-    # That it does not read wrongful line (no test_message)
+    def test_parse_no_testname(self) -> None:
+        # Arrange 
+        self._parser = CuTestParser()
+        parsed_line = ["/input/tests/AllTests.c:55: assert failed"]
+        expected_fail_list:  List[FailedCuTest] = []
 
-    # Test from based on file
+        # Act 
+        failed_cutests = self._parser.parse(parsed_line)
+        
+        # Assert 
+        self.assertEqual(failed_cutests, expected_fail_list)
 
-    # Test single_line_parse 
+    def test_parse_no_testmessage(self) -> None:
+        # Arrange 
+        self._parser = CuTestParser()
+        parsed_line = ["500) Test_CuAssertHest: /input/tests/AllTests.c:55: Noget helt andet"]
+        expected_fail_list:  List[FailedCuTest] = [None]
 
+        # Act 
+        failed_cutests = self._parser.parse(parsed_line)
+        
+        # Assert 
+        self.assertEqual(failed_cutests, expected_fail_list)
+    
+
+    def test_single_parse_pointer(self) -> None:
+        # Arrange 
+        self._parser = CuTestParser()
+        parsed_line = "5) Test_CuAssertPtrEquals: /input/tests/AllTests.c:55: expected pointer <0x0x16c17e0> but was <0x0x16c1800>"
+        
+        expected_expected = "0x0x16c17e0"
+        expected_actual = "0x0x16c1800"
+
+        # Act 
+        failed_cutest = self._parser.parse_single_line(parsed_line)
+        
+        actual_expected = failed_cutest.expected
+        actual_actual = failed_cutest.actual
+
+        # Assert 
+        self.assertEqual(expected_expected, actual_expected)
+        self.assertEqual(actual_actual, expected_actual)
 
 

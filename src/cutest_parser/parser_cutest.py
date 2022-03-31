@@ -88,6 +88,8 @@ class CuTestParser:
         if "expected <" in test_message or "expected pointer <" in test_message and "but was <" in test_message:
             error = self.trim_expected_actual_group(error_line, FailedCuTest(test_name, test_src))
             return error
+        else:
+            return None
 
 # parser = CuTestParser()
 # # Run this from src/cutest_parser
@@ -96,4 +98,4 @@ class CuTestParser:
 # CuTestList = parser.parse(parsed_lines)
 
 # for test in CuTestList:
-#     pprint(vars(test))
+#     pprint(test)

@@ -4,7 +4,7 @@
 #include "Canary.h"
 
 int add(int a, int b) {CANARY_TWEET_BEGIN_UNIT(unit);
-    do {CANARY_TWEET_LOCATION(0); a=a;CANARY_TWEET_LOCATION(l); } while(0);
+    do {CANARY_TWEET_LOCATION(0); a-=a;CANARY_TWEET_LOCATION(l); } while(0);
 
     while(1) {CANARY_TWEET_LOCATION(1); a=a;CANARY_TWEET_LOCATION(l); break; }
     for(;;) {CANARY_TWEET_LOCATION(3);{CANARY_TWEET_LOCATION(2);break;}}
@@ -18,7 +18,7 @@ int add(int a, int b) {CANARY_TWEET_BEGIN_UNIT(unit);
     int sum;CANARY_TWEET_LOCATION(l);
     goto SUM;
 SUM:CANARY_TWEET_LOCATION(8);
-    sum |= a + b;CANARY_TWEET_LOCATION(l);
+    sum = a + b;CANARY_TWEET_LOCATION(l);
     CANARY_TWEET_END_UNIT(unit);return sum;
 CANARY_TWEET_END_UNIT(unit);}
 #endif
