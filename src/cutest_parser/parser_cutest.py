@@ -42,11 +42,10 @@ class CuTestParser:
             error_line[2] = error_line[2].replace("expected pointer <", "")
         else:
             error_line[2] = error_line[2].replace("expected <", "")
-        error_line[2] = error_line[2].replace("> but was <", "SplitActualStringThingBading")
         error_line[2] = error_line[2].replace(">", "")
         error_line[2] = error_line[2].replace("\n", "")
 
-        error = error_line[2].split("SplitActualStringThingBading")
+        error = error_line[2].split(" but was <")
 
         exp_ass_cutest.test_name = error_line[0]
         exp_ass_cutest.test_src = error_line[1]
@@ -74,7 +73,7 @@ class CuTestParser:
         # fixes: expected< test: 1hest: > but was < hest : hesst>
         if len(error_line) > 3:
             error_line[2] = ": ".join(error_line[2:])
-                
+
         # Just a single assert_true
         if "assert " in test_message:
             error = self.trim_single_assert_group(error_line, FailedCuTest(test_name, test_src))
@@ -84,5 +83,4 @@ class CuTestParser:
         if "expected <" in test_message or "expected pointer <" in test_message and "but was <" in test_message:
             error = self.trim_expected_actual_group(error_line, FailedCuTest(test_name, test_src))
             return error
-        else:
-            return None
+        return None
