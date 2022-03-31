@@ -80,7 +80,7 @@ class CuTestParser:
             error = self.trim_single_assert_group(error_line, FailedCuTest(test_name, test_src))
             return error
 
-        # Assert with expected and actual 
+        # Assert with expected and actual
         if "expected <" in test_message or "expected pointer <" in test_message and "but was <" in test_message:
             error = self.trim_expected_actual_group(error_line, FailedCuTest(test_name, test_src))
             return error
