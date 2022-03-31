@@ -7,7 +7,7 @@ from . import *
 class TestCutestParser(unittest.TestCase):
     def setUp(self) -> None:
         return super().setUp()
-    
+
     def test_parse_string_with_colon(self) -> None:
         # Arrange
         self._parser = CuTestParser()
