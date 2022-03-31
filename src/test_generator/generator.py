@@ -32,9 +32,12 @@ class CodeGenerator(ABC):
     def _next_line(self) -> None:
         self._write_line("")
 
+    def _white_space_indentation(self, indentation: int = None) -> str:
+        if indentation is None: indentation = self._indentation
+        return indentation * "    "
+
     def _write_line(self, line: str = "") -> None:
-        indent: str = self._indentation * "    "
-        self._lines.append(f'{indent}{line}')
+        self._lines.append(f'{self._white_space_indentation()}{line}')
 
 class CuTestSuiteCodeGenerator(CodeGenerator, ASTVisitor):
     def __init__(self) -> None:
@@ -73,12 +76,21 @@ class CuTestSuiteCodeGenerator(CodeGenerator, ASTVisitor):
     def visit_test_case(self, test: TestCase) -> List[str]:
         self._write_line(f'void {test.name}(CuTest *ct)' + ' {')
         self._indent()
+
         self._write_line("// Arrange")
         for stmt in test.arrange: stmt.accept(self)
+
         self._write_line("// Act")
-        if test.act is not None: test.act.accept(self)
+        if test.act is not None:
+            prev_indentation = self._indentation
+            self._indentation = 0
+            test.act.accept(self)
+            self._lines[-1] = f'{self._white_space_indentation(prev_indentation)}CANARY_ACT({self._lines[-1]});'
+            self._indentation = prev_indentation
+
         self._write_line("// Assert")
         for stmt in test.assertions: stmt.accept(self)
+
         self._deindent()
         self._write_line("}")
         return self._lines
