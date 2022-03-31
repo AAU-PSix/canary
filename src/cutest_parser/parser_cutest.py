@@ -1,6 +1,4 @@
 from typing import List
-from pprint import pprint
-import os
 
 class FailedCuTest():
     def __init__(self, test_name: str, test_src: str):
@@ -48,8 +46,6 @@ class CuTestParser:
         error_line[2] = error_line[2].replace(">", "")
         error_line[2] = error_line[2].replace("\n", "")
 
-
-        
         error = error_line[2].split("SplitActualStringThingBading")
 
         exp_ass_cutest.test_name = error_line[0]
@@ -90,12 +86,3 @@ class CuTestParser:
             return error
         else:
             return None
-
-# parser = CuTestParser()
-# # Run this from src/cutest_parser
-# cwd = os.getcwd()
-# parsed_lines = parser.read_parse_file(cwd + "/test_strings/original.h.mut.copy.results")
-# CuTestList = parser.parse(parsed_lines)
-
-# for test in CuTestList:
-#     pprint(test)
