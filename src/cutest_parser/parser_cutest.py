@@ -14,7 +14,7 @@ class CuTestParser:
     def read_parse_file(self, source : str) -> List[str]:
         file = open(source, "r")
         file_str : str = file.readlines()
-        
+
         line_list = []
         for line in file_str:
             if line[0].isdigit() and ") " in line:
@@ -33,10 +33,10 @@ class CuTestParser:
             
             if line[0].isdigit():
                 error = self.parse_single_line(line)
-                CuTestList.append(error)  
+                CuTestList.append(error)
 
-        return CuTestList  
-    
+        return CuTestList
+
     def trim_expected_actual_group(self, error_line: str, exp_ass_cutest: FailedCuTest) -> FailedCuTest:
         if "expected pointer <" in error_line[2]:
             error_line[2] = error_line[2].replace("expected pointer <", "")
@@ -79,7 +79,7 @@ class CuTestParser:
         if "assert " in test_message:
             error = self.trim_single_assert_group(error_line, FailedCuTest(test_name, test_src))
             return error
-        
+
         # Assert with expected and actual 
         if "expected <" in test_message or "expected pointer <" in test_message and "but was <" in test_message:
             error = self.trim_expected_actual_group(error_line, FailedCuTest(test_name, test_src))
