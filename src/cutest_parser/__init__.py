@@ -1,1 +1,1 @@
-from parser_cutest import *
+from .parser_cutest import *
