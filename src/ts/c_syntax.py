@@ -64,6 +64,7 @@ class CNodeType(NodeType):
     IDENTIFIER = "identifier"
     # Constructs
     EXPRESSION_STATEMENT = "expression_statement"
+    ASSIGNMENT_EXPRESSION = "assignment_expression"
     DECLARATION = "declaration"
     IF_STATEMENT = "if_statement"
     WHILE_STATEMENT = "while_statement"
@@ -77,6 +78,7 @@ class CNodeType(NodeType):
     RETURN_STATEMENT = "return_statement"
     LABELED_STATEMENT = "labeled_statement"
     GOTO_STATEMENT = "goto_statement"
+    FUNCTION_DEFINITION = "function_definition"
 
 class CSyntax(Syntax):
     @property
@@ -161,6 +163,7 @@ class CSyntax(Syntax):
             CNodeType.DO_STATEMENT,
             CNodeType.FOR_STATEMENT,
             CNodeType.SWITCH_STATEMENT,
+            CNodeType.FUNCTION_DEFINITION
         ]
 
     @property
@@ -288,8 +291,16 @@ class CSyntax(Syntax):
     def is_expression_statement(self, node: Node) -> bool:
         return node is not None and node.is_type(CNodeType.EXPRESSION_STATEMENT)
 
+    def is_return_statement(self, node: Node) -> bool:
+        return node is not None and node.is_type(CNodeType.RETURN_STATEMENT)
+
     def is_declaration(self, node: Node) -> bool:
         return node is not None and node.is_type(CNodeType.DECLARATION)
+
+    def is_immediate_of_function_definition(self, node: Node) -> bool:
+        return node is not None and node.get_immediate_descendent_of_types_field(
+            [ CNodeType.FUNCTION_DEFINITION.value ], CField.BODY
+        ) is not None
 
     def node_field(self, node_type: str) -> CNodeType:
         return CNodeType(node_type)

@@ -88,7 +88,7 @@
 #define CANARY_PRIMITIVE_LONG_DOUBLE_PLACEHOLDER            "%Lf"
 
 #define CANARY_TWEET_LOCATION(l)\
-do { printf("location="CANARY_STR(l)"\n"); } while(0)
+do { printf("Location="CANARY_STR(l)"\n"); } while(0)
 
 char *PrimitivePlaceholder(int type) {
     switch (type) {
@@ -149,6 +149,18 @@ char *PrimitivePlaceholder(int type) {
     }
     return CANARY_PRIMITIVE_DEFAULT;
 }
+
+#define CANARY_TWEET_BEGIN_TEST(TEST)\
+do { printf("BeginTest="CANARY_STR(TEST)"\n"); } while(0)
+
+#define CANARY_TWEET_END_TEST(TEST)\
+do { printf("EndTest="CANARY_STR(TEST)"\n"); } while(0)
+
+#define CANARY_TWEET_BEGIN_UNIT(UNIT)\
+do { printf("BeginUnit="CANARY_STR(UNIT)"\n"); } while(0)
+
+#define CANARY_TWEET_END_UNIT(UNIT)\
+do { printf("EndUnit="CANARY_STR(UNIT)"\n"); } while(0)
 
 #define CANARY_TWEET_PRIMITIVE(VAR)                             \
 do {                                                            \

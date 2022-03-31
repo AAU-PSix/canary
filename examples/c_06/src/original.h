@@ -4,13 +4,21 @@
 #include "Canary.h"
 
 int add(int a, int b) {
-    CANARY_TWEET_PRIMITIVE(a);
-    CANARY_TWEET_PRIMITIVE(b);
-    if (a > b) {
-        int sum = b + a;
-        return sum;
-    }
-    int sum = a + b;
+    do { a=a; } while(0);
+
+    while(1) { a=a; break; }
+    for(;;) break;
+
+    for (;0;) a=a;
+
+    if (a==a) { a=a; }
+    else if(b==b) { b=b; }
+    else { b=b; }
+
+    int sum;
+    goto SUM;
+SUM:
+    sum = a + b;
     return sum;
 }
 #endif
