@@ -45,8 +45,7 @@ class CuTestParser:
         else:
             error_line[2] = error_line[2].replace("expected <", "")
         error_line[2] = error_line[2].replace("> but was <", "SplitActualStringThingBading")
-        error_line[2] = error_line[2].replace(">", "")
-        error_line[2] = error_line[2].replace("\n", "")
+        error_line[2] = error_line[2].replace(">\n", "")
 
 
         
@@ -61,8 +60,8 @@ class CuTestParser:
 
     def trim_single_assert_group(self, error_line: str, failed_cutest: FailedCuTest) -> FailedCuTest:
         error_line[2] = error_line[2].replace("\n", "")
-        failed_cutest.expected = "True"
-        failed_cutest.actual = error_line[2] # This might be a bit iffy, since the message is "assert failed"
+        failed_cutest.expected = "true"
+        failed_cutest.actual = "false"
         return failed_cutest
 
     def trim_function_name_group(self, error_line: str) -> str:
@@ -91,11 +90,11 @@ class CuTestParser:
         else:
             return None
 
-# parser = CuTestParser()
-# # Run this from src/cutest_parser
-# cwd = os.getcwd()
-# parsed_lines = parser.read_parse_file(cwd + "/test_strings/original.h.mut.copy.results")
-# CuTestList = parser.parse(parsed_lines)
+parser = CuTestParser()
+# Run this from src/cutest_parser
+cwd = os.getcwd()
+parsed_lines = parser.read_parse_file(cwd + "/test_strings/original.h.mut.copy.results")
+CuTestList = parser.parse(parsed_lines)
 
-# for test in CuTestList:
-#     pprint(test)
+for test in CuTestList:
+    pprint(vars(test))
