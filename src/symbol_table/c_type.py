@@ -1,5 +1,5 @@
 from enum import Enum
-from symbol_table import Declaration, LexicalSymbolTable
+from symbol_table import LexicalDeclaration, LexicalSymbolTable
 from .type import *
 
 class CTypeQualifier(Enum):
@@ -52,5 +52,7 @@ class CSymbolTable(LexicalSymbolTable):
         super().__init__(parent, children)
 
     # We have to override the original to support shadowing
-    def enter(self, identifier: str, type: Type) -> bool:
-        self._declarations.append(Declaration(identifier, type))
+    def enter(self, identifier: str, type: Type, lexical_index: int) -> bool:
+        declaration = LexicalDeclaration(identifier, type, lexical_index)
+        self._declarations.append(declaration)
+        return True

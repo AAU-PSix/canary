@@ -15,19 +15,29 @@ class Declaration():
     def type(self) -> Type:
         return self._type
 
+class LexicalDeclaration(Declaration):
+    def __init__(self, identifier: str, type: Type, lexical_index: int) -> None:
+        self._lexical_index = lexical_index
+        super().__init__(identifier, type)
+
+    @property
+    def lexical_index(self) -> int:
+        return self._lexical_index
+
 class LexicalSymbolTable(Node["LexicalSymbolTable"]):
     def __init__(
         self,
         parent: "LexicalSymbolTable" = None,
         children: List["LexicalSymbolTable"] = list(),
     ) -> None:
-        self._declarations: List[Declaration] = [ ]
+        self._declarations: List[LexicalDeclaration] = [ ]
         super().__init__(parent, children)
 
-    def enter(self, identifier: str, type: Type) -> bool:
+    def enter(self, identifier: str, type: Type, lexical_index: int) -> bool:
         for declaration in self._declarations:
             if declaration.identifier == identifier: return False
-        self._declarations.append(Declaration(identifier, type))
+        declaration = LexicalDeclaration(identifier, type, lexical_index)
+        self._declarations.append(declaration)
         return True
 
     def local_lookup(self, identifier: str) -> Type:
@@ -107,8 +117,8 @@ class LexicalSymbolTabelBuilder():
         self._scope_stack.append(new_table)
         return self
 
-    def enter(self, identifier: str, type: Type) -> "LexicalSymbolTabelBuilder":
-        self.current.enter(identifier, type)
+    def enter(self, identifier: str, type: Type, lexical_index: int) -> "LexicalSymbolTabelBuilder":
+        self.current.enter(identifier, type, lexical_index)
         return self
 
     def close(self) -> "LexicalSymbolTabelBuilder":

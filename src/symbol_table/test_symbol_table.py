@@ -50,9 +50,9 @@ class TestSymbolTable(unittest.TestCase):
         builder = LexicalSymbolTabelBuilder()
         type_int = PrimitiveType("int")
         type_double = PrimitiveType("double")
-        builder.enter("foo", type_int)
+        builder.enter("foo", type_int, 0)
         builder.open()
-        builder.enter("bar", type_double)
+        builder.enter("bar", type_double, 1)
         builder.close()
 
         root: LexicalSymbolTable = builder.build().root
@@ -171,10 +171,10 @@ class TestSymbolTable(unittest.TestCase):
         builder = LexicalSymbolTabelBuilder()
         type_int = PrimitiveType("int")
         builder.open()
-        builder.enter("foo", type_int)
+        builder.enter("foo", type_int, 0)
         builder.close()
         builder.open()
-        builder.enter("bar", type_int)
+        builder.enter("bar", type_int, 1)
         builder.close()
 
         root: LexicalSymbolTable = builder.build().root
