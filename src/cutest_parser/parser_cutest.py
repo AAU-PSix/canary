@@ -1,3 +1,4 @@
+from operator import contains
 from typing import List
 
 class FailedCuTest():
@@ -43,9 +44,14 @@ class CuTestParser:
         else:
             error_line[2] = error_line[2].replace("expected <", "")
         error_line[2] = error_line[2].replace("> but was <", "SplitActualStringThingBading")
-        error_line[2] = error_line[2].replace(">\n", "")
 
-        error = error_line[2].split(" but was <")
+        # If there is a newline in the last character of the error_message
+        if "\n" in error_line[2][-1]:
+            error_line[2] = error_line[2].replace(">\n", "")
+        else:
+            error_line[2] = error_line[2].replace(">", "")
+
+        error = error_line[2].split("SplitActualStringThingBading")
 
         exp_ass_cutest.test_name = error_line[0]
         exp_ass_cutest.test_src = error_line[1]
