@@ -1,5 +1,5 @@
 from enum import Enum
-from symbol_table import SymbolTable
+from symbol_table import Declaration, LexicalSymbolTable
 from .type import *
 
 class CTypeQualifier(Enum):
@@ -43,14 +43,14 @@ class CUnionType(CType, CompositeType):
     def __init__(self, identifier: str, composition: List[CompositeField]) -> None:
         super().__init__(identifier, composition)
 
-class CSymbolTable(SymbolTable):
+class CSymbolTable(LexicalSymbolTable):
     def __init__(
         self,
-        parent: "SymbolTable" = None,
-        children: List["SymbolTable"] = list()
+        parent: "LexicalSymbolTable" = None,
+        children: List["LexicalSymbolTable"] = list()
     ) -> None:
         super().__init__(parent, children)
 
     # We have to override the original to support shadowing
-    def enter(self, type: Type) -> bool:
-        self._declarations[type.identifier] = type
+    def enter(self, identifier: str, type: Type) -> bool:
+        self._declarations.append(Declaration(identifier, type))

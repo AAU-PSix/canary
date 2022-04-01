@@ -33,6 +33,7 @@ class Node(Generic[TNode]):
 
     @property
     def next_sibling(self) -> TNode:
+        if self.parent is None: return None
         index = self.siblings.index(self)
         # Check if the next siblings is out of bounds.
         if index + 1 == len(self.siblings) - 1: return None
@@ -40,10 +41,15 @@ class Node(Generic[TNode]):
 
     @property
     def previous_sibling(self) -> TNode:
+        if self.parent is None: return None
         index = self.siblings.index(self)
         # Check if the next siblings is out of bounds.
         if index - 1 < 0: return None
         return self.siblings[index - 1]
+
+    @property
+    def has_previous_sibling(self) -> bool:
+        return self.previous_sibling is not None
 
     @property
     def children(self) -> List[TNode]:
