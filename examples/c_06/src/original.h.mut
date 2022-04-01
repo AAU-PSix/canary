@@ -9,7 +9,7 @@ int add(int a, int b) {CANARY_TWEET_BEGIN_UNIT(unit);
     while(1) {CANARY_TWEET_LOCATION(1); a=a;CANARY_TWEET_LOCATION(l); break; }
     for(;;) {CANARY_TWEET_LOCATION(3);{CANARY_TWEET_LOCATION(2);break;}}
 
-    for (;0;) {CANARY_TWEET_LOCATION(4);a=a;}
+    for (;0;) {CANARY_TWEET_LOCATION(4);a/=a;}
 
     if (a==a) {CANARY_TWEET_LOCATION(5); a^=a;CANARY_TWEET_LOCATION(l); }
     else if(b==b) {CANARY_TWEET_LOCATION(6); b=b;CANARY_TWEET_LOCATION(l); }

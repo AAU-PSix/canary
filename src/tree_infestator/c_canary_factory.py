@@ -1,13 +1,11 @@
 from typing import Iterable
-from symbol_table import SymbolTable
 from ts import Node, CNodeType
 from .tree_infection import TreeInfection
 from .canary_factory import CanaryFactory
 
 class CCanaryFactory(CanaryFactory):
-    def __init__(self, symbol_table: SymbolTable = SymbolTable()) -> None:
+    def __init__(self) -> None:
         self._current_location = 0
-        self._symbol_table = symbol_table
         super().__init__()
 
     @property
