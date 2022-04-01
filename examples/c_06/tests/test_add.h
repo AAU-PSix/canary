@@ -9,10 +9,10 @@
 
 void test_add(CuTest *ct) {
     // Arrange
-    int a_0 = -13;
-    int b_0 = -108;
+    int a_0 = 3;
+    int b_0 = -58;
     // Act
-    int actual = add(a_0, b_0);
+    CANARY_ACT(int actual = add(a_0, b_0););
     // Assert
 }
 
