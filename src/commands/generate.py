@@ -1,3 +1,4 @@
+from pprint import pprint
 from typing import Union, List
 
 from application import (
@@ -11,6 +12,9 @@ from application import (
     InfestProgramUseCase,
     RunTestRequest,
     RunTestUseCase,
+    ParseTestResultRequest, 
+    ParseTestResultResponse, 
+    ParseTestResultUseCase
 )
 
 from mutator import Mutator
@@ -79,6 +83,7 @@ def generate(
     # Step 5: Rename the original file to the temp
     os.rename(filepath, tmp_filepath)
 
+    # TODO Generate Mutate UseCase
     # Step 6: Generate the mutant
     # Step 6.1: Read the original file, which is now the temp
     original_file: FileHandler = open(tmp_filepath, "r")
@@ -101,11 +106,18 @@ def generate(
     )
     RunTestUseCase().do(mutant_test_request)
 
+    # Step 7.1: Parse the test results
+    parse_results_request = ParseTestResultRequest(mutant_results_filepath)
+    test_result = ParseTestResultUseCase().do(parse_results_request)
+
+    # TODO Write use-case for Rename
     # Step 8: Move the original program into the mutant
     #   If we want to persist then store the mutant another place
     if persist: os.rename(filepath, f'{filepath}.mut')
     os.rename(tmp_filepath, filepath)
 
+
+    # TODO Create Revert use case 
     # Step 9: Clean up
     # Step 9.1: Remove canaries in the original file
     new_inf_original_file: FileHandler = open(filepath, "w+")

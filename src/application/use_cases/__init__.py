@@ -4,3 +4,4 @@ from .create_initial_test_cases import *
 from .infest_program import *
 from .run_subprocess import *
 from .run_test import *
+from .parse_test_result import *
