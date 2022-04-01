@@ -21,5 +21,5 @@ class CSymbolTable(SymbolTable):
     def enter(self, type: Type) -> bool:
         self._declarations[type.identifier] = type
 
-    def enter_extern(self, type: Type) -> "CSymbolTable":
+    def enter_extern(self, _: Type) -> "CSymbolTable":
         return self

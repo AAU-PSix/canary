@@ -8,9 +8,7 @@ There were 5 failures:
 3) Test_CuAssertDblEquals: /input/tests/AllTests.c:45: expected <0.000000> but was <0.200000>
 4) Test_CuAssertTrue: /input/tests/AllTests.c:49: assert failed
 5) Test_CuAssertPtrEquals: /input/tests/AllTests.c:55: expected pointer <0x0x16c17e0> but was <0x0x16c1800>
-5) Test_CuAssertPtrEquals: /input/tests/AllTests.c:55: expected <Test Hest: Blæst> but was <Pøls : 1 2 3>
-1) Test_CuAssertPtrEquals: /input/tests/AllTests.c:55: Jaaaaaaaaa Taaaaaak
-1) Test_CuAssertPtrEquals: /input/tests/AllTests.c:55: 
+5) Test_CuAssertPtrEquals: /input/tests/AllTests.c:55: expected <Test Hest: B<< >>læst> but was <Pøls :<< > 1 2 3>
 
 
 !!!FAILURES!!!
