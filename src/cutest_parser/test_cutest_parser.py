@@ -85,8 +85,8 @@ class TestCutestParser(unittest.TestCase):
         self._parser = CuTestParser()
         parsed_line = ["5) Test_CuAssertGuguGaga: /input/tests/AllTests.c:55: assert failed"]
 
-        expected_expected = "True"
-        expected_actual = "assert failed"
+        expected_expected = "true"
+        expected_actual = "false"
 
         # Act
         failed_cutests = self._parser.parse(parsed_line)
@@ -133,7 +133,7 @@ class TestCutestParser(unittest.TestCase):
 
         # Act
         failed_cutest = self._parser.parse_single_line(parsed_line)
-        
+
         actual_expected = failed_cutest.expected
         actual_actual = failed_cutest.actual
 

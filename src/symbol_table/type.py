@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, TypeVar
 from abc import ABC
 
 class Type(ABC):
