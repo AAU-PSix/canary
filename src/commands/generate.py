@@ -1,4 +1,3 @@
-from pprint import pprint
 from typing import Union, List
 
 from application import (
@@ -13,20 +12,18 @@ from application import (
     RunTestRequest,
     RunTestUseCase,
     ParseTestResultRequest, 
-    ParseTestResultResponse, 
-    ParseTestResultUseCase
+    ParseTestResultUseCase,
+    RenameRequest,
+    RenameUseCase,
+    RevertRequest,
+    RevertUseCase, 
+    GenerateMutantsRequest,
+    GenerateMutantsUseCase
 )
 
-from mutator import Mutator
 from ts import (
     Parser,
-    Tree,
 )
-from utilities import (
-    FileHandler
-)
-import subprocess
-import os
 
 def generate(
     file: str,
@@ -81,24 +78,16 @@ def generate(
     RunTestUseCase().do(original_test_request)
 
     # Step 5: Rename the original file to the temp
-    os.rename(filepath, tmp_filepath)
+    rename_original_to_tmp_request = RenameRequest(
+        filepath, tmp_filepath
+    )
+    RenameUseCase().do(rename_original_to_tmp_request)
 
-    # TODO Generate Mutate UseCase
     # Step 6: Generate the mutant
-    # Step 6.1: Read the original file, which is now the temp
-    original_file: FileHandler = open(tmp_filepath, "r")
-    original_contents: str = original_file.read()
-    original_file.close()
-    # Step 6.2: Parse the tree for the original program
-    parser: Parser = Parser.c()
-    tree: Tree = parser.parse(original_contents)
-    # Step 6.3: Create the mutant
-    mutator: Mutator = Mutator(parser)
-    mutated_tree: Tree = mutator.mutate(tree)
-    # Step 6.4: Write the mutant to the original filepath
-    mutant_file: FileHandler = open(filepath, "w+")
-    mutant_file.write(mutated_tree.text)
-    mutant_file.close()
+    generate_mutants_request = GenerateMutantsRequest(
+        filepath, tmp_filepath
+    )
+    GenerateMutantsUseCase().do(generate_mutants_request)
 
     # Step 7: Test the mutant program
     mutant_test_request = RunTestRequest(
@@ -110,16 +99,21 @@ def generate(
     parse_results_request = ParseTestResultRequest(mutant_results_filepath)
     test_result = ParseTestResultUseCase().do(parse_results_request)
 
-    # TODO Write use-case for Rename
     # Step 8: Move the original program into the mutant
     #   If we want to persist then store the mutant another place
-    if persist: os.rename(filepath, f'{filepath}.mut')
-    os.rename(tmp_filepath, filepath)
+    if persist: 
+        mut_rename_request = RenameRequest(
+            filepath, f'{filepath}.mut'
+        )
+        tmp_rename_request = RenameRequest(
+            tmp_filepath, filepath
+        )
+        RenameUseCase().do(mut_rename_request)
+        RenameUseCase().do(tmp_rename_request)
 
-
-    # TODO Create Revert use case 
     # Step 9: Clean up
     # Step 9.1: Remove canaries in the original file
-    new_inf_original_file: FileHandler = open(filepath, "w+")
-    new_inf_original_file.write(unit_analysis_response.tree.text)
-    new_inf_original_file.close()
+    revert_request = RevertRequest(
+        filepath, unit_analysis_response.tree.text
+    )
+    RevertUseCase().do(revert_request)

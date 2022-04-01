@@ -39,7 +39,11 @@ Location=8
 Location=l
 EndUnit=unit
 EndTest=test_add
-...
+.F.
 
-OK (3 tests)
+There was 1 failure:
+1) addTest_1_1: /input/tests/AllTests.c:25: expected <12> but was <33>
+
+!!!FAILURES!!!
+Runs: 3 Passes: 2 Fails: 1
 

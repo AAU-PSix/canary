@@ -141,7 +141,7 @@ class TestCutestParser(unittest.TestCase):
         self.assertEqual(expected_expected, actual_expected)
         self.assertEqual(actual_actual, expected_actual)
 
-    def test_single_parse_tisssssss(self) -> None:
+    def test_single_single_parse_int(self) -> None:
         # Arrange
         self._parser = CuTestParser()
         parsed_line = "1) addTest_1_1: /input/tests/AllTests.c:25: expected <12> but was <1>"
