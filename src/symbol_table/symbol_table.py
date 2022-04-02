@@ -27,19 +27,23 @@ class LexicalDeclaration(Declaration):
 class LexicalSymbolTable(Node["LexicalSymbolTable"]):
     def __init__(
         self,
+        minimum_lexical_index: int,
+        maximum_lexical_index: int,
         parent: "LexicalSymbolTable" = None,
         children: List["LexicalSymbolTable"] = list(),
     ) -> None:
         self._declarations: List[LexicalDeclaration] = [ ]
+        self._minimum_lexical_index = minimum_lexical_index
+        self._maximum_lexical_index = maximum_lexical_index
         super().__init__(parent, children)
 
     @property
-    def last_lexical_index(self) -> int:
-        return self._declarations[-1].lexical_index
+    def minimum_lexical_index(self) -> int:
+        return self._minimum_lexical_index
 
     @property
-    def first_lexical_index(self) -> int:
-        return self._declarations[0].lexical_index
+    def maximum_lexical_index(self) -> int:
+        return self._maximum_lexical_index
 
     @property
     def is_empty(self) -> bool:
@@ -76,12 +80,46 @@ class LexicalSymbolTable(Node["LexicalSymbolTable"]):
     def local_identifiers(self) -> List[str]:
         return [ declaration.identifier for declaration in self._declarations ]
 
-    def identifiers(self, last_lexical: int = None) -> List[str]:
-        if last_lexical is None: last_lexical = self.last_lexical_index
+    def identifiers(self, lexical_bound: int = None) -> List[str]:
+        start = self
+
+        if lexical_bound is None:
+            # If no lexical bound is defined then it is because
+            #   we want every identifiers avaiable after this scope.
+            lexical_bound = self.maximum_lexical_index + 1
+        else:
+            # If a lexical bound is defined then it is because
+            #   we want all identifiers accesible at a given point.
+            while start.parent is not None:
+                start = start.parent
+
+            # We loop until no child has the "lexical bound"
+            #   within its scope, this can happen in the following case:
+            # 0: {
+            # 1:     {
+            # 2:         int a;
+            # 3:     }
+            # 4:     int b;
+            # 5:     {
+            # 6:         int c;
+            # 7:     }
+            # 8: }
+            # When search for the bound "4", should stop in the current scope
+            #   even through it still has children - for this reason we have
+            #   the "loop" variable which handles the iterative deepening.
+            loop = True
+            while loop:
+                for child in start.children:
+                    if lexical_bound <= child.maximum_lexical_index and \
+                        lexical_bound >= child.minimum_lexical_index:
+                        start = child
+                        break
+                loop = False
+
         identifiers = [ ]
-        for table in self.lexical_traversal():
+        for table in start.lexical_traversal():
             for declaration in table._declarations:
-                if declaration.lexical_index <= last_lexical:
+                if declaration.lexical_index < lexical_bound:
                     identifiers.append(declaration.identifier)
                 # Compilers for C allows "implicit declaration of function"
                 #   Which means that "functions" can be used before they are declared.
@@ -107,8 +145,16 @@ class LexicalSymbolTable(Node["LexicalSymbolTable"]):
             curr = curr.parent
 
 class LexicalSymbolTabelBuilder():
-    def __init__(self) -> None:
-        self._root = LexicalSymbolTable(None, list())
+    def __init__(
+        self,
+        minimum_lexical_index: int,
+        maximum_lexical_index: int,
+    ) -> None:
+        self._root = LexicalSymbolTable(
+            minimum_lexical_index,
+            maximum_lexical_index,
+            None, list()
+        )
         self._scope_stack = [ self._root ]
 
     @property
@@ -119,13 +165,27 @@ class LexicalSymbolTabelBuilder():
     def depth(self) -> int:
         return len(self._scope_stack)
 
-    def open(self) -> "LexicalSymbolTabelBuilder":
-        new_table = LexicalSymbolTable(self.current, list())
+    def open(
+        self,
+        minimum_lexical_index: int,
+        maximum_lexical_index: int
+    ) -> "LexicalSymbolTabelBuilder":
+        new_table = LexicalSymbolTable(
+            minimum_lexical_index,
+            maximum_lexical_index,
+            self.current,
+            list()
+        )
         self.current.children.append(new_table)
         self._scope_stack.append(new_table)
         return self
 
-    def enter(self, identifier: str, type: Type, lexical_index: int) -> "LexicalSymbolTabelBuilder":
+    def enter(
+        self,
+        identifier: str,
+        type: Type,
+        lexical_index: int
+    ) -> "LexicalSymbolTabelBuilder":
         self.current.enter(identifier, type, lexical_index)
         return self
 

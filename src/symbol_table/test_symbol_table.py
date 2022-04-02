@@ -11,11 +11,11 @@ from . import (
 class TestSymbolTable(unittest.TestCase):
     def test_root_children_siblings(self) -> None:
         root_children: List[LexicalSymbolTable] = [ ]
-        root_table = LexicalSymbolTable(None, root_children)
+        root_table = LexicalSymbolTable(-10, 10, None, root_children)
         # Two different approaches of appending a child
-        root_table.children.append(LexicalSymbolTable(root_table, list()))
-        root_children.append(LexicalSymbolTable(root_table, list()))
-        root_children.append(LexicalSymbolTable(root_table, list()))
+        root_table.children.append(LexicalSymbolTable(1, 2, root_table, list()))
+        root_children.append(LexicalSymbolTable(3, 4, root_table, list()))
+        root_children.append(LexicalSymbolTable(5, 6, root_table, list()))
 
         self.assertEqual(root_table.child_count, 3)
         self.assertEqual(root_table.children, root_children)
@@ -30,12 +30,12 @@ class TestSymbolTable(unittest.TestCase):
         self.assertEqual(root_children[2].siblings, root_table.children)
 
     def test_symbol_table_builder(self) -> None:
-        builder = LexicalSymbolTabelBuilder()
-        builder.open()
+        builder = LexicalSymbolTabelBuilder(-10, 10)
+        builder.open(1, 1)
         builder.close()
-        builder.open()
+        builder.open(2, 2)
         builder.close()
-        builder.open()
+        builder.open(3, 3)
         builder.close()
 
         root = builder.build().root
@@ -48,11 +48,11 @@ class TestSymbolTable(unittest.TestCase):
         self.assertEqual(root.children[1].previous_sibling, root.children[0])
 
     def test_lookup(self) -> None:
-        builder = LexicalSymbolTabelBuilder()
+        builder = LexicalSymbolTabelBuilder(-10, 10)
         type_int = PrimitiveType("int")
         type_double = PrimitiveType("double")
         builder.enter("foo", type_int, 0)
-        builder.open()
+        builder.open(1, 2)
         builder.enter("bar", type_double, 1)
         builder.close()
 
@@ -78,10 +78,10 @@ class TestSymbolTable(unittest.TestCase):
         # 0: Is the start
         # [0-2]: Is the traversed
         #   tables and their order.
-        builder = LexicalSymbolTabelBuilder()
-        builder.open().close() # 0
-        builder.open().close() # o
-        builder.open().close() # o
+        builder = LexicalSymbolTabelBuilder(0, 10)
+        builder.open(1, 1).close() # 0
+        builder.open(2, 2).close() # o
+        builder.open(3, 3).close() # o
 
         tree = builder.build()
         root = tree.root
@@ -100,12 +100,12 @@ class TestSymbolTable(unittest.TestCase):
         #      /|\
         #     o 0 o
         # 0: Is the start
-        # [0-2]: Is the traversed
+        # [0-1]: Is the traversed
         #   tables and their order.
-        builder = LexicalSymbolTabelBuilder()
-        builder.open().close() # o
-        builder.open().close() # 0
-        builder.open().close() # o
+        builder = LexicalSymbolTabelBuilder(0, 10)
+        builder.open(1, 1).close() # o
+        builder.open(2, 2).close() # 0
+        builder.open(3, 3).close() # o
 
         tree = builder.build()
         root = tree.root
@@ -128,21 +128,21 @@ class TestSymbolTable(unittest.TestCase):
         # 0: Is the start
         # [0-4]: Is the traversed
         #   tables and their order.
-        builder = LexicalSymbolTabelBuilder()
-        builder.open()  # o
-        builder.open()  # | o
+        builder = LexicalSymbolTabelBuilder(0, 20)
+        builder.open(1, 5)  # o
+        builder.open(2, 4)  # | o
         builder.close() # | |
         builder.close() # |
 
-        builder.open()  # 1
-        builder.open()  # | o
+        builder.open(6, 10)  # 1
+        builder.open(7, 7)  # | o
         builder.close() # | |
-        builder.open()  # | 0
+        builder.open(8, 9)  # | 0
         builder.close() # | |
         builder.close() # |
 
-        builder.open()  # o
-        builder.open()  # | o
+        builder.open(11, 15)  # o
+        builder.open(13, 14)  # | o
         builder.close() # | |
         builder.close() # |
 
@@ -169,7 +169,7 @@ class TestSymbolTable(unittest.TestCase):
         #   |
         #   0
         # G: The global scope, 0: is the "sum"-function scope
-        builder = LexicalSymbolTabelBuilder()
+        builder = LexicalSymbolTabelBuilder(0, 35)
         type_int = PrimitiveType("int")
         sum_type = SubroutineType(type_int, [ type_int, type_int ])
         # Add "sum" to the global scope (G)
@@ -178,7 +178,7 @@ class TestSymbolTable(unittest.TestCase):
         builder.enter("sum", sum_type, 35)
         # Create the "sum"-function scope and add the formal parameters
         #   The lexical-index of the formal parameters are their "last_byte"
-        builder.open() \
+        builder.open(13, 20) \
             .enter("a", type_int, 13) \
             .enter("b", type_int, 20) \
             .close()
@@ -246,27 +246,27 @@ class TestSymbolTable(unittest.TestCase):
         # I: "if (a > b)"-body
         # E: "else if (a < b)"-body
         # B: "{ int i = b; }"-block in E
-        builder = LexicalSymbolTabelBuilder()
+        builder = LexicalSymbolTabelBuilder(0, 93)
         type_int = PrimitiveType("int")
         sum_type = SubroutineType(type_int, [ type_int, type_int ])
 
         # The lexical-indices are approximations
         builder \
             .enter("sum", sum_type, 0) \
-                .open() \
+            .open(13, 93) \
                 .enter("a", type_int, 13) \
                 .enter("b", type_int, 20) \
-                    .open() \
+                .open(30, 30) \
                     .enter("z", type_int, 30) \
-                    .close() \
-                    .open() \
-                        .open() \
+                .close() \
+                .open(60, 80) \
+                    .open(60, 60) \
                         .enter("i", type_int, 60) \
-                        .close() \
-                    .enter("z", type_int, 80) \
                     .close() \
+                    .enter("z", type_int, 80) \
+                .close() \
                 .enter("imm", type_int, 93) \
-                .close()
+            .close()
 
         tree = builder.build()
         root = tree.root
@@ -326,13 +326,98 @@ class TestSymbolTable(unittest.TestCase):
         self.assertEqual(b_scope.lookup("imm"), f_scope.lookup("imm"))
         self.assertIsInstance(b_scope.lookup("i"), PrimitiveType)
 
-    def test_get(self) -> None:
-        builder = LexicalSymbolTabelBuilder()
+    def test_bounded_identifiers_single_scope(self) -> None:
+        # The lines of code can be viewed like this:
+        # 0: int a;
+        # 1: int b;
+        # 2: int c;
+        # 3: int d;
+        # 4: int e;
+        # The questions answered by "identifiers_at" is the following:
+        #   "what identifiers can be used at line n", resulting in the
+        #   set of valid identifiers to reference at a given line.
+
+        builder = LexicalSymbolTabelBuilder(0, 4)
         type_int = PrimitiveType("int")
-        builder.open()
+        builder.open(0, 4) \
+            .enter("a", type_int, 0) \
+            .enter("b", type_int, 1) \
+            .enter("c", type_int, 2) \
+            .enter("d", type_int, 3) \
+            .enter("e", type_int, 4) \
+            .close()
+
+        tree = builder.build()
+        root = tree.root
+
+        identifiers_at_0 = root.identifiers(0)
+        identifiers_at_1 = root.identifiers(1)
+        identifiers_at_2 = root.identifiers(2)
+        identifiers_at_3 = root.identifiers(3)
+        identifiers_at_4 = root.identifiers(4)
+
+        self.assertEqual(root.minimum_lexical_index, 0)
+        self.assertEqual(root.maximum_lexical_index, 4)
+
+        self.assertEqual(len(identifiers_at_0), 0)
+        self.assertEqual(len(identifiers_at_1), 1)
+        self.assertTrue("a" in identifiers_at_1)
+        self.assertEqual(len(identifiers_at_2), 2)
+        self.assertTrue("a" in identifiers_at_2)
+        self.assertTrue("b" in identifiers_at_2)
+        self.assertEqual(len(identifiers_at_3), 3)
+        self.assertTrue("a" in identifiers_at_3)
+        self.assertTrue("b" in identifiers_at_3)
+        self.assertTrue("c" in identifiers_at_3)
+        self.assertEqual(len(identifiers_at_4), 4)
+        self.assertTrue("a" in identifiers_at_4)
+        self.assertTrue("b" in identifiers_at_4)
+        self.assertTrue("c" in identifiers_at_4)
+        self.assertTrue("d" in identifiers_at_4)
+
+    def test_bounded_identifiers_multiple_scopes(self) -> None:
+        # 0: {
+        # 1:     {
+        # 2:         int a;
+        # 3:     }
+        # 4:     int b;
+        # 5:     {
+        # 6:         int c;
+        # 7:     }
+        # 8: }
+
+        builder = LexicalSymbolTabelBuilder(0, 8)
+        type_int = PrimitiveType("int")
+        builder.open(1, 3) \
+                .enter("a", type_int, 2) \
+            .close() \
+            .enter("b", type_int, 4) \
+            .open(5, 7) \
+                .enter("c", type_int, 6) \
+            .close()
+
+        tree = builder.build()
+        root = tree.root
+
+        identifiers_at_3 = root.identifiers(3)
+        identifiers_at_5 = root.identifiers(5)
+        identifiers_at_7 = root.identifiers(7)
+
+        self.assertEqual(len(identifiers_at_3), 1)
+        self.assertTrue("a" in identifiers_at_3)
+        self.assertEqual(len(identifiers_at_5), 1)
+        self.assertTrue("b" in identifiers_at_5)
+        self.assertEqual(len(identifiers_at_7), 2)
+        self.assertTrue("b" in identifiers_at_7)
+        self.assertTrue("c" in identifiers_at_7)
+
+    def test_get(self) -> None:
+        builder = LexicalSymbolTabelBuilder(-10, 10)
+        type_int = PrimitiveType("int")
+        builder.open(0, 0)
         builder.enter("foo", type_int, 0)
         builder.close()
-        builder.open()
+        builder.open(1, 1)
         builder.enter("bar", type_int, 1)
         builder.close()
 

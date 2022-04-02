@@ -77,3 +77,7 @@ class SubroutineType(Type):
     @property
     def parameters(self) -> List[Type]:
         return self._parameters
+
+    @property
+    def arity(self) -> int:
+        return len(self._parameters)

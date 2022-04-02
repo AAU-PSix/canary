@@ -59,7 +59,7 @@ class CSymbolTable(LexicalSymbolTable):
         return True
 
     def identifiers(self, index: int = None) -> List[str]:
-        identifiers = self.local_identifiers(index)
+        identifiers: List[str] = self.local_identifiers(index)
 
         for table in self.lexical_traversal():
             if table is self: continue
