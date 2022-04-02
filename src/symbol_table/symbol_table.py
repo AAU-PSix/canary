@@ -1,5 +1,5 @@
 from typing import Iterable, List
-from .type import Type
+from .type import SubroutineType, Type
 from .tree import Tree, Node
 
 class Declaration():
@@ -33,9 +33,20 @@ class LexicalSymbolTable(Node["LexicalSymbolTable"]):
         self._declarations: List[LexicalDeclaration] = [ ]
         super().__init__(parent, children)
 
+    @property
+    def last_lexical_index(self) -> int:
+        return self._declarations[-1].lexical_index
+
+    @property
+    def first_lexical_index(self) -> int:
+        return self._declarations[0].lexical_index
+
+    @property
+    def is_empty(self) -> bool:
+        return len(self._declarations) == 0
+
     def enter(self, identifier: str, type: Type, lexical_index: int) -> bool:
-        for declaration in self._declarations:
-            if declaration.identifier == identifier: return False
+        if self.lookup(identifier) is not None: return False
         declaration = LexicalDeclaration(identifier, type, lexical_index)
         self._declarations.append(declaration)
         return True
@@ -46,10 +57,10 @@ class LexicalSymbolTable(Node["LexicalSymbolTable"]):
         return None
 
     def lookup(self, identifier: str) -> Type:
-        local_result = self.local_lookup(identifier)
-        if local_result is not None: return local_result
-        parent: LexicalSymbolTable = self._parent
-        return None if parent is None else parent.lookup(identifier)
+        for table in self.lexical_traversal():
+            result = table.local_lookup(identifier)
+            if result is not None: return result
+        return None
 
     def local_index(self, identifier: str) -> int:
         for idx, declaration in enumerate(self._declarations):
@@ -62,17 +73,20 @@ class LexicalSymbolTable(Node["LexicalSymbolTable"]):
         parent: LexicalSymbolTable = self._parent
         return None if parent is None else parent.find(identifier)
 
-    def local_identifiers(self, index: int = None) -> List[str]:
-        if index is None: index = len(self._declarations) - 1
-        return [ declaration.identifier for declaration in self._declarations[0 : index + 1] ]
+    def local_identifiers(self) -> List[str]:
+        return [ declaration.identifier for declaration in self._declarations ]
 
-    def identifiers(self, index: int = None) -> List[str]:
-        identifiers = self.local_identifiers(index)
-
+    def identifiers(self, last_lexical: int = None) -> List[str]:
+        if last_lexical is None: last_lexical = self.last_lexical_index
+        identifiers = [ ]
         for table in self.lexical_traversal():
-            if table is self: continue
             for declaration in table._declarations:
-                identifiers.append(declaration.identifier)
+                if declaration.lexical_index <= last_lexical:
+                    identifiers.append(declaration.identifier)
+                # Compilers for C allows "implicit declaration of function"
+                #   Which means that "functions" can be used before they are declared.
+                elif isinstance(declaration.type, SubroutineType):
+                    identifiers.append(declaration.identifier)
         return identifiers
 
     def has_local(self, identifier: str) -> bool:
@@ -86,17 +100,11 @@ class LexicalSymbolTable(Node["LexicalSymbolTable"]):
     def lexical_traversal(self) -> Iterable["LexicalSymbolTable"]:
         """Traverses the connected symbols tables in lexical order for declaration
         """
-        closed_set: List[LexicalSymbolTable] = [ ]
+        # closed_set: List[LexicalSymbolTable] = [ ]
         curr: LexicalSymbolTable = self
         while curr is not None:
-            if curr.child_count > 0 and \
-                curr.first_child not in closed_set:
-                curr = curr.first_child
             yield curr
-            closed_set.append(curr)
-            if not curr.has_previous_sibling:
-                curr = curr.parent
-            else: curr = curr.previous_sibling
+            curr = curr.parent
 
 class LexicalSymbolTabelBuilder():
     def __init__(self) -> None:
