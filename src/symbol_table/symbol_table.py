@@ -1,5 +1,5 @@
-from typing import Iterable, List
-from .type import SubroutineType, Type
+from typing import Generic, Iterable, List, TypeVar
+from .type import Type
 from .tree import Tree, Node
 
 class Declaration():
@@ -24,13 +24,14 @@ class LexicalDeclaration(Declaration):
     def lexical_index(self) -> int:
         return self._lexical_index
 
-class LexicalSymbolTable(Node["LexicalSymbolTable"]):
+TLexicalSymbolTable = TypeVar("TLexicalSymbolTable", bound="LexicalSymbolTable")
+class LexicalSymbolTable(Generic[TLexicalSymbolTable], Node[TLexicalSymbolTable]):
     def __init__(
         self,
         minimum_lexical_index: int,
         maximum_lexical_index: int,
-        parent: "LexicalSymbolTable" = None,
-        children: List["LexicalSymbolTable"] = list(),
+        parent: TLexicalSymbolTable = None,
+        children: List[TLexicalSymbolTable] = list(),
     ) -> None:
         self._declarations: List[LexicalDeclaration] = [ ]
         self._minimum_lexical_index = minimum_lexical_index
@@ -71,10 +72,10 @@ class LexicalSymbolTable(Node["LexicalSymbolTable"]):
             if declaration.identifier == identifier: return idx
         raise ValueError()
 
-    def find(self, identifier: str) -> "LexicalSymbolTable":
+    def find(self, identifier: str) -> TLexicalSymbolTable:
         local_result = self.local_lookup(identifier)
         if local_result is not None: return self
-        parent: LexicalSymbolTable = self._parent
+        parent: TLexicalSymbolTable = self._parent
         return None if parent is None else parent.find(identifier)
 
     def local_identifiers(self) -> List[str]:
@@ -119,13 +120,12 @@ class LexicalSymbolTable(Node["LexicalSymbolTable"]):
         identifiers = [ ]
         for table in start.lexical_traversal():
             for declaration in table._declarations:
-                if declaration.lexical_index < lexical_bound:
-                    identifiers.append(declaration.identifier)
-                # Compilers for C allows "implicit declaration of function"
-                #   Which means that "functions" can be used before they are declared.
-                elif isinstance(declaration.type, SubroutineType):
+                if self.can_be_referenced(declaration, lexical_bound):
                     identifiers.append(declaration.identifier)
         return identifiers
+
+    def can_be_referenced(self, declaration: LexicalDeclaration, lexical_upper_bound: int) -> bool:
+        return declaration.lexical_index < lexical_upper_bound
 
     def has_local(self, identifier: str) -> bool:
         for declaration in self._declarations:
@@ -135,22 +135,21 @@ class LexicalSymbolTable(Node["LexicalSymbolTable"]):
     def has(self, identifier: str) -> bool:
         return self.lookup(identifier) is not None
 
-    def lexical_traversal(self) -> Iterable["LexicalSymbolTable"]:
+    def lexical_traversal(self) -> Iterable[TLexicalSymbolTable]:
         """Traverses the connected symbols tables in lexical order for declaration
         """
-        # closed_set: List[LexicalSymbolTable] = [ ]
-        curr: LexicalSymbolTable = self
+        curr: TLexicalSymbolTable = self
         while curr is not None:
             yield curr
             curr = curr.parent
 
-class LexicalSymbolTabelBuilder():
+class LexicalSymbolTabelBuilder(Generic[TLexicalSymbolTable]):
     def __init__(
         self,
         minimum_lexical_index: int,
         maximum_lexical_index: int,
     ) -> None:
-        self._root = LexicalSymbolTable(
+        self._root = self._create(
             minimum_lexical_index,
             maximum_lexical_index,
             None, list()
@@ -158,7 +157,7 @@ class LexicalSymbolTabelBuilder():
         self._scope_stack = [ self._root ]
 
     @property
-    def current(self) -> LexicalSymbolTable:
+    def current(self) -> TLexicalSymbolTable:
         return self._scope_stack[-1]
 
     @property
@@ -169,8 +168,8 @@ class LexicalSymbolTabelBuilder():
         self,
         minimum_lexical_index: int,
         maximum_lexical_index: int
-    ) -> "LexicalSymbolTabelBuilder":
-        new_table = LexicalSymbolTable(
+    ) -> "LexicalSymbolTabelBuilder[TLexicalSymbolTable]":
+        new_table = self._create(
             minimum_lexical_index,
             maximum_lexical_index,
             self.current,
@@ -185,15 +184,29 @@ class LexicalSymbolTabelBuilder():
         identifier: str,
         type: Type,
         lexical_index: int
-    ) -> "LexicalSymbolTabelBuilder":
+    ) -> "LexicalSymbolTabelBuilder[TLexicalSymbolTable]":
         self.current.enter(identifier, type, lexical_index)
         return self
 
-    def close(self) -> "LexicalSymbolTabelBuilder":
+    def close(self) -> "LexicalSymbolTabelBuilder[TLexicalSymbolTable]":
         if len(self._scope_stack) == 1:
             raise Exception("Cannot close root symbol table as forests are not supported")
         self._scope_stack.pop()
         return self
 
-    def build(self) -> Tree[LexicalSymbolTable]:
+    def _create(
+        self,
+        minimum_lexical_index: int,
+        maximum_lexical_index: int,
+        parent: "TLexicalSymbolTable" = None,
+        children: List["TLexicalSymbolTable"] = list(),
+    ) -> TLexicalSymbolTable:
+        return LexicalSymbolTable[LexicalSymbolTable](
+            minimum_lexical_index,
+            maximum_lexical_index,
+            parent,
+            children
+        )
+
+    def build(self) -> Tree[TLexicalSymbolTable]:
         return Tree(self._root)

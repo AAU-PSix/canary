@@ -1,9 +1,11 @@
 import unittest
 from typing import List
 
+from src.symbol_table.c_type import CSymbolTableBuilder
+
 from . import (
     LexicalSymbolTable,
-    LexicalSymbolTabelBuilder,
+    CSymbolTableBuilder,
     PrimitiveType,
     SubroutineType
 )
@@ -30,7 +32,7 @@ class TestSymbolTable(unittest.TestCase):
         self.assertEqual(root_children[2].siblings, root_table.children)
 
     def test_symbol_table_builder(self) -> None:
-        builder = LexicalSymbolTabelBuilder(-10, 10)
+        builder = CSymbolTableBuilder(-10, 10)
         builder.open(1, 1)
         builder.close()
         builder.open(2, 2)
@@ -48,7 +50,7 @@ class TestSymbolTable(unittest.TestCase):
         self.assertEqual(root.children[1].previous_sibling, root.children[0])
 
     def test_lookup(self) -> None:
-        builder = LexicalSymbolTabelBuilder(-10, 10)
+        builder = CSymbolTableBuilder(-10, 10)
         type_int = PrimitiveType("int")
         type_double = PrimitiveType("double")
         builder.enter("foo", type_int, 0)
@@ -78,7 +80,7 @@ class TestSymbolTable(unittest.TestCase):
         # 0: Is the start
         # [0-2]: Is the traversed
         #   tables and their order.
-        builder = LexicalSymbolTabelBuilder(0, 10)
+        builder = CSymbolTableBuilder(0, 10)
         builder.open(1, 1).close() # 0
         builder.open(2, 2).close() # o
         builder.open(3, 3).close() # o
@@ -102,7 +104,7 @@ class TestSymbolTable(unittest.TestCase):
         # 0: Is the start
         # [0-1]: Is the traversed
         #   tables and their order.
-        builder = LexicalSymbolTabelBuilder(0, 10)
+        builder = CSymbolTableBuilder(0, 10)
         builder.open(1, 1).close() # o
         builder.open(2, 2).close() # 0
         builder.open(3, 3).close() # o
@@ -128,7 +130,7 @@ class TestSymbolTable(unittest.TestCase):
         # 0: Is the start
         # [0-4]: Is the traversed
         #   tables and their order.
-        builder = LexicalSymbolTabelBuilder(0, 20)
+        builder = CSymbolTableBuilder(0, 20)
         builder.open(1, 5)  # o
         builder.open(2, 4)  # | o
         builder.close() # | |
@@ -169,7 +171,7 @@ class TestSymbolTable(unittest.TestCase):
         #   |
         #   0
         # G: The global scope, 0: is the "sum"-function scope
-        builder = LexicalSymbolTabelBuilder(0, 35)
+        builder = CSymbolTableBuilder(0, 35)
         type_int = PrimitiveType("int")
         sum_type = SubroutineType(type_int, [ type_int, type_int ])
         # Add "sum" to the global scope (G)
@@ -246,7 +248,7 @@ class TestSymbolTable(unittest.TestCase):
         # I: "if (a > b)"-body
         # E: "else if (a < b)"-body
         # B: "{ int i = b; }"-block in E
-        builder = LexicalSymbolTabelBuilder(0, 93)
+        builder = CSymbolTableBuilder(0, 93)
         type_int = PrimitiveType("int")
         sum_type = SubroutineType(type_int, [ type_int, type_int ])
 
@@ -337,7 +339,7 @@ class TestSymbolTable(unittest.TestCase):
         #   "what identifiers can be used at line n", resulting in the
         #   set of valid identifiers to reference at a given line.
 
-        builder = LexicalSymbolTabelBuilder(0, 4)
+        builder = CSymbolTableBuilder(0, 4)
         type_int = PrimitiveType("int")
         builder.open(0, 4) \
             .enter("a", type_int, 0) \
@@ -386,7 +388,7 @@ class TestSymbolTable(unittest.TestCase):
         # 7:     }
         # 8: }
 
-        builder = LexicalSymbolTabelBuilder(0, 8)
+        builder = CSymbolTableBuilder(0, 8)
         type_int = PrimitiveType("int")
         builder.open(1, 3) \
                 .enter("a", type_int, 2) \
@@ -412,7 +414,7 @@ class TestSymbolTable(unittest.TestCase):
         self.assertTrue("c" in identifiers_at_7)
 
     def test_get(self) -> None:
-        builder = LexicalSymbolTabelBuilder(-10, 10)
+        builder = CSymbolTableBuilder(-10, 10)
         type_int = PrimitiveType("int")
         builder.open(0, 0)
         builder.enter("foo", type_int, 0)

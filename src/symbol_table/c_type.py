@@ -44,30 +44,41 @@ class CUnionType(CType, CompositeType):
     def __init__(self, identifier: str, composition: List[CompositeField]) -> None:
         super().__init__(identifier, composition)
 
-class CSymbolTable(LexicalSymbolTable):
+class CSymbolTable(LexicalSymbolTable["CSymbolTable"]):
     def __init__(
         self,
+        minimum_lexical_index: int,
+        maximum_lexical_index: int,
         parent: "LexicalSymbolTable" = None,
         children: List["LexicalSymbolTable"] = list()
     ) -> None:
-        super().__init__(parent, children)
+        super().__init__(
+            minimum_lexical_index,
+            maximum_lexical_index,
+            parent,
+            children
+        )
 
-    # We have to override the original to support shadowing
-    def enter(self, identifier: str, type: Type, lexical_index: int) -> bool:
-        declaration = LexicalDeclaration(identifier, type, lexical_index)
-        self._declarations.append(declaration)
-        return True
-
-    def identifiers(self, index: int = None) -> List[str]:
-        identifiers: List[str] = self.local_identifiers(index)
-
-        for table in self.lexical_traversal():
-            if table is self: continue
-            for declaration in table._declarations:
-                if declaration.lexical_index < self.last_lexical_index:
-                    identifiers.append(declaration.identifier)
+    def can_be_referenced(self, declaration: LexicalDeclaration, lexical_upper_bound: int) -> bool:
                 # Compilers for C allows "implicit declaration of function"
                 #   Which means that "functions" can be used before they are declared.
-                elif isinstance(declaration.type, SubroutineType):
-                    identifiers.append(declaration.identifier)
-        return identifiers
+        return super().can_be_referenced(declaration, lexical_upper_bound) or \
+            isinstance(declaration.type, SubroutineType)
+
+class CSymbolTableBuilder(LexicalSymbolTabelBuilder[CSymbolTable]):
+    def __init__(self, minimum_lexical_index: int, maximum_lexical_index: int) -> None:
+        super().__init__(minimum_lexical_index, maximum_lexical_index)
+
+    def _create(
+        self,
+        minimum_lexical_index: int,
+        maximum_lexical_index: int,
+        parent: CSymbolTable = None,
+        children: List[CSymbolTable] = list()
+    ) -> CSymbolTable:
+        return CSymbolTable(
+            minimum_lexical_index,
+            maximum_lexical_index,
+            parent,
+            children
+        )
