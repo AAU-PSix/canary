@@ -1,6 +1,8 @@
 import unittest
 from typing import List
 
+from graphviz import Digraph
+
 from src.symbol_table.c_type import CSymbolTableBuilder
 
 from . import (
@@ -436,3 +438,21 @@ class TestSymbolTable(unittest.TestCase):
         self.assertEqual(len(last_identifiers), 1)
         self.assertFalse("foo" in last_identifiers)
         self.assertTrue("bar" in last_identifiers)
+
+    def test_draw(self) -> None:
+        builder = CSymbolTableBuilder(0, 8)
+        type_int = PrimitiveType("int")
+        builder.open(1, 3) \
+                .enter("foo", type_int, 2) \
+                .enter("a", type_int, 3) \
+            .close() \
+            .enter("b", type_int, 4) \
+            .open(5, 7) \
+                .enter("bar", type_int, 6) \
+            .close()
+
+        tree = builder.build()
+        root = tree.root
+
+        dot: Digraph = root.draw("symbol_table_test")
+        dot.save(directory="graphs")

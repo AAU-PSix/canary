@@ -1,4 +1,7 @@
-from typing import Generic, Iterable, List, TypeVar
+import os
+from typing import Dict, Generic, Iterable, List, TypeVar
+
+from graphviz import Digraph
 from .type import Type
 from .tree import Tree, Node
 
@@ -142,6 +145,36 @@ class LexicalSymbolTable(Generic[TLexicalSymbolTable], Node[TLexicalSymbolTable]
         while curr is not None:
             yield curr
             curr = curr.parent
+
+    def draw(self, name: str, dot: Digraph = None) -> Digraph:
+        if dot is None: dot = Digraph(name)
+
+        def symbol_table_label(table: LexicalSymbolTable) -> str:
+            label = f'[{table.minimum_lexical_index}, {table.maximum_lexical_index}]{os.linesep}'
+            for declaration in table._declarations:
+                label += f'[{declaration.lexical_index}] {declaration.type.__class__.__name__}::{declaration.identifier}\l{os.linesep}'
+            return label
+
+        ids: Dict[LexicalSymbolTable, str] = dict()
+        counter: int = 0
+
+        openset: List[LexicalSymbolTable] = list()
+        openset.append(self)
+        
+        dot.attr('node', shape='square')
+        while len(openset) > 0:
+            curr = openset.pop()
+            id = counter = counter + 1
+            id = str(id)
+            dot.node(id, symbol_table_label(curr))
+            ids[curr] = id
+            openset.extend(curr.children)
+
+            if curr.parent is not None:
+                parrent_id = ids[curr.parent]
+                dot.edge(parrent_id, id)
+
+        return dot
 
 class LexicalSymbolTabelBuilder(Generic[TLexicalSymbolTable]):
     def __init__(

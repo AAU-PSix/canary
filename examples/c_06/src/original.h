@@ -3,8 +3,6 @@
 
 #include "Canary.h"
 
-int someFunction(char arg[static 10]) { }
-
 int add(int a, int b) {
     do { a=a; } while(0);
 
