@@ -1,4 +1,10 @@
 from enum import Enum
+from symtable import SymbolTable
+from ts import (
+    Node,
+    CField,
+    Tree as TsTree
+)
 from symbol_table import LexicalDeclaration, LexicalSymbolTabelBuilder, LexicalSymbolTable
 from .type import *
 from .tree import Tree
@@ -64,6 +70,42 @@ class CSymbolTable(LexicalSymbolTable["CSymbolTable"]):
                 #   Which means that "functions" can be used before they are declared.
         return super().can_be_referenced(declaration, lexical_upper_bound) or \
             isinstance(declaration.type, SubroutineType)
+
+class CTypeFactory():
+    def create_primitive_type(
+        self,
+        tree: TsTree,
+        node: Node
+    ) -> PrimitiveType:
+        return PrimitiveType(
+            tree.contents_of(node)
+        )
+
+    def create_subroutine_type(
+        self,
+        tree: TsTree,
+        function_definition: Node
+    ) -> SubroutineType[LexicalDeclaration]:
+        return_type_node = function_definition.child_by_field(CField.TYPE)
+        declarator_node = function_definition.child_by_field(CField.DECLARATOR)
+        parameters_node = declarator_node.child_by_field(CField.PARAMETERS)
+        return_type = self.create_primitive_type(tree, return_type_node)
+
+        parameters: List[LexicalDeclaration] = [ ]
+        for parameter_node in parameters_node.named_children:
+            parameter_type_node = parameter_node.child_by_field(CField.TYPE)
+            parameter_type = self.create_primitive_type(tree, parameter_type_node)
+            parameter_identifier_node = parameter_node.child_by_field(CField.DECLARATOR)
+            parameter_identifier = tree.contents_of(parameter_identifier_node)
+            parameter_declaration = LexicalDeclaration(
+                parameter_identifier,
+                parameter_type,
+                parameter_node.end_byte,
+            )
+            parameters.append(parameter_declaration)
+        function_type = SubroutineType(return_type, parameters)
+
+        return function_type
 
 class CSymbolTableBuilder(LexicalSymbolTabelBuilder[CSymbolTable]):
     def __init__(self, minimum_lexical_index: int, maximum_lexical_index: int) -> None:

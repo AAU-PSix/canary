@@ -1,5 +1,28 @@
-from typing import List
+from typing import Generic, List, TypeVar
 from abc import ABC
+
+
+class Declaration():
+    def __init__(self, identifier: str, type: "Type") -> None:
+        self._identifier = identifier
+        self._type = type
+
+    @property
+    def identifier(self) -> str:
+        return self._identifier
+
+    @property
+    def type(self) -> "Type":
+        return self._type
+
+class LexicalDeclaration(Declaration):
+    def __init__(self, identifier: str, type: "Type", lexical_index: int) -> None:
+        self._lexical_index = lexical_index
+        super().__init__(identifier, type)
+
+    @property
+    def lexical_index(self) -> int:
+        return self._lexical_index
 
 class Type(ABC):
     def __init__(self) -> None: pass
@@ -53,14 +76,15 @@ class AggregateType(Type):
     def type(self) -> Type:
         return self._type
 
-class SubroutineType(Type):
+TDeclaration = TypeVar("TDeclaration", bound=Declaration)
+class SubroutineType(Generic[TDeclaration], Type):
     """Referred to as a function, procedure, method, and subprogram,
         is code called and executed anywhere in a program
     """
     def __init__(
         self,
         return_type: Type = None,
-        parameters: List[Type] = list()
+        parameters: List[TDeclaration] = list()
     ) -> None:
         self._return_type = return_type
         self._parameters = parameters
@@ -75,7 +99,7 @@ class SubroutineType(Type):
         return self._return_type
 
     @property
-    def parameters(self) -> List[Type]:
+    def parameters(self) -> List[TDeclaration]:
         return self._parameters
 
     @property

@@ -2,30 +2,8 @@ import os
 from typing import Dict, Generic, Iterable, List, TypeVar
 
 from graphviz import Digraph
-from .type import Type
+from .type import LexicalDeclaration, Type
 from .tree import Tree, Node
-
-class Declaration():
-    def __init__(self, identifier: str, type: Type) -> None:
-        self._identifier = identifier
-        self._type = type
-
-    @property
-    def identifier(self) -> str:
-        return self._identifier
-
-    @property
-    def type(self) -> Type:
-        return self._type
-
-class LexicalDeclaration(Declaration):
-    def __init__(self, identifier: str, type: Type, lexical_index: int) -> None:
-        self._lexical_index = lexical_index
-        super().__init__(identifier, type)
-
-    @property
-    def lexical_index(self) -> int:
-        return self._lexical_index
 
 TLexicalSymbolTable = TypeVar("TLexicalSymbolTable", bound="LexicalSymbolTable")
 class LexicalSymbolTable(Generic[TLexicalSymbolTable], Node[TLexicalSymbolTable]):
