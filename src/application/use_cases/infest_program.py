@@ -2,11 +2,6 @@ from cfa import (
     CCFAFactory,
     CFA
 )
-from typing import List
-from src.cfa.cfa import CFAGeneric
-from src.cfa.cfa_edge import CFAEdge
-
-from src.cfa.cfa_node import CFANode
 from utilities import FileHandler
 from tree_infestator import (
     CCanaryFactory,
