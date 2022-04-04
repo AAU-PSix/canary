@@ -52,9 +52,9 @@ class TestCFA(TestCase):
                 self.assertFalse(node_1 is edge.destination)
 
     def test_remove_last(self) -> None:
-        root: CFANode = CFANode(None, 1)
-        node_1: CFANode = CFANode(None, 2)
-        node_2: CFANode = CFANode(None, 3)
+        root: CFANode = CFANode(None)
+        node_1: CFANode = CFANode(None)
+        node_2: CFANode = CFANode(None)
         cfa: CFA = CFA(root)
 
         cfa.branch(root, node_1)
@@ -78,13 +78,13 @@ class TestCFA(TestCase):
                 self.assertFalse(node_2 is edge.destination)
 
     def test_remove_center(self) -> None:
-        node_0: CFANode = CFANode(None, 1)
-        node_1: CFANode = CFANode(None, 2)
+        node_0: CFANode = CFANode(None)
+        node_1: CFANode = CFANode(None)
 
-        node_2: CFANode = CFANode(None, 3)
+        node_2: CFANode = CFANode(None)
 
-        node_3: CFANode = CFANode(None, 4)
-        node_4: CFANode = CFANode(None, 5)
+        node_3: CFANode = CFANode(None)
+        node_4: CFANode = CFANode(None)
 
         cfa: CFA = CFA(node_2)
 
