@@ -444,7 +444,7 @@ class TestSymbolTable(unittest.TestCase):
         type_int = PrimitiveType("int")
         builder.open(1, 3) \
                 .enter("foo", type_int, 2) \
-                .enter("a", type_int, 3) \
+                .enter("a", type_int, 2) \
             .close() \
             .enter("b", type_int, 4) \
             .open(5, 7) \
