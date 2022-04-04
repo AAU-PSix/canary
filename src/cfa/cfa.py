@@ -1,12 +1,71 @@
-from typing import Dict, List, Iterable
+from abc import ABC, abstractmethod
+from typing import Dict, Generic, List, Iterable, TypeVar
 from queue import Queue
 from graphviz import Digraph
 from ts import Tree, Node
 from .cfa_edge import CFAEdge
 from .cfa_node import CFANode
 
+NodeType = TypeVar('NodeType', bound=CFANode)
+EdgeType = TypeVar('EdgeType', bound=CFAEdge)
 
-class CFA:
+class CFAGeneric(Generic[NodeType, EdgeType], ABC):
+
+    @abstractmethod
+    def nodes(self) -> List[NodeType]:
+        pass
+
+    @abstractmethod
+    def root(self) -> NodeType:
+        pass
+
+    @abstractmethod
+    def finals(self) -> List[NodeType]:
+        pass
+
+    @abstractmethod
+    def add_final(self, final: NodeType) -> bool:
+        pass
+
+    @abstractmethod
+    def outgoing(self, source: NodeType) -> List[NodeType]:
+        pass
+
+    
+    @abstractmethod
+    def outgoing_edges(self, source: NodeType) -> List[CFAEdge]:
+        pass
+
+    @abstractmethod
+    def ingoing(self, destination: NodeType) -> List[NodeType]:
+        pass
+
+    @abstractmethod
+    def ingoing_edges(self, source: NodeType) -> List[CFAEdge]:
+        pass
+    
+    @abstractmethod
+    def branch(self, source: NodeType, destination: NodeType, label: str = None) -> None:
+        pass
+
+    @abstractmethod
+    def _remove_edge(self, edge: CFAEdge) -> None:
+        pass    
+
+    @abstractmethod
+    def remove(self, source: NodeType) -> None:
+        pass
+
+    @abstractmethod
+    def replace(self, before: NodeType, after: NodeType) -> None:
+        pass
+
+    @abstractmethod
+    def breadth_first_traverse(self) -> Iterable[NodeType]:
+        pass
+
+
+class CFA(CFAGeneric[CFANode, CFAEdge]):
     _root: CFANode
     _nodes: List[CFANode]
     _outgoing_edges: Dict[CFANode, List[CFAEdge]]
