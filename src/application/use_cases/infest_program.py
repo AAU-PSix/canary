@@ -1,6 +1,12 @@
 from cfa import (
     CCFAFactory,
+    CFA
 )
+from typing import List
+from src.cfa.cfa import CFAGeneric
+from src.cfa.cfa_edge import CFAEdge
+
+from src.cfa.cfa_node import CFANode
 from utilities import FileHandler
 from tree_infestator import (
     CCanaryFactory,
@@ -71,6 +77,8 @@ class InfestProgramUseCase(
         if request.save_graph:
             graph = cfa.draw(request.tree, "cfa_fut_org")
             graph.save(directory=request.save_graph_directory)
+
+
 
         # Step 2: Infest
         canary_factory = CCanaryFactory()
