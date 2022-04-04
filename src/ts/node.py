@@ -189,25 +189,32 @@ class Node:
 
     def pre_order_traverse(self, named_only: bool = False) -> Iterable["Node"]:
         reached_root: bool = False
+        root: Node = self
         curr: Node = self
         while not reached_root:
             if named_only and curr.is_named: yield curr
             elif not named_only: yield curr
-            
+
             child: Node = curr.first_child
             if child is not None:
                 curr = child
                 continue
-            
+
             sibling: Node = curr.next_sibling
             if sibling is not None:
                 curr = sibling
                 continue
 
-            retracng: bool = True
-            while retracng:
-                if curr.parent is None:
-                    retracng = False
+            while True:
+                if curr == root:
                     reached_root = True
+                    break
+
+                if curr.parent is None:
+                    reached_root = True
+                    break
+                else: curr = curr.parent
+
                 if curr.next_sibling is not None:
-                    retracng = False
+                    curr = curr.next_sibling
+                    break

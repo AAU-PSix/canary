@@ -62,6 +62,8 @@ class CNodeType(NodeType):
     SHIFT_COMPOUND_RIGHT = ">>="
     # Literals
     IDENTIFIER = "identifier"
+    # Types
+    PRIMITIVE_TYPE = "primitive_type"
     # Constructs
     EXPRESSION_STATEMENT = "expression_statement"
     ASSIGNMENT_EXPRESSION = "assignment_expression"
