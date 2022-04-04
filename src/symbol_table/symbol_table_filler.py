@@ -25,6 +25,11 @@ class CSymbolTableFiller(SymbolTableFiller):
             CNodeType.DECLARATION.value: self._visit_declaration,
             CNodeType.COMPOUND_STATEMENT.value: self._visit_compound_statement,
             CNodeType.FUNCTION_DEFINITION.value: self._visit_function_definition,
+            CNodeType.IF_STATEMENT.value: self._visit_if_statement,
+            CNodeType.WHILE_STATEMENT.value: self._visit_while_statement,
+            CNodeType.DO_STATEMENT.value: self._visit_do_statement,
+            CNodeType.FOR_STATEMENT.value: self._visit_for_statement,
+            CNodeType.SWITCH_STATEMENT.value: self._visit_switch_statement,
         }
         super().__init__()
 
@@ -80,16 +85,101 @@ class CSymbolTableFiller(SymbolTableFiller):
     ) -> None:
         self._accept_children(tree, translation_unit, builder)
 
+    def _visit_if_statement(
+        self,
+        tree: TsTree,
+        if_statement: Node,
+        builder: CSymbolTableBuilder
+    ) -> None:
+        consequence = if_statement.child_by_field(CField.CONSEQUENCE)
+        if consequence is not None:
+            is_compound = consequence.is_type(CNodeType.COMPOUND_STATEMENT)
+            if not is_compound: builder.open_for(consequence)
+            self._accept(
+                tree,
+                consequence,
+                builder
+            )
+            if not is_compound: builder.close()
+
+        alternative = if_statement.child_by_field_name(CField.ALTERNATIVE)
+        if alternative is not None:
+            is_compound = alternative.is_type(CNodeType.COMPOUND_STATEMENT)
+            if not is_compound: builder.open_for(alternative)
+            self._accept(
+                tree,
+                alternative,
+                builder
+            )
+            if not is_compound: builder.close()
+
+    def _visit_while_statement(
+        self,
+        tree: TsTree,
+        while_statement: Node,
+        builder: CSymbolTableBuilder
+    ) -> None:
+        body = while_statement.child_by_field(CField.BODY)
+        is_compound = body.is_type(CNodeType.COMPOUND_STATEMENT)
+        if not is_compound: builder.open_for(body)
+        self._accept(tree, body, builder)
+        if not is_compound: builder.close()
+
+    def _visit_do_statement(
+        self,
+        tree: TsTree,
+        do_statement: Node,
+        builder: CSymbolTableBuilder
+    ) -> None:
+        body = do_statement.child_by_field(CField.BODY)
+        is_compound = body.is_type(CNodeType.COMPOUND_STATEMENT)
+        if not is_compound: builder.open_for(body)
+        self._accept(tree, body, builder)
+        if not is_compound: builder.close()
+
+    def _visit_switch_statement(
+        self,
+        tree: TsTree,
+        switch_statement: Node,
+        builder: CSymbolTableBuilder
+    ) -> None:
+        # It is not possible for C programs to have
+        #   declaration immediately after a label
+        #   for this reason a declaration cannot be an
+        #   immediate child of a case-label. But we do
+        #   however parse it correctly, even though neither
+        #   C++ allows this code construction (Funny enough
+        #   because they violate scoping rules).
+        body = switch_statement.child_by_field(CField.BODY)
+        is_compound = body.is_type(CNodeType.COMPOUND_STATEMENT)
+        if not is_compound: builder.open_for(body)
+        self._accept(tree, body, builder)
+        if not is_compound: builder.close()
+
+    def _visit_for_statement(
+        self,
+        tree: TsTree,
+        for_statement: Node,
+        builder: CSymbolTableBuilder
+    ) -> None:
+        builder.open(for_statement)
+        initialization = for_statement.child_by_field(CField.INITIALIZER)
+        if initialization is not None:
+            self._accept(initialization)
+        body = self._syntax.get_for_loop_body(for_statement)
+        is_compound = body.is_type(CNodeType.COMPOUND_STATEMENT)
+        if not is_compound: builder.open_for(body)
+        self._accept(tree, body, builder)
+        if not is_compound: builder.close()
+        builder.close()
+
     def _visit_compound_statement(
         self,
         tree: TsTree,
         compound_statement: Node,
         builder: CSymbolTableBuilder
     ) -> None:
-        builder.open(
-            compound_statement.start_byte,
-            compound_statement.end_byte
-        )
+        builder.open_for(compound_statement)
         self._accept_children(
             tree, compound_statement, builder
         )

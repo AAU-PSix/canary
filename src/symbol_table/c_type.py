@@ -1,13 +1,17 @@
 from enum import Enum
 from symtable import SymbolTable
+from typing import Dict
 from ts import (
     Node,
     CField,
-    Tree as TsTree
+    Tree
 )
-from symbol_table import LexicalDeclaration, LexicalSymbolTabelBuilder, LexicalSymbolTable
+from symbol_table import (
+    LexicalDeclaration,
+    LexicalSymbolTabelBuilder,
+    LexicalSymbolTable
+)
 from .type import *
-from .tree import Tree
 
 class CTypeQualifier(Enum):
     CONST = "const",
@@ -72,18 +76,21 @@ class CSymbolTable(LexicalSymbolTable["CSymbolTable"]):
             isinstance(declaration.type, SubroutineType)
 
 class CTypeFactory():
+    def __init__(self) -> None:
+        self._primitives: Dict[str, PrimitiveType] = {
+            "int": PrimitiveType("int")
+        }
+    
     def create_primitive_type(
         self,
-        tree: TsTree,
+        tree: Tree,
         node: Node
     ) -> PrimitiveType:
-        return PrimitiveType(
-            tree.contents_of(node)
-        )
+        return self._primitives[tree.contents_of(node)]
 
     def create_subroutine_type(
         self,
-        tree: TsTree,
+        tree: Tree,
         function_definition: Node
     ) -> SubroutineType[LexicalDeclaration]:
         return_type_node = function_definition.child_by_field(CField.TYPE)
