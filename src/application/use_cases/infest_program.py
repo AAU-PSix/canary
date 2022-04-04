@@ -1,17 +1,9 @@
 from cfa import (
     CCFAFactory,
-    CFA
 )
-from typing import List
-from src.cfa.cfa import CFAGeneric
-from src.cfa.cfa_edge import CFAEdge
+from tree_infestator.localized_canary_factory import LocalisationInfestator
 
-from src.cfa.cfa_node import CFANode
 from utilities import FileHandler
-from tree_infestator import (
-    CCanaryFactory,
-    CTreeInfestator,
-)
 from ts import (
     Tree,
     Node,
@@ -81,8 +73,8 @@ class InfestProgramUseCase(
 
 
         # Step 2: Infest
-        canary_factory = CCanaryFactory()
-        infestator = CTreeInfestator(request.parser, canary_factory)
+        canary_factory = LocalisationInfestator()
+        infestator = LocalisationInfestator(request.parser, canary_factory)
         infested_tree = infestator.infect(request.tree, cfa)
 
         # Step 3: Write the infested file

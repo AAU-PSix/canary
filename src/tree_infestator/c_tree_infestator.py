@@ -1,4 +1,5 @@
 from typing import List, Dict, Callable
+from tree_infestator.canary_factory import CanaryFactory
 from ts import (
     Node,
     Parser,
@@ -8,12 +9,15 @@ from ts import (
     CField
 )
 from cfa import CFA
-from .c_canary_factory import CCanaryFactory
 from .tree_infection import TreeInfection
 from .tree_infestator import TreeInfestator
 
+from typing import Dict, List
+from ts import Tree, Node
+
+
 class CTreeInfestator(TreeInfestator):
-    def __init__(self, parser: Parser, canary_factory: CCanaryFactory) -> None:
+    def __init__(self, parser: Parser, canary_factory: CanaryFactory) -> None:
         self._parser = parser
         self._canary_factory = canary_factory
         self._syntax = CSyntax()
@@ -198,3 +202,6 @@ class CTreeInfestator(TreeInfestator):
             tree = infection.do(self._parser, tree)
 
         return tree
+
+
+

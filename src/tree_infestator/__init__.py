@@ -6,3 +6,4 @@ from .tree_infection_append import *
 from .tree_infection_insert import *
 from .tree_infection import *
 from .tree_infestator import *
+from .localized_canary_factory import *
