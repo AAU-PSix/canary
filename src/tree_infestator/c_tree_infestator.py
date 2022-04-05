@@ -21,6 +21,7 @@ class CTreeInfestator(TreeInfestator):
         self._parser = parser
         self._canary_factory = canary_factory
         self._syntax = CSyntax()
+        self.infections:TreeInfection = []
         super().__init__()
 
     def nests_of_if_condition(self, condition: Node) -> List[Node]:
@@ -199,8 +200,9 @@ class CTreeInfestator(TreeInfestator):
         # Step 2: Infect the tree from end to start
         infections.sort(key=lambda x: x.last_byte_index, reverse=True)
         for infection in infections:
-            tree = infection.do(self._parser, tree)
+            tree = infection.do(self._parser, tree) 
 
+        self.infections = infections
         return tree
 
 

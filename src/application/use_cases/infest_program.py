@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from cfa import (
     CCFAFactory,
 )
-
-from tree_infestator.localized_canary_factory import LocalisedCInfestator, LocalisedTree
+from src.tree_infestator.c_canary_factory import CCanaryFactory
+from src.tree_infestator.c_tree_infestator import CTreeInfestator
 
 
 from utilities import FileHandler
@@ -58,8 +58,7 @@ class InfestProgramRequest(UseCaseRequest):
         return self._save_graph_directory
 
 @dataclass
-class InfestProgramResponse(UseCaseResponse):
-    localisedTree: LocalisedTree
+class InfestProgramResponse(UseCaseResponse): pass
     
 
 
@@ -80,8 +79,8 @@ class InfestProgramUseCase(
 
 
         # Step 2: Infest
-        canary_factory = LocalisedCInfestator()
-        infestator = LocalisedCInfestator(request.parser, canary_factory)
+        canary_factory = CCanaryFactory()
+        infestator = CTreeInfestator(request.parser, canary_factory)
         infested_tree = infestator.infect(request.tree, cfa)
 
     
