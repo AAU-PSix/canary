@@ -1,3 +1,114 @@
+from abc import ABC, abstractmethod
+from cfa import CFANode, CFAEdge, CFAGeneric, CFA
+from cfa.c_cfa_factory import CCFAFactory
+from ts.c_syntax import *
+from typing import List, Dict
+
+
+
+class LocalisedNode(CFANode):
+    def __init__(self, node: Node) -> None:
+        self.location = -99
+        super().__init__(node)
+
+class LocalisedCFA(CFAGeneric[LocalisedNode, CFAEdge]):
+    pass
+
+class LocalisedCFACFactory(CCFAFactory):
+    pass
+
+class CFADecorator(ABC):
+    def __init__(self, cfa:CFA) -> None:
+        self.cfa = cfa
+
+        super().__init__()
+
+    @abstractmethod
+    def decorate(self) -> CFA:
+        pass
+
+class ScopeContent:
+    def __init__(self) -> None:
+        self.statements: List[LocalisedNode] = []
+
+    def add_to_scope(self, node : LocalisedNode):
+        self.statements.append(node)
+
+def peek(stack: List[Dict[int, ScopeContent]]) -> Dict[int, ScopeContent]:
+    if stack == []:
+        return None
+    else:
+        top = len(stack)-1
+        return stack[top]
+
+
+class LocationDecorator(CFADecorator):
+
+
+    def __init__(self, CFA: LocalisedCFA) -> None:
+        self.cfa = CFA
+        self.location_value = 0
+        self.stack: Dict[int, ScopeContent] = []
+        self.result: Dict[int, ScopeContent] = []
+
+    def _add_to_current_scope(self, node: LocalisedNode):
+        peek(self.stack)[self.location_value].add_to_scope(node)
+
+    def decorate(self) -> LocalisedCFA:
+        syntax = CSyntax()
+        searched_nodes = []
+        for cfa_node in self.cfa.breadth_first_traverse():
+            if cfa_node in searched_nodes:
+                continue
+    
+            searched_nodes.append(cfa_node)
+            
+            if syntax.is_condition_of_if(cfa_node.node):
+                self._enter_scope(cfa_node)
+                continue
+            elif syntax.is_else_if(cfa_node.node):
+                self._enter_scope(cfa_node)
+                continue
+            # Switch
+            elif syntax.is_condition_of_switch(cfa_node.node):
+                self._enter_scope(cfa_node)
+                continue
+            elif syntax.is_empty_switch_case(cfa_node.node):
+                self._enter_scope(cfa_node)
+                continue
+            elif syntax.is_default_switch_case(cfa_node.node):
+                self._enter_scope(cfa_node)
+                continue
+            # While and for
+            elif syntax.is_condition_of_while(cfa_node.node):
+                self._enter_scope(cfa_node)
+                continue
+            elif syntax.is_condition_of_do_while(cfa_node.node):
+                self._enter_scope(cfa_node)
+                continue
+            elif syntax.is_body_of_for_loop(cfa_node.node):
+                self._enter_scope(cfa_node)
+                continue
+            else:
+                self._add_to_current_scope(cfa_node)
+                
+            self._exit_scope()
+                
+
+    def _exit_scope(self):
+        self.location_value -= 1
+        content = self.stack.pop()
+        self.result[self.location_value] = content
+
+    def _enter_scope(self, node: LocalisedNode):
+        scope = ScopeContent()
+        scope.add_to_scope(node)
+        self.stack[self.location_value] = scope
+        self.location_value += 1
+    
+
+    
+
 from typing import (
     Callable,
     Dict,
@@ -12,21 +123,21 @@ from ts import (
     CField,
     CSyntax
 )
-from .cfa_factory import CFAFactory
-from .cfa import CFA, CFANode
+from cfa.cfa_factory import CFAFactory
+from cfa import CFA
 
 
-class CCFAFactory(CFAFactory):
+class CCFADecoratorFactory(CFAFactory):
     _cfa: CFA
     _tree: Tree
-    _continue_break_stack: "deque[Tuple[CFANode, CFANode]]"
-    _current: CFANode
-    _labels: List[Tuple[CFANode, str]]
-    _gotos: List[Tuple[CFANode, str]]
+    _continue_break_stack: "deque[Tuple[LocalisedNode, LocalisedNode]]"
+    _current: LocalisedNode
+    _labels: List[Tuple[LocalisedNode, str]]
+    _gotos: List[Tuple[LocalisedNode, str]]
 
     def __init__(self, tree: Tree) -> None:
         # We dont have the "translation_unit" because it will always be the root
-        self._visits: Dict[str, Callable[[Node], CFANode]] = {
+        self._visits: Dict[str, Callable[[Node], LocalisedNode]] = {
             CNodeType.EXPRESSION_STATEMENT.value: self._visit_node,
             CNodeType.DECLARATION.value: self._visit_node,
             CNodeType.IF_STATEMENT.value: self._visit_if_statement,
@@ -50,7 +161,7 @@ class CCFAFactory(CFAFactory):
         self._continue_break_stack = deque()
         self._labels = list()
         self._gotos = list()
-        cfa_root: CFANode = CFANode(None)
+        cfa_root: LocalisedNode = LocalisedNode(None)
         self._cfa = CFA(cfa_root)
         self._next(cfa_root)
 
@@ -61,54 +172,54 @@ class CCFAFactory(CFAFactory):
 
         return self._cfa
 
-    def _add_continue(self, source: CFANode) -> CFANode:
-        continue_break: Tuple[CFANode, CFANode] = self._continue_break_stack.pop()
+    def _add_continue(self, source: LocalisedNode) -> LocalisedNode:
+        continue_break: Tuple[LocalisedNode, LocalisedNode] = self._continue_break_stack.pop()
         self._continue_break_stack.append(continue_break)
         return self._branch(source, continue_break[0], "C")
 
-    def _add_break(self, source: CFANode) -> CFANode:
-        continue_break: Tuple[CFANode, CFANode] = self._continue_break_stack.pop()
+    def _add_break(self, source: LocalisedNode) -> LocalisedNode:
+        continue_break: Tuple[LocalisedNode, LocalisedNode] = self._continue_break_stack.pop()
         self._continue_break_stack.append(continue_break)
         return self._branch(source, continue_break[1], "B")
 
-    def _add_label(self, label: Node, label_stmt: CFANode) -> None:
+    def _add_label(self, label: Node, label_stmt: LocalisedNode) -> None:
         label_str: str = self._tree.contents_of(label)
         self._labels.append((label_stmt, label_str))
-        current: CFANode = self._current
+        current: LocalisedNode = self._current
         for goto in self._gotos:
-            goto_stmt: CFANode = goto[0]
+            goto_stmt: LocalisedNode = goto[0]
             goto_label_str: str = goto[1]
             if goto_label_str == label_str:
                 self._branch(goto_stmt, label_stmt, "G")
         self._set_active(current)
 
-    def _add_goto(self, label: Node, goto_stmt: CFANode) -> None:
+    def _add_goto(self, label: Node, goto_stmt: LocalisedNode) -> None:
         goto_label_str: str = self._tree.contents_of(label)
         self._gotos.append((goto_stmt, goto_label_str))
-        current: CFANode = self._current
+        current: LocalisedNode = self._current
         for label in self._labels:
-            label_stmt: CFANode = label[0]
+            label_stmt: LocalisedNode = label[0]
             label_str: str = label[1]
             if label_str == goto_label_str:
                 self._branch(goto_stmt, label_stmt, "G")
         self._set_active(current)
 
-    def _next(self, d: CFANode) -> CFANode:
+    def _next(self, d: LocalisedNode) -> LocalisedNode:
         # s
         # |
         # d
-        s: CFANode = self._current
+        s: LocalisedNode = self._current
         if s is None:
             self._current = d
             return d
         # if is possible for the TSNode to be None when we
-        #   want to start a branch from another CFANode.
+        #   want to start a branch from another LocalisedNode.
         elif s.node is None:
             s.node = d.node
             return s
         return self._branch(s, d)
 
-    def _branch(self, s: CFANode, d: CFANode, label: str = None) -> CFANode:
+    def _branch(self, s: LocalisedNode, d: LocalisedNode, label: str = None) -> LocalisedNode:
         # s
         # |
         # d
@@ -116,49 +227,49 @@ class CCFAFactory(CFAFactory):
         self._current = d
         return d
 
-    def _set_active(self, node: CFANode) -> None:
+    def _set_active(self, node: LocalisedNode) -> None:
         self._current = node
 
-    def _accept(self, node: Node) -> CFANode:
+    def _accept(self, node: Node) -> LocalisedNode:
         if node.type in self._visits:
             return self._visits[node.type](node)
 
-    def _accept_siblings(self, node: Node) -> CFANode:
-        last: CFANode = None
+    def _accept_siblings(self, node: Node) -> LocalisedNode:
+        last: LocalisedNode = None
         sibling: Node = node.next_named_sibling
         while sibling is not None:
             last = self._accept(sibling)
             sibling = sibling.next_named_sibling
         return last
     
-    def _accept_children(self, node: Node) -> CFANode:
-        last: CFANode = None
+    def _accept_children(self, node: Node) -> LocalisedNode:
+        last: LocalisedNode = None
         for child in node.named_children:
             last = self._accept(child)
         return last
 
-    def _visit_translation_unit(self, node: Node) -> CFANode:
+    def _visit_translation_unit(self, node: Node) -> LocalisedNode:
         return self._accept_children(node)
 
-    def _visit_compound_statement(self, node: Node) -> CFANode:
+    def _visit_compound_statement(self, node: Node) -> LocalisedNode:
         # If the compound statement is empty, then we create a node for it.
         #   The reason for this is that the CFA loses too much detail if
         #   they are excluded completely.
         if node.named_child_count == 0:
-            return self._next(CFANode(node))
+            return self._next(LocalisedNode(node))
         return self._accept_children(node)
 
-    def _visit_node(self, d: Node) -> CFANode:
+    def _visit_node(self, d: Node) -> LocalisedNode:
         # p
         # |
         # d
-        return self._next(CFANode(d))
+        return self._next(LocalisedNode(d))
 
-    def _visit_if_statement(self, node: Node) -> CFANode:
+    def _visit_if_statement(self, node: Node) -> LocalisedNode:
         # if with alternative
         # "j", "i" and "s" are None because we dont know whether they
         #   are required in the flow, it could be that there are
-        #   no CFANode(s) in the "alternative"/"consequence" and after the
+        #   no LocalisedNode(s) in the "alternative"/"consequence" and after the
         #   "if"-statement for these reasons they exists.
         #   p
         #  / \
@@ -169,15 +280,15 @@ class CCFAFactory(CFAFactory):
         #   s
 
         condition: Node = node.child_by_field(CField.CONDITION)
-        p: CFANode = self._next(CFANode(condition))
-        s: CFANode = CFANode(None)
+        p: LocalisedNode = self._next(LocalisedNode(condition))
+        s: LocalisedNode = LocalisedNode(None)
 
         consequence: Node = node.child_by_field(CField.CONSEQUENCE)
         if consequence is not None:
-            j: CFANode = CFANode(None)
+            j: LocalisedNode = LocalisedNode(None)
             # By doing this branch the next to be replaced will be "j"
             j = self._branch(p, j, "T")
-            c: CFANode = self._accept(consequence)
+            c: LocalisedNode = self._accept(consequence)
             if j.node is not None:
                 self._branch(c, s)
             else:
@@ -188,10 +299,10 @@ class CCFAFactory(CFAFactory):
 
         alternative: Node = node.child_by_field(CField.ALTERNATIVE)
         if alternative is not None:
-            i: CFANode = CFANode(None)
+            i: LocalisedNode = LocalisedNode(None)
             # By doing this branch the next to be replaced will be "i"
             i = self._branch(p, i, "F")
-            a: CFANode = self._accept(alternative)
+            a: LocalisedNode = self._accept(alternative)
             if i.node is not None:
                 self._branch(a, s)
             else:
@@ -203,7 +314,7 @@ class CCFAFactory(CFAFactory):
             self._branch(p, s, "F")
         return s
 
-    def _visit_switch_statement(self, node: Node) -> CFANode:
+    def _visit_switch_statement(self, node: Node) -> LocalisedNode:
         # Because of fallthrough for now we assume that the end of
         #   the first case is connected with the start of the next.
         #   p
@@ -214,11 +325,11 @@ class CCFAFactory(CFAFactory):
         #  \|/
         #   s
 
-        p: CFANode = CFANode(node.child_by_field(CField.CONDITION))
+        p: LocalisedNode = LocalisedNode(node.child_by_field(CField.CONDITION))
         p = self._next(p)
-        s: CFANode = CFANode(None)
+        s: LocalisedNode = LocalisedNode(None)
 
-        cases: List[Tuple[CFANode, CFANode]] = list()
+        cases: List[Tuple[LocalisedNode, LocalisedNode]] = list()
 
         body: Node = node.child_by_field(CField.BODY)
         # A child will always be a "case_statement"
@@ -227,8 +338,8 @@ class CCFAFactory(CFAFactory):
             is_empty_case = self._syntax.is_empty_switch_case(case_stmt)
             value: Node = case_stmt.child_by_field(CField.VALUE)
 
-            v: CFANode = CFANode(value)
-            c: CFANode = CFANode(None)
+            v: LocalisedNode = LocalisedNode(value)
+            c: LocalisedNode = LocalisedNode(None)
 
             # Case 1: No body "case 1:"
             if is_empty_case and not is_default_case:
@@ -245,7 +356,7 @@ class CCFAFactory(CFAFactory):
                 c = self._accept_children(case_stmt)
             # Case 4: Default but without a body "default:"
             elif is_empty_case and is_default_case:
-                v = CFANode(case_stmt)
+                v = LocalisedNode(case_stmt)
                 c = self._branch(p, v, "D")
 
             # We always add the current case, this helps discover bugs
@@ -253,17 +364,17 @@ class CCFAFactory(CFAFactory):
 
         # Connect fall throughs
         for idx in range(0, len(cases) - 1):
-            prev_end: CFANode = cases[idx][1]
-            next_start: CFANode = cases[idx + 1][0]
+            prev_end: LocalisedNode = cases[idx][1]
+            next_start: LocalisedNode = cases[idx + 1][0]
             self._branch(prev_end, next_start)
 
         # Connect breaks
         for case in cases:
-            prev_end: CFANode = case[1]
+            prev_end: LocalisedNode = case[1]
             self._branch(prev_end, s)
         return s
 
-    def _visit_while_statement(self, node: Node) -> CFANode:
+    def _visit_while_statement(self, node: Node) -> LocalisedNode:
         # While-loop with "p" condition, and "b" body which when "c"
         #   is true is then executed. Otherwise, we exit and advance to "s"
         # --p--
@@ -273,12 +384,12 @@ class CCFAFactory(CFAFactory):
         # --b
 
         condition: Node = node.child_by_field(CField.CONDITION)
-        p: CFANode = self._next(CFANode(condition))
-        s: CFANode = CFANode(None)
+        p: LocalisedNode = self._next(LocalisedNode(condition))
+        s: LocalisedNode = LocalisedNode(None)
 
         self._continue_break_stack.append((p, s))
 
-        j: CFANode = CFANode(None)
+        j: LocalisedNode = LocalisedNode(None)
         self._branch(p, j, "T")
         b: Node = node.child_by_field(CField.BODY)
         self._accept(b)
@@ -288,22 +399,22 @@ class CCFAFactory(CFAFactory):
 
         return self._branch(p, s, "F")
 
-    def _visit_do_statement(self, node: Node) -> CFANode:
+    def _visit_do_statement(self, node: Node) -> LocalisedNode:
         #   i
         #   |
         # --b
         # | |
         # --c-s
-        i: CFANode = CFANode(None)
+        i: LocalisedNode = LocalisedNode(None)
         i = self._next(i)
-        b: CFANode = self._accept(node.child_by_field(CField.BODY))
-        c: CFANode = CFANode(node.child_by_field(CField.CONDITION))
+        b: LocalisedNode = self._accept(node.child_by_field(CField.BODY))
+        c: LocalisedNode = LocalisedNode(node.child_by_field(CField.CONDITION))
         self._next(c)
-        s: CFANode = CFANode(None)
+        s: LocalisedNode = LocalisedNode(None)
         self._branch(c, i, "T")
         return self._branch(c, s, "F")
 
-    def _visit_for_statement(self, node: Node) -> CFANode:
+    def _visit_for_statement(self, node: Node) -> LocalisedNode:
         #   i
         #   |
         # --c--
@@ -313,10 +424,10 @@ class CCFAFactory(CFAFactory):
         # | b f
         # | |
         # --u
-        f: CFANode = CFANode(None)
-        i: CFANode = CFANode(node.child_by_field(CField.INITIALIZER))
-        c: CFANode = CFANode(node.child_by_field(CField.CONDITION))
-        u: CFANode = CFANode(node.child_by_field(CField.UPDATE))
+        f: LocalisedNode = LocalisedNode(None)
+        i: LocalisedNode = LocalisedNode(node.child_by_field(CField.INITIALIZER))
+        c: LocalisedNode = LocalisedNode(node.child_by_field(CField.CONDITION))
+        u: LocalisedNode = LocalisedNode(node.child_by_field(CField.UPDATE))
 
         has_init: bool = i.node is not None
         has_cond: bool = c.node is not None
@@ -335,18 +446,18 @@ class CCFAFactory(CFAFactory):
         #   implicitly it means that there is a "condition" which cant
         #   be found in the tree and evaluated to TRUE constantly.
         if has_cond and has_update:
-            j: CFANode = CFANode(None)
+            j: LocalisedNode = LocalisedNode(None)
             j = self._branch(self._current, j, "T")
             self._accept(body)
             self._next(u)
             self._next(c)
         elif has_cond and not has_update:
-            j: CFANode = CFANode(None)
+            j: LocalisedNode = LocalisedNode(None)
             j = self._branch(self._current, j, "T")
             self._accept(body)
             self._next(c)
         elif not has_cond and not has_update:
-            j: CFANode = CFANode(None)
+            j: LocalisedNode = LocalisedNode(None)
             j = self._next(j)
             c = self._accept(body)
             self._branch(c, j)
@@ -358,33 +469,33 @@ class CCFAFactory(CFAFactory):
         #   branch, ebcause there are no predicate to be "false"
         return self._branch(c, f, "F" if has_cond else "")
 
-    def _visit_labeled_statement(self, node: Node) -> CFANode:
+    def _visit_labeled_statement(self, node: Node) -> LocalisedNode:
         label: Node = node.child_by_field(CField.LABEL)
-        stmt: CFANode = self._next(CFANode(node))
+        stmt: LocalisedNode = self._next(LocalisedNode(node))
         self._add_label(label, stmt)
         return stmt
 
-    def _visit_goto_statement(self, node: Node) -> CFANode:
+    def _visit_goto_statement(self, node: Node) -> LocalisedNode:
         label: Node = node.child_by_field(CField.LABEL)
-        stmt: CFANode = CFANode(node)
+        stmt: LocalisedNode = LocalisedNode(node)
         self._add_goto(label, stmt)
         return self._next(stmt)
 
-    def _visit_break_statement(self, node: Node) -> CFANode:
-        break_node: CFANode = CFANode(node)
-        current: CFANode = self._current
+    def _visit_break_statement(self, node: Node) -> LocalisedNode:
+        break_node: LocalisedNode = LocalisedNode(node)
+        current: LocalisedNode = self._current
         self._add_break(break_node)
         self._set_active(current)
         return self._next(break_node)
 
-    def _visit_continue_statement(self, node: Node) -> CFANode:
-        continue_node: CFANode = CFANode(node)
-        current: CFANode = self._current
+    def _visit_continue_statement(self, node: Node) -> LocalisedNode:
+        continue_node: LocalisedNode = LocalisedNode(node)
+        current: LocalisedNode = self._current
         self._add_continue(continue_node)
         self._set_active(current)
         return self._next(continue_node)
 
-    def _visit_return_statement(self, node: Node) -> CFANode:
-        return_node = self._next(CFANode(node))
+    def _visit_return_statement(self, node: Node) -> LocalisedNode:
+        return_node = self._next(LocalisedNode(node))
         self._cfa.add_final(return_node)
         return return_node
