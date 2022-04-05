@@ -776,6 +776,33 @@ class TestGraphsGraphics(TestCase):
                  return;
              }
              """),
+            ("program_5", """
+             typedef struct Foo {
+                 int b;
+             } Foo;
+             struct Bar {
+                 foo Foo;
+             };
+             typedef struct Bar Bar;
+             void foo() {
+                 int a = 0;
+                 int b;
+                 double c;
+                 for (int p = 0; b < 10; ++b) {
+                     print(p);
+                 }
+                 return;
+             }
+             void bar(int *a) {
+                 double c;
+                 return;
+                 if (a) {
+                     if (b) {
+                         int q = 0;
+                     }
+                 }
+             }
+             """),
         ]
 
         def draw_normal_cfa(name: str, program: str):
