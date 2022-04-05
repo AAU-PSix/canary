@@ -1,3 +1,4 @@
+from abc import ABC
 from typing import (
     Callable,
     Dict,
@@ -14,6 +15,11 @@ from ts import (
 )
 from .cfa_factory import CFAFactory
 from .cfa import CFA, CFANode
+from typing import TypeVar, Generic
+NodeType = TypeVar('NodeType', bound=CFANode)
+class CCFAFactoryGeneric(Generic[NodeType], ABC):
+    pass
+
 
 class CCFAFactory(CFAFactory):
     _cfa: CFA

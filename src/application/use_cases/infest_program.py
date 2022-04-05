@@ -1,10 +1,14 @@
 from dataclasses import dataclass
+from math import factorial
 from cfa import (
-    CCFAFactory,
+    CCFAFactory
 )
-from src.tree_infestator.c_canary_factory import CCanaryFactory
-from src.tree_infestator.c_tree_infestator import CTreeInfestator
-
+from cfa.decorators.location_decorator import *
+from cfa.cfa_factory import CFAFactory
+from tree_infestator.c_canary_factory import CCanaryFactory
+from tree_infestator.c_tree_infestator import CTreeInfestator
+from cfa import Node
+from cfa.c_cfa_factory import CCFAFactory
 
 from utilities import FileHandler
 from ts import (
@@ -83,12 +87,18 @@ class InfestProgramUseCase(
         infestator = CTreeInfestator(request.parser, canary_factory)
         infested_tree = infestator.infect(request.tree, cfa)
 
-    
-
-
         # Step 3: Write the infested file
         file: FileHandler = open(request.filepath, "w+")
         file.write(infested_tree.text)
         file.close()
+
+        # Step 4: Decorate CFA with locations
+        factory = CFAFactory(infested_tree)
+        cfa = factory.create(infested_tree.root_node)
+        decorator = LocationDecorator(cfa)
+        decoratedCFA = decorator.decorate()
+        
+
+
 
         return InfestProgramResponse()
