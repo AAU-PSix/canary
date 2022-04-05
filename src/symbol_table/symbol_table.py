@@ -147,9 +147,9 @@ class LexicalSymbolTable(Generic[TLexicalSymbolTable], Node[TLexicalSymbolTable]
         if dot is None: dot = Digraph(name)
 
         def symbol_table_label(table: LexicalSymbolTable) -> str:
-            label = f'[{table.minimum_lexical_index}, {table.maximum_lexical_index}]{os.linesep}'
+            label = f'[{table.minimum_lexical_index}, {table.maximum_lexical_index}]{2*os.linesep}'
             for declaration in table._declarations:
-                label += f'[{declaration.lexical_index}] {declaration.type.__class__.__name__}::{declaration.identifier}\l{os.linesep}'
+                label += f'[{declaration.lexical_index}] {declaration.type.__class__.__name__}::{declaration.identifier}\l'
             return label
 
         ids: Dict[LexicalSymbolTable, str] = dict()
@@ -158,7 +158,7 @@ class LexicalSymbolTable(Generic[TLexicalSymbolTable], Node[TLexicalSymbolTable]
         openset: List[LexicalSymbolTable] = list()
         openset.append(self)
         
-        dot.attr('node', shape='square')
+        dot.attr('node', shape='rectangle')
         while len(openset) > 0:
             curr = openset.pop()
             id = counter = counter + 1
