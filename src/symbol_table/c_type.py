@@ -82,6 +82,7 @@ class CTypeFactory():
         self._declaration_factory = CDeclaratorFactory()
         self._primitives: Dict[str, PrimitiveType] = {
             "int": PrimitiveType("int"),
+            "double": PrimitiveType("double"),
             "void": PrimitiveType("void")
         }
 

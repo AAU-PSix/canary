@@ -116,7 +116,7 @@ class CSymbolTableFiller(SymbolTableFiller):
             )
             if not is_compound: builder.close()
 
-        alternative = if_statement.child_by_field_name(CField.ALTERNATIVE)
+        alternative = if_statement.child_by_field(CField.ALTERNATIVE)
         if alternative is not None:
             is_compound = alternative.is_type(CNodeType.COMPOUND_STATEMENT)
             if not is_compound: builder.open_for(alternative)
@@ -176,10 +176,10 @@ class CSymbolTableFiller(SymbolTableFiller):
         for_statement: Node,
         builder: CSymbolTableBuilder
     ) -> None:
-        builder.open(for_statement)
+        builder.open_for(for_statement)
         initialization = for_statement.child_by_field(CField.INITIALIZER)
         if initialization is not None:
-            self._accept(initialization)
+            self._accept(tree, initialization, builder)
         body = self._syntax.get_for_loop_body(for_statement)
         is_compound = body.is_type(CNodeType.COMPOUND_STATEMENT)
         if not is_compound: builder.open_for(body)
