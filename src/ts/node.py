@@ -127,6 +127,13 @@ class Node:
             return None
         return Node(result)
 
+    def get_children_of_type(self, node_type: NodeType) -> List["Node"]:
+        result: List[Node] = list()
+        for child in self.named_children:
+            if child.is_type(node_type):
+                result.append(child)
+        return result
+
     def child_by_field(self, field: Field) -> "Node":
         return self.child_by_field_name(field.value)
 

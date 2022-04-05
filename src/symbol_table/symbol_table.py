@@ -3,7 +3,7 @@ from graphviz import Digraph
 from typing import Dict, Generic, Iterable, List, TypeVar
 
 from ts import Node as TsNode
-from .type import LexicalDeclaration, Type
+from .type import CDeclaration, LexicalDeclaration, Type
 from .tree import Tree, Node
 
 TLexicalSymbolTable = TypeVar("TLexicalSymbolTable", bound="LexicalSymbolTable")
@@ -15,7 +15,7 @@ class LexicalSymbolTable(Generic[TLexicalSymbolTable], Node[TLexicalSymbolTable]
         parent: TLexicalSymbolTable = None,
         children: List[TLexicalSymbolTable] = list(),
     ) -> None:
-        self._declarations: List[LexicalDeclaration] = [ ]
+        self._declarations: List[CDeclaration] = [ ]
         self._minimum_lexical_index = minimum_lexical_index
         self._maximum_lexical_index = maximum_lexical_index
         super().__init__(parent, children)
@@ -32,18 +32,36 @@ class LexicalSymbolTable(Generic[TLexicalSymbolTable], Node[TLexicalSymbolTable]
     def is_empty(self) -> bool:
         return len(self._declarations) == 0
 
-    def enter(self, identifier: str, type: Type, lexical_index: int) -> bool:
-        if self.lookup(identifier) is not None: return False
-        declaration = LexicalDeclaration(identifier, type, lexical_index)
+    def enter(
+        self,
+        identifier: str,
+        type: Type,
+        lexical_index: int,
+        storage_class_specifiers: List[str] = list(),
+        type_qualifiers: List[str] = list(),
+    ) -> bool:
+        return self.enter_declaration(CDeclaration(
+            identifier,
+            type,
+            lexical_index,
+            storage_class_specifiers,
+            type_qualifiers,
+        ))
+
+    def enter_declaration(
+        self,
+        declaration: CDeclaration
+    ) -> bool:
+        if self.lookup(declaration.identifier) is not None: return False
         self._declarations.append(declaration)
         return True
 
-    def local_lookup(self, identifier: str) -> Type:
+    def local_lookup(self, identifier: str) -> CDeclaration:
         for declaration in self._declarations:
-            if declaration.identifier == identifier: return declaration.type
+            if declaration.identifier == identifier: return declaration
         return None
 
-    def lookup(self, identifier: str) -> Type:
+    def lookup(self, identifier: str) -> CDeclaration:
         for table in self.lexical_traversal():
             result = table.local_lookup(identifier)
             if result is not None: return result
@@ -196,13 +214,27 @@ class LexicalSymbolTabelBuilder(Generic[TLexicalSymbolTable]):
         self._scope_stack.append(new_table)
         return self
 
+    def enter_declaration(
+        self,
+        declaration: CDeclaration
+    ) -> "LexicalSymbolTabelBuilder[TLexicalSymbolTable]":
+        self.current.enter_declaration(declaration)
+
     def enter(
         self,
         identifier: str,
         type: Type,
-        lexical_index: int
+        lexical_index: int,
+        storage_class_specifiers: List[str] = list(),
+        type_qualifiers: List[str] = list(),
     ) -> "LexicalSymbolTabelBuilder[TLexicalSymbolTable]":
-        self.current.enter(identifier, type, lexical_index)
+        self.current.enter(
+            identifier,
+            type,
+            lexical_index,
+            storage_class_specifiers,
+            type_qualifiers,
+        )
         return self
 
     def close(self) -> "LexicalSymbolTabelBuilder[TLexicalSymbolTable]":

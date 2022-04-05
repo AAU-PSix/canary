@@ -1,5 +1,6 @@
 from abc import ABC
 from typing import Callable, Dict
+from urllib.request import build_opener
 from ts import (
     Node,
     CNodeType,
@@ -9,7 +10,15 @@ from ts import (
 )
 from .type import *
 from .symbol_table import LexicalSymbolTable
-from .c_type import CSymbolTable, CSymbolTableBuilder, CTypeFactory
+from .c_type import (
+    CAggregateType,
+    CDeclaratorFactory,
+    CSymbolTable,
+    CSymbolTableBuilder,
+    CType,
+    CTypeFactory,
+    PointerType,
+)
 from .tree import Tree
 
 class SymbolTableFiller(ABC):
@@ -18,6 +27,7 @@ class SymbolTableFiller(ABC):
 
 class CSymbolTableFiller(SymbolTableFiller):
     def __init__(self,syntax: CSyntax) -> None:
+        self._c_declarator_factory = CDeclaratorFactory()
         self._syntax = syntax
         self._type_factory = CTypeFactory()
         self._visits: Dict[str, Callable[[TsTree, Node, CSymbolTableBuilder], None]] = {
@@ -30,6 +40,10 @@ class CSymbolTableFiller(SymbolTableFiller):
             CNodeType.DO_STATEMENT.value: self._visit_do_statement,
             CNodeType.FOR_STATEMENT.value: self._visit_for_statement,
             CNodeType.SWITCH_STATEMENT.value: self._visit_switch_statement,
+            CNodeType.TYPE_DEFINITION.value: self._visit_type_definition,
+            CNodeType.STRUCT_SPECIFIER.value: self._visit_struct_specifier,
+            CNodeType.UNION_SPECIFIER.value: self._visit_union_specifier,
+            CNodeType.ENUM_SPECIFIER.value: self._visit_enum_specifier,
         }
         super().__init__()
 
@@ -217,19 +231,95 @@ class CSymbolTableFiller(SymbolTableFiller):
         self._accept(tree, body_node, builder)
         builder.close()
 
+    def _visit_struct_specifier(
+        self,
+        tree: TsTree,
+        struct_specifier: Node,
+        builder: CSymbolTableBuilder
+    ) -> None:
+        builder.enter(
+            self._type_factory.create_specifier_name(tree, struct_specifier),
+            self._type_factory.create_composite_type(tree, struct_specifier),
+            struct_specifier.end_byte,
+        )
+
+    def _visit_union_specifier(
+        self,
+        tree: TsTree,
+        union_specifier: Node,
+        builder: CSymbolTableBuilder
+    ) -> None:
+        builder.enter(
+            self._type_factory.create_specifier_name(tree, union_specifier),
+            self._type_factory.create_composite_type(tree, union_specifier),
+            union_specifier.end_byte,
+        )
+
+    def _visit_enum_specifier(
+        self,
+        tree: TsTree,
+        enum_specifier: Node,
+        builder: CSymbolTableBuilder
+    ) -> None:
+        builder.enter(
+            self._type_factory.create_specifier_name(tree, enum_specifier),
+            self._type_factory.create_enum_type(tree, enum_specifier),
+            enum_specifier.end_byte
+        )
+
+    def _visit_type_definition(
+        self,
+        tree: TsTree,
+        type_definition: Node,
+        builder: CSymbolTableBuilder
+    ) -> None:
+        type_node = type_definition.child_by_field(CField.TYPE)
+        if (type_node.is_type(CNodeType.STRUCT_SPECIFIER) or \
+            type_node.is_type(CNodeType.UNION_SPECIFIER) or \
+            type_node.is_type(CNodeType.ENUM_SPECIFIER)) and \
+            type_node.child_by_field(CField.BODY) is not None:
+            self._accept(tree, type_node, builder)
+
+        type_identifier = self._type_factory.create_specifier_name(tree, type_node)
+        reference_declaration = builder.current.lookup(type_identifier)
+        declarator_node = type_definition.child_by_field(CField.DECLARATOR)
+        declarator_identifier = tree.contents_of(declarator_node)
+        builder.enter(
+            declarator_identifier,
+            reference_declaration.type,
+            type_definition.end_byte,
+            reference_declaration.storage_class_specifiers,
+            reference_declaration.type_qualifiers
+        )
+
     def _visit_declaration(
         self,
         tree: TsTree,
         declaration: Node,
         builder: CSymbolTableBuilder
     ) -> None:
-        type_field = declaration.child_by_field(CField.TYPE)
-        declarator = declaration.child_by_field(CField.DECLARATOR)
-        declaration_identifier = declarator.child_by_field(CField.DECLARATOR)
+        declaration_storage_class_specifier_nodes = declaration.get_children_of_type(
+            CNodeType.STORAGE_CLASS_SPECIFIERS
+        )
+        declaration_storage_class_specifiers = [
+            tree.contents_of(node) for node in declaration_storage_class_specifier_nodes
+        ]
 
-        if type_field.type == CNodeType.PRIMITIVE_TYPE.value:
-            builder.enter(
-                tree.contents_of(declaration_identifier),
-                PrimitiveType(type_field),
-                declaration.end_byte
+        declaration_type_qualifier_nodes = declaration.get_children_of_type(
+            CNodeType.TYPE_QUALIFIER
+        )
+        declaration_type_qualifiers = [
+            tree.contents_of(node) for node in declaration_type_qualifier_nodes
+        ]
+
+        type_field = declaration.child_by_field(CField.TYPE)
+        type = self._type_factory.create_type_for(tree, type_field)
+        declarator_node = type_field.next_named_sibling
+        while declarator_node is not None:
+            c_declaration = self._c_declarator_factory.create_declaration(
+                type, tree, declarator_node,
+                declaration_storage_class_specifiers,
+                declaration_type_qualifiers
             )
+            builder.enter_declaration(c_declaration)
+            declarator_node = declarator_node.next_named_sibling
