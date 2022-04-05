@@ -4,7 +4,7 @@ from tree_sitter.binding import Query as _Query
 from tree_sitter import Language as _Language
 from os import path
 
-from src.ts.c_syntax import CSyntax
+from ts import CSyntax
 
 from . import FilePoint
 from .capture import Capture

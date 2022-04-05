@@ -2,7 +2,9 @@ from dataclasses import dataclass
 from cfa import (
     CCFAFactory,
 )
+
 from tree_infestator.localized_canary_factory import LocalisedCInfestator, LocalisedTree
+
 
 from utilities import FileHandler
 from ts import (

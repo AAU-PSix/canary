@@ -3,8 +3,6 @@ from typing import List
 
 from graphviz import Digraph
 
-from src.symbol_table.c_type import CSymbolTableBuilder
-
 from . import (
     LexicalSymbolTable,
     CSymbolTableBuilder,

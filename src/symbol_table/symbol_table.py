@@ -1,7 +1,8 @@
 import os
+from graphviz import Digraph
 from typing import Dict, Generic, Iterable, List, TypeVar
 
-from graphviz import Digraph
+from ts import Node as TsNode
 from .type import LexicalDeclaration, Type
 from .tree import Tree, Node
 
@@ -174,6 +175,11 @@ class LexicalSymbolTabelBuilder(Generic[TLexicalSymbolTable]):
     @property
     def depth(self) -> int:
         return len(self._scope_stack)
+
+    def open_for(
+        self, node: TsNode
+    ) -> "LexicalSymbolTabelBuilder[TLexicalSymbolTable]":
+        return self.open(node.start_byte, node.end_byte)
 
     def open(
         self,
