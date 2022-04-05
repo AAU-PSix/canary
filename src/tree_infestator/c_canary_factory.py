@@ -1,5 +1,5 @@
 from typing import Iterable
-from src.tree_infestator.tree_infection import TreeInfection
+from tree_infection import TreeInfection
 from ts import Node, CNodeType
 from .canary_factory import CanaryFactory
 
