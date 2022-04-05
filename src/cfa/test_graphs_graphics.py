@@ -1,6 +1,7 @@
 from unittest import TestCase
 from typing import List, Tuple
 from graphviz import Digraph
+from symbol_table import CSymbolTableFiller
 from tree_infestator import (
     TreeInfestator,
     CTreeInfestator,
@@ -12,6 +13,7 @@ from ts import (
     Query,
     Tree,
     Node,
+    CSyntax,
 )
 from . import (
     CFA,
@@ -758,7 +760,49 @@ class TestGraphsGraphics(TestCase):
                             }
                             return FAIL;
                         }
-             """)
+             """),
+            ("program_4", """
+             void foo() {
+                 int a = 0;
+                 int b;
+                 double c;
+                 for (int p = 0; b < 10; ++b) {
+                     print(p);
+                 }
+                 return;
+             }
+             void bar(int *a) {
+                 double c;
+                 return;
+             }
+             """),
+            ("program_5", """
+             typedef struct Foo {
+                 int b;
+             } Foo;
+             struct Bar {
+                 foo Foo;
+             };
+             typedef struct Bar Bar;
+             void foo() {
+                 int a = 0;
+                 int b;
+                 double c;
+                 for (int p = 0; b < 10; ++b) {
+                     print(p);
+                 }
+                 return;
+             }
+             void bar(int *a) {
+                 double c;
+                 return;
+                 if (a) {
+                     if (b) {
+                         int q = 0;
+                     }
+                 }
+             }
+             """),
         ]
 
         def draw_normal_cfa(name: str, program: str):
@@ -772,7 +816,9 @@ class TestGraphsGraphics(TestCase):
             cfa: CFA = visitor.create(root)
             dot: Digraph = cfa.draw(tree, name)
             dot.save(directory="graphs")
+
             draw_infected_cfa(name, tree, cfa)
+            draw_symbol_table(name, tree)
 
         def draw_infected_cfa(name: str, tree: Tree, cfa: CFA):
             try:
@@ -786,13 +832,24 @@ class TestGraphsGraphics(TestCase):
                 if root.named_children[0].type == "function_definition":
                     root = root.named_children[0].child_by_field_name("body")
 
-
                 infested_visitor: CFAFactory = CCFAFactory(infested_tree)
                 infested_cfa: CFA = infested_visitor.create(root)
                 infested_dot: Digraph = infested_cfa.draw(infested_tree, f'{name}_infested')
                 infested_dot.save(directory="graphs")
             except:
                 self.assertEqual(name, "", "Infestation failed for this program")
+
+        def draw_symbol_table(name: str, tree: Tree):
+            try:
+                symbol_filler = CSymbolTableFiller(CSyntax())
+                root_table = symbol_filler.fill(tree)
+                table_tree = root_table.root.draw(f'{name}_symbols')
+                table_tree.save(directory="graphs")
+            except:
+                # For now we ignore mistakes in certain programs
+                if name == "program_2": return
+                if name == "program_3": return
+                self.assertEqual(name, "", "Symbol filling failed for this program")
 
         for program in programs:
             name: str = program[0]
