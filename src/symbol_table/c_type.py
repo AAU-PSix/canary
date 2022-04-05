@@ -198,7 +198,6 @@ class CDeclaratorFactory():
         type_node = parameter_declaration_node.child_by_field(CField.TYPE)
         type = type_factory.create_type_for(tree, type_node)
         declarator = parameter_declaration_node.child_by_field(CField.DECLARATOR)
-        print(declarator.type)
         return self.create_declaration(
             type, tree, declarator,
             declaration_storage_class_specifiers,
