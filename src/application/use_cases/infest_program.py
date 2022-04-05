@@ -1,10 +1,11 @@
+
 from dataclasses import dataclass
-from math import factorial
 from cfa import (
     CCFAFactory
 )
 from decorators import *
 from cfa.cfa_factory import CFAFactory
+from decorators.location_decorator import CCFADecoratorFactory
 from tree_infestator.c_canary_factory import CCanaryFactory
 from tree_infestator.c_tree_infestator import CTreeInfestator
 from cfa import Node
@@ -93,7 +94,10 @@ class InfestProgramUseCase(
         file.close()
 
         # Step 4: Decorate CFA with locations
-
+        factory = CCFADecoratorFactory(infested_tree)
+        cfa = factory.create(infested_tree.root_node)
+        decorator = LocationDecorator(cfa)
+        decoratedCFA = decorator.decorate()
 
 
 

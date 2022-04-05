@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from cfa import CFANode, CFAEdge, CFAGeneric, CFA
+from dataclasses import dataclass
+from cfa import CFANode, CFAEdge, CFAGeneric, CFA, CFAFactory
 from cfa.c_cfa_factory import CCFAFactory
 from ts.c_syntax import *
 from typing import List, Dict
@@ -17,15 +18,6 @@ class LocalisedCFA(CFAGeneric[LocalisedNode, CFAEdge]):
 class LocalisedCFACFactory(CCFAFactory):
     pass
 
-class CFADecorator(ABC):
-    def __init__(self, cfa:CFA) -> None:
-        self.cfa = cfa
-
-        super().__init__()
-
-    @abstractmethod
-    def decorate(self) -> CFA:
-        pass
 
 class ScopeContent:
     def __init__(self) -> None:
@@ -42,8 +34,24 @@ def peek(stack: List[Dict[int, ScopeContent]]) -> Dict[int, ScopeContent]:
         return stack[top]
 
 
-class LocationDecorator(CFADecorator):
 
+@dataclass
+class DecorationResult():
+    cfa: LocalisedCFA = None
+
+@dataclass
+class LocalisationResult(DecorationResult):
+    Scopes: Dict[int, ScopeContent] = None
+
+class CFADecorator(ABC):
+
+    @abstractmethod
+    def decorate(self) -> DecorationResult:
+        pass
+
+
+
+class LocationDecorator(CFADecorator):
 
     def __init__(self, CFA: LocalisedCFA) -> None:
         self.cfa = CFA
@@ -52,9 +60,10 @@ class LocationDecorator(CFADecorator):
         self.result: Dict[int, ScopeContent] = []
 
     def _add_to_current_scope(self, node: LocalisedNode):
+        node.location = self.location_value
         peek(self.stack)[self.location_value].add_to_scope(node)
 
-    def decorate(self) -> LocalisedCFA:
+    def decorate(self) -> LocalisationResult:
         syntax = CSyntax()
         searched_nodes = []
         for cfa_node in self.cfa.breadth_first_traverse():
@@ -91,8 +100,12 @@ class LocationDecorator(CFADecorator):
                 continue
             else:
                 self._add_to_current_scope(cfa_node)
+                continue
                 
-            self._exit_scope()
+        # Exit global scope to say that we are done
+        self._exit_scope()
+
+        return DecorationResult(Scopes=self.result, cfa=self.cfa)
                 
 
     def _exit_scope(self):
@@ -102,7 +115,7 @@ class LocationDecorator(CFADecorator):
 
     def _enter_scope(self, node: LocalisedNode):
         scope = ScopeContent()
-        scope.add_to_scope(node)
+        self._add_to_current_scope(node)
         self.stack[self.location_value] = scope
         self.location_value += 1
     
@@ -157,7 +170,7 @@ class CCFADecoratorFactory(CFAFactory):
         self._tree = tree
         self._syntax = CSyntax()
 
-    def create(self, root: Node) -> CFA:
+    def create(self, root: Node) -> LocalisedCFA:
         self._continue_break_stack = deque()
         self._labels = list()
         self._gotos = list()
