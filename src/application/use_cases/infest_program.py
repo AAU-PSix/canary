@@ -1,7 +1,8 @@
+from dataclasses import dataclass
 from cfa import (
     CCFAFactory,
 )
-from tree_infestator.localized_canary_factory import LocalisationInfestator
+from tree_infestator.localized_canary_factory import LocalisedCInfestator, LocalisedTree
 
 from utilities import FileHandler
 from ts import (
@@ -54,7 +55,11 @@ class InfestProgramRequest(UseCaseRequest):
     def save_graph_directory(self) -> str:
         return self._save_graph_directory
 
-class InfestProgramResponse(UseCaseResponse): pass
+@dataclass
+class InfestProgramResponse(UseCaseResponse):
+    localisedTree: LocalisedTree
+    
+
 
 class InfestProgramUseCase(
     UseCase[InfestProgramRequest, InfestProgramResponse]
@@ -73,9 +78,12 @@ class InfestProgramUseCase(
 
 
         # Step 2: Infest
-        canary_factory = LocalisationInfestator()
-        infestator = LocalisationInfestator(request.parser, canary_factory)
+        canary_factory = LocalisedCInfestator()
+        infestator = LocalisedCInfestator(request.parser, canary_factory)
         infested_tree = infestator.infect(request.tree, cfa)
+
+    
+
 
         # Step 3: Write the infested file
         file: FileHandler = open(request.filepath, "w+")
