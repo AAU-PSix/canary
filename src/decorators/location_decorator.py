@@ -26,8 +26,8 @@ class ScopeContent:
     def add_to_scope(self, node : LocalisedNode):
         self.statements.append(node)
 
-def peek(stack: List[Dict[int, ScopeContent]]) -> Dict[int, ScopeContent]:
-    if stack == []:
+def peek(stack: Dict[int, ScopeContent]) -> ScopeContent:
+    if stack == {}:
         return None
     else:
         top = len(stack)-1
@@ -56,17 +56,19 @@ class LocationDecorator(CFADecorator):
     def __init__(self, CFA: LocalisedCFA) -> None:
         self.cfa = CFA
         self.location_value = 0
-        self.stack: Dict[int, ScopeContent] = []
-        self.result: Dict[int, ScopeContent] = []
+        self.scopes: Dict[int, ScopeContent] = {self.location_value:ScopeContent()}
+        self.result: Dict[int, ScopeContent] = {}
 
     def _add_to_current_scope(self, node: LocalisedNode):
         node.location = self.location_value
-        peek(self.stack)[self.location_value].add_to_scope(node)
+        dict = peek(self.scopes)
+        if dict is not None:
+            dict.add_to_scope(node)
 
     def decorate(self) -> LocalisationResult:
         syntax = CSyntax()
         searched_nodes = []
-        for cfa_node in self.cfa.breadth_first_traverse():
+        for cfa_node in self.cfa.depth_first_traverse():
             if cfa_node in searched_nodes:
                 continue
     
@@ -109,14 +111,15 @@ class LocationDecorator(CFADecorator):
                 
 
     def _exit_scope(self):
+        location = self.location_value
+        content = self.scopes.pop(location)
+        self.result[location] = content
         self.location_value -= 1
-        content = self.stack.pop()
-        self.result[self.location_value] = content
 
     def _enter_scope(self, node: LocalisedNode):
         scope = ScopeContent()
         self._add_to_current_scope(node)
-        self.stack[self.location_value] = scope
+        self.scopes[self.location_value] = scope
         self.location_value += 1
     
 

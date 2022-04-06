@@ -1,1 +1,1 @@
-from location_decorator import LocationDecorator
+from .location_decorator import *

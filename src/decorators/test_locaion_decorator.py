@@ -1,20 +1,19 @@
-'''
+
 from dataclasses import dataclass
 from math import factorial
 from cfa import (
     CCFAFactory
 )
 from decorators import *
-from cfa.cfa_factory import CFAFactory
-from tree_infestator.c_canary_factory import CCanaryFactory
-from tree_infestator.c_tree_infestator import CTreeInfestator
+from cfa.c_cfa_factory import CCFAFactory
 from unittest import TestCase
 from ts import (
     LanguageLibrary,
     Parser
 )
 
-from location_decorator import LocalisationResult, LocationDecorator
+from decorators.location_decorator import LocationDecorator
+
 
 class TestLocationDecorator(TestCase):
     def setUp(self) -> None:
@@ -30,7 +29,7 @@ class TestLocationDecorator(TestCase):
         tree = self._parser.parse(program)
 
 
-        factory = CFAFactory(tree)
+        factory = CCFAFactory(tree)
         cfa = factory.create(tree.root_node)
         decorator = LocationDecorator(cfa)
         result = decorator.decorate()
@@ -43,9 +42,3 @@ class TestLocationDecorator(TestCase):
         
   
 
-
-
-
-
-
-'''

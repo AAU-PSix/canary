@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Generic, List, Iterable, TypeVar
 from queue import Queue
+from xmlrpc.client import Boolean
 from graphviz import Digraph
 from ts import Tree, Node
 from .cfa_edge import CFAEdge
@@ -62,6 +63,10 @@ class CFAGeneric(Generic[NodeType, EdgeType], ABC):
 
     @abstractmethod
     def breadth_first_traverse(self) -> Iterable[NodeType]:
+        pass
+
+    @abstractmethod
+    def depth_first_traverse(self) -> Iterable[NodeType]:
         pass
 
 
@@ -234,3 +239,25 @@ class CFA(CFAGeneric[CFANode, CFAEdge]):
                 if outgoing.destination not in visited:
                     queue.put(outgoing.destination)
                     visited.append(outgoing.destination)
+
+
+    def _depth_first_util(self, v:CFANode, visited: List[Boolean]):
+        visited[v] = True
+        for edge in self.outgoing_edges(v):
+            if not visited[edge.destination]:
+                self._depth_first_util(edge.destination, visited)
+
+    def depth_first_traverse(self) -> Iterable[NodeType]:
+        
+        V = len(self.nodes)
+        visited = [False] * V
+
+        for i in range(V):
+            if not visited[i]:
+                self._depth_first_util(i, visited)
+
+        visited.insert(0, True)
+        return visited
+                
+
+
