@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from cfa import (
     CCFAFactory
 )
-from decorators import *
+from decorators.location_decorator import LocationDecorator
 from cfa.cfa_factory import CFAFactory
 from decorators.location_decorator import CCFADecoratorFactory
 from tree_infestator.c_canary_factory import CCanaryFactory

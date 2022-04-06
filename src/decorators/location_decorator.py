@@ -1,5 +1,7 @@
+from ts.tree import Tree
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from posixpath import split
 from cfa import CFANode, CFAEdge, CFAGeneric, CFA, CFAFactory
 from cfa.c_cfa_factory import CCFAFactory
 from ts.c_syntax import *
@@ -26,8 +28,8 @@ class ScopeContent:
     def add_to_scope(self, node : LocalisedNode):
         self.statements.append(node)
 
-def peek(stack: List[Dict[int, ScopeContent]]) -> Dict[int, ScopeContent]:
-    if stack == []:
+def peek(stack: Dict[int, ScopeContent]) -> ScopeContent:
+    if stack == {}:
         return None
     else:
         top = len(stack)-1
@@ -53,72 +55,41 @@ class CFADecorator(ABC):
 
 class LocationDecorator(CFADecorator):
 
-    def __init__(self, CFA: LocalisedCFA) -> None:
-        self.cfa = CFA
-        self.location_value = 0
-        self.stack: Dict[int, ScopeContent] = []
-        self.result: Dict[int, ScopeContent] = []
+    def __init__(self, cfa_factory: LocalisedCFACFactory, tree:Tree) -> None:
+        self.tree: Tree = tree
+        self.cfa = cfa_factory.create(tree.root_node)
+        self.location = ''
 
-    def _add_to_current_scope(self, node: LocalisedNode):
-        node.location = self.location_value
-        peek(self.stack)[self.location_value].add_to_scope(node)
+
+    def extract_location_text(self, cfa_node: CFANode) -> str:
+        text = self.tree.contents_of(cfa_node.node)
+        if "CANARY_TWEET_LOCATION(" in text:
+            return text.split("CANARY_TWEET_LOCATION(").pop()[:-2]
+
+        return ''
+
+        
 
     def decorate(self) -> LocalisationResult:
         syntax = CSyntax()
         searched_nodes = []
-        for cfa_node in self.cfa.breadth_first_traverse():
+        result: Dict[str:List[CFANode]] = {self.location: []}
+        for cfa_node in self.cfa.depth_first_traverse():
             if cfa_node in searched_nodes:
                 continue
-    
+
             searched_nodes.append(cfa_node)
-            
-            if syntax.is_condition_of_if(cfa_node.node):
-                self._enter_scope(cfa_node)
-                continue
-            elif syntax.is_else_if(cfa_node.node):
-                self._enter_scope(cfa_node)
-                continue
-            # Switch
-            elif syntax.is_condition_of_switch(cfa_node.node):
-                self._enter_scope(cfa_node)
-                continue
-            elif syntax.is_empty_switch_case(cfa_node.node):
-                self._enter_scope(cfa_node)
-                continue
-            elif syntax.is_default_switch_case(cfa_node.node):
-                self._enter_scope(cfa_node)
-                continue
-            # While and for
-            elif syntax.is_condition_of_while(cfa_node.node):
-                self._enter_scope(cfa_node)
-                continue
-            elif syntax.is_condition_of_do_while(cfa_node.node):
-                self._enter_scope(cfa_node)
-                continue
-            elif syntax.is_body_of_for_loop(cfa_node.node):
-                self._enter_scope(cfa_node)
-                continue
-            else:
-                self._add_to_current_scope(cfa_node)
-                continue
+            if self.extract_location_text(cfa_node) != '':
+                pass
+            else:   
+                pass
                 
-        # Exit global scope to say that we are done
-        self._exit_scope()
-
-        return DecorationResult(Scopes=self.result, cfa=self.cfa)
+                
                 
 
-    def _exit_scope(self):
-        self.location_value -= 1
-        content = self.stack.pop()
-        self.result[self.location_value] = content
 
-    def _enter_scope(self, node: LocalisedNode):
-        scope = ScopeContent()
-        self._add_to_current_scope(node)
-        self.stack[self.location_value] = scope
-        self.location_value += 1
-    
+
+
 
     
 

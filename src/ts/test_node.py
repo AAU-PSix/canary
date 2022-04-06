@@ -19,8 +19,8 @@ class TestNode(unittest.TestCase):
         actual = expression_stmt.is_immediate_descendt_of_type("for_statement")
 
         self.assertEqual(actual, expected)
-
-    def test_get_immediate_descendent_of_types(self) -> None:
+    
+    def test(self) -> None:
         program: str = "for(;;) { a=1; }"
         tree: Tree = self._parser.parse(program)
         for_stmt: Node = tree.root_node.first_named_child
