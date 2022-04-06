@@ -1,9 +1,14 @@
 from unittest import TestCase
-
-from .c_type import CAggregateType, PointerType
-from .type import CDeclaration, CompositeType, Declaration, EnumType, PrimitiveType, SubroutineType, Type
 from ts import LanguageLibrary, Parser, CSyntax
-from .symbol_table_filler import CSymbolTableFiller
+from .composite_type import CompositeType
+from .declaration import Declaration
+from .enum_type import EnumType
+from .primitive_type import PrimitiveType
+from .subroutine_type import SubroutineType
+from .c_aggregate_type import CAggregateType
+from .c_pointer_type import CPointerType
+from .c_declaration import CDeclaration
+from .c_symbol_table_filler import CSymbolTableFiller
 
 class TestSymbolTableFiller(TestCase):
     def setUp(self) -> None:
@@ -377,18 +382,18 @@ class TestSymbolTableFiller(TestCase):
         root_table = self._filler.fill(tree).root
 
         a: CDeclaration = root_table.lookup("a")
-        a_type: PointerType = a.type
-        self.assertIsInstance(a_type, PointerType)
+        a_type: CPointerType = a.type
+        self.assertIsInstance(a_type, CPointerType)
         self.assertEqual(a_type.multiple_indirection, 1)
 
         b: CDeclaration = root_table.lookup("b")
-        b_type: PointerType = b.type
-        self.assertIsInstance(b_type, PointerType)
+        b_type: CPointerType = b.type
+        self.assertIsInstance(b_type, CPointerType)
         self.assertEqual(b_type.multiple_indirection, 2)
 
         c: CDeclaration = root_table.lookup("c")
-        c_type: PointerType = c.type
-        self.assertIsInstance(c_type, PointerType)
+        c_type: CPointerType = c.type
+        self.assertIsInstance(c_type, CPointerType)
         self.assertEqual(c_type.multiple_indirection, 3)
 
     def test_functions_1(self) -> None:
@@ -405,13 +410,13 @@ class TestSymbolTableFiller(TestCase):
         foo1_type: SubroutineType[Declaration] = foo1.type
         self.assertIsInstance(foo1_type, SubroutineType)
         self.assertEqual(foo1_type.arity, 1)
-        self.assertIsInstance(foo1_type.parameters[0].type, PointerType)
+        self.assertIsInstance(foo1_type.parameters[0].type, CPointerType)
 
         foo2 = root_table.lookup("Foo2")
         foo2_type: SubroutineType[Declaration] = foo2.type
         self.assertIsInstance(foo2_type, SubroutineType)
         self.assertEqual(foo2_type.arity, 2)
-        self.assertIsInstance(foo2_type.parameters[0].type, PointerType)
+        self.assertIsInstance(foo2_type.parameters[0].type, CPointerType)
         self.assertIsInstance(foo2_type.parameters[1].type, PrimitiveType)
 
         foo3 = root_table.lookup("Foo3")
