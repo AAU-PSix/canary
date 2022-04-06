@@ -247,6 +247,7 @@ class CFA(CFAGeneric[CFANode, CFAEdge]):
             for outgoing in self._outgoing_edges[node]:
                 if outgoing.destination not in visited:
                     self.depth_first_traverse(outgoing.destination, visited=visited)
+        
         yield node
 
 
