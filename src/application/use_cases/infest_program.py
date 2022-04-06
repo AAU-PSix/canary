@@ -93,12 +93,4 @@ class InfestProgramUseCase(
         file.write(infested_tree.text)
         file.close()
 
-        # Step 4: Decorate CFA with locations
-        factory = CCFADecoratorFactory(infested_tree)
-        cfa = factory.create(infested_tree.root_node)
-        decorator = LocationDecorator(cfa)
-        decoratedCFA = decorator.decorate()
-
-
-
         return InfestProgramResponse()
