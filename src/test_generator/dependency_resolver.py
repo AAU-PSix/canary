@@ -1,6 +1,13 @@
 from typing import Dict, List, Tuple
-from .ast import Constant, Declaration, Expression, ExpressionStatement, FunctionCall, FunctionDeclaration, Statement
 import random
+
+from .ast_function_declaration import FunctionDeclaration
+from .ast_expression import Expression
+from .ast_statement import Statement
+from .ast_expression_statement import ExpressionStatement
+from .ast_constant import Constant
+from .ast_declaration import Declaration
+from .ast_function_call import FunctionCall
 
 class DependencyResolver:
     def __init__(self) -> None:

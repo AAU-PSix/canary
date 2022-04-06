@@ -1,18 +1,17 @@
 from typing import List
 from abc import ABC
-from .ast import (
-    Assertion,
-    Declaration,
-    Expression,
-    Statement,
-    TestCase,
-    ASTVisitor,
-    ExpressionStatement,
-    Constant,
-    Assignment,
-    FunctionCall,
-    TestSuite
-)
+
+from .ast_visitor import ASTVisitor
+from .ast_expression import Expression
+from .ast_statement import Statement
+from .ast_expression_statement import ExpressionStatement
+from .ast_constant import Constant
+from .ast_assignment import Assignment
+from .ast_declaration import Declaration
+from .ast_function_call import FunctionCall
+from .ast_assertion import Assertion
+from .ast_test_suite import TestSuite
+from .ast_test_case import TestCase
 
 class CodeGenerator(ABC):
     def __init__(self) -> None:
