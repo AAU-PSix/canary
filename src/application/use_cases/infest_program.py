@@ -1,12 +1,17 @@
+
+from dataclasses import dataclass
 from cfa import (
-    CCFAFactory,
-    CFA
+    CCFAFactory
 )
+from decorators.location_decorator import LocationDecorator
+from cfa.cfa_factory import CFAFactory
+from decorators.location_decorator import CCFADecoratorFactory
+from tree_infestator.c_canary_factory import CCanaryFactory
+from tree_infestator.c_tree_infestator import CTreeInfestator
+from cfa import Node
+from cfa.c_cfa_factory import CCFAFactory
+
 from utilities import FileHandler
-from tree_infestator import (
-    CCanaryFactory,
-    CTreeInfestator,
-)
 from ts import (
     Tree,
     Node,
@@ -57,7 +62,10 @@ class InfestProgramRequest(UseCaseRequest):
     def save_graph_directory(self) -> str:
         return self._save_graph_directory
 
+@dataclass
 class InfestProgramResponse(UseCaseResponse): pass
+    
+
 
 class InfestProgramUseCase(
     UseCase[InfestProgramRequest, InfestProgramResponse]

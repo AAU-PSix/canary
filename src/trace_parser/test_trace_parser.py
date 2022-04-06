@@ -1,9 +1,8 @@
 import unittest
 from typing import List
 
-from numpy import test
-from symbol_table.tree import Tree, Node, TNode
-
+from symbol_table.tree import Tree
+from symbol_table.node import Node, TNode
 
 class TestTraceParser(unittest.TestCase):
     def test_parse_trace_single_unit(self) -> None:

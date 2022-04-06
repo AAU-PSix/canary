@@ -1,12 +1,19 @@
 import os
+from typing import TypeVar
 from graphviz import Digraph
-from typing import Dict, Generic, Iterable, List, TypeVar
-
-from ts import Node as TsNode
-from .type import LexicalDeclaration, Type
-from .tree import Tree, Node
+from typing import (
+    Dict,
+    Generic,
+    Iterable,
+    List,
+)
+from .types import Type
+from .c_types import CDeclaration
+from .lexical_declaration import LexicalDeclaration
+from .node import Node
 
 TLexicalSymbolTable = TypeVar("TLexicalSymbolTable", bound="LexicalSymbolTable")
+
 class LexicalSymbolTable(Generic[TLexicalSymbolTable], Node[TLexicalSymbolTable]):
     def __init__(
         self,
@@ -15,7 +22,7 @@ class LexicalSymbolTable(Generic[TLexicalSymbolTable], Node[TLexicalSymbolTable]
         parent: TLexicalSymbolTable = None,
         children: List[TLexicalSymbolTable] = list(),
     ) -> None:
-        self._declarations: List[LexicalDeclaration] = [ ]
+        self._declarations: List[CDeclaration] = [ ]
         self._minimum_lexical_index = minimum_lexical_index
         self._maximum_lexical_index = maximum_lexical_index
         super().__init__(parent, children)
@@ -32,18 +39,36 @@ class LexicalSymbolTable(Generic[TLexicalSymbolTable], Node[TLexicalSymbolTable]
     def is_empty(self) -> bool:
         return len(self._declarations) == 0
 
-    def enter(self, identifier: str, type: Type, lexical_index: int) -> bool:
-        if self.lookup(identifier) is not None: return False
-        declaration = LexicalDeclaration(identifier, type, lexical_index)
+    def enter(
+        self,
+        identifier: str,
+        type: Type,
+        lexical_index: int,
+        storage_class_specifiers: List[str] = list(),
+        type_qualifiers: List[str] = list(),
+    ) -> bool:
+        return self.enter_declaration(CDeclaration(
+            identifier,
+            type,
+            lexical_index,
+            storage_class_specifiers,
+            type_qualifiers,
+        ))
+
+    def enter_declaration(
+        self,
+        declaration: CDeclaration
+    ) -> bool:
+        if self.lookup(declaration.identifier) is not None: return False
         self._declarations.append(declaration)
         return True
 
-    def local_lookup(self, identifier: str) -> Type:
+    def local_lookup(self, identifier: str) -> CDeclaration:
         for declaration in self._declarations:
-            if declaration.identifier == identifier: return declaration.type
+            if declaration.identifier == identifier: return declaration
         return None
 
-    def lookup(self, identifier: str) -> Type:
+    def lookup(self, identifier: str) -> CDeclaration:
         for table in self.lexical_traversal():
             result = table.local_lookup(identifier)
             if result is not None: return result
@@ -129,9 +154,9 @@ class LexicalSymbolTable(Generic[TLexicalSymbolTable], Node[TLexicalSymbolTable]
         if dot is None: dot = Digraph(name)
 
         def symbol_table_label(table: LexicalSymbolTable) -> str:
-            label = f'[{table.minimum_lexical_index}, {table.maximum_lexical_index}]{os.linesep}'
+            label = f'[{table.minimum_lexical_index}, {table.maximum_lexical_index}]{2*os.linesep}'
             for declaration in table._declarations:
-                label += f'[{declaration.lexical_index}] {declaration.type.__class__.__name__}::{declaration.identifier}\l{os.linesep}'
+                label += f'[{declaration.lexical_index}] {declaration.type.__class__.__name__}::{declaration.identifier}\l'
             return label
 
         ids: Dict[LexicalSymbolTable, str] = dict()
@@ -140,7 +165,7 @@ class LexicalSymbolTable(Generic[TLexicalSymbolTable], Node[TLexicalSymbolTable]
         openset: List[LexicalSymbolTable] = list()
         openset.append(self)
         
-        dot.attr('node', shape='square')
+        dot.attr('node', shape='rectangle')
         while len(openset) > 0:
             curr = openset.pop()
             id = counter = counter + 1
@@ -154,76 +179,3 @@ class LexicalSymbolTable(Generic[TLexicalSymbolTable], Node[TLexicalSymbolTable]
                 dot.edge(parrent_id, id)
 
         return dot
-
-class LexicalSymbolTabelBuilder(Generic[TLexicalSymbolTable]):
-    def __init__(
-        self,
-        minimum_lexical_index: int,
-        maximum_lexical_index: int,
-    ) -> None:
-        self._root = self._create(
-            minimum_lexical_index,
-            maximum_lexical_index,
-            None, list()
-        )
-        self._scope_stack = [ self._root ]
-
-    @property
-    def current(self) -> TLexicalSymbolTable:
-        return self._scope_stack[-1]
-
-    @property
-    def depth(self) -> int:
-        return len(self._scope_stack)
-
-    def open_for(
-        self, node: TsNode
-    ) -> "LexicalSymbolTabelBuilder[TLexicalSymbolTable]":
-        return self.open(node.start_byte, node.end_byte)
-
-    def open(
-        self,
-        minimum_lexical_index: int,
-        maximum_lexical_index: int
-    ) -> "LexicalSymbolTabelBuilder[TLexicalSymbolTable]":
-        new_table = self._create(
-            minimum_lexical_index,
-            maximum_lexical_index,
-            self.current,
-            list()
-        )
-        self.current.children.append(new_table)
-        self._scope_stack.append(new_table)
-        return self
-
-    def enter(
-        self,
-        identifier: str,
-        type: Type,
-        lexical_index: int
-    ) -> "LexicalSymbolTabelBuilder[TLexicalSymbolTable]":
-        self.current.enter(identifier, type, lexical_index)
-        return self
-
-    def close(self) -> "LexicalSymbolTabelBuilder[TLexicalSymbolTable]":
-        if len(self._scope_stack) == 1:
-            raise Exception("Cannot close root symbol table as forests are not supported")
-        self._scope_stack.pop()
-        return self
-
-    def _create(
-        self,
-        minimum_lexical_index: int,
-        maximum_lexical_index: int,
-        parent: "TLexicalSymbolTable" = None,
-        children: List["TLexicalSymbolTable"] = list(),
-    ) -> TLexicalSymbolTable:
-        return LexicalSymbolTable[LexicalSymbolTable](
-            minimum_lexical_index,
-            maximum_lexical_index,
-            parent,
-            children
-        )
-
-    def build(self) -> Tree[TLexicalSymbolTable]:
-        return Tree(self._root)

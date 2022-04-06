@@ -64,6 +64,8 @@ class CNodeType(NodeType):
     IDENTIFIER = "identifier"
     # Types
     PRIMITIVE_TYPE = "primitive_type"
+    STRUCT_SPECIFIER = "struct_specifier"
+    UNION_SPECIFIER = "union_specifier"
     # Constructs
     EXPRESSION_STATEMENT = "expression_statement"
     ASSIGNMENT_EXPRESSION = "assignment_expression"
@@ -81,6 +83,14 @@ class CNodeType(NodeType):
     LABELED_STATEMENT = "labeled_statement"
     GOTO_STATEMENT = "goto_statement"
     FUNCTION_DEFINITION = "function_definition"
+    TYPE_DEFINITION = "type_definition"
+    ENUM_SPECIFIER = "enum_specifier"
+    STORAGE_CLASS_SPECIFIERS = "storage_class_specifier"
+    TYPE_QUALIFIER = "type_qualifier"
+    INIT_DECLARATOR = "init_declarator"
+    ARRAY_DECLARATOR = "array_declarator"
+    POINTER_DECLARATOR = "pointer_declarator"
+    PARAMETER_DECLARATION = "parameter_declaration"
 
 class CSyntax(Syntax):
     @property
