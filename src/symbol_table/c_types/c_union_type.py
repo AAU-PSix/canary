@@ -1,7 +1,9 @@
 from typing import List
 from .c_type import CType
-from .composite_type import CompositeType
-from .composite_field import CompositeField
+from symbol_table.types import (
+    CompositeType,
+    CompositeField
+)
 
 class CUnionType(CType, CompositeType):
     def __init__(self, identifier: str, composition: List[CompositeField]) -> None:

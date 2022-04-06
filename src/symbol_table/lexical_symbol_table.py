@@ -7,8 +7,8 @@ from typing import (
     Iterable,
     List,
 )
-from .type import Type
-from .c_declaration import CDeclaration
+from .types import Type
+from .c_types import CDeclaration
 from .lexical_declaration import LexicalDeclaration
 from .node import Node
 

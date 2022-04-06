@@ -1,5 +1,5 @@
 from enum import Enum
-from .type import *
+from ..types.type import *
 
 class CTypeQualifier(Enum):
     CONST = "const",

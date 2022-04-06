@@ -1,4 +1,7 @@
-from .type import Type
+from typing import TypeVar
+from .types.type import Type
+
+TDeclaration = TypeVar("TDeclaration", bound="Declaration")
 
 class Declaration():
     def __init__(self, identifier: str, type: Type) -> None:

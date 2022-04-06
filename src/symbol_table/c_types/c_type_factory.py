@@ -8,14 +8,14 @@ from ts import (
 from .c_aggregate_type import CAggregateType
 from .c_pointer_type import CPointerType
 from .c_declaration import CDeclaration
-from .type import Type
-from .primitive_type import PrimitiveType
-from .composite_field import CompositeField
-from .enum_type import EnumType
-from .composite_type import CompositeType
-from .subroutine_type import SubroutineType
-from .enum_field import EnumField
-from .lexical_declaration import LexicalDeclaration
+from ..types.type import Type
+from ..types.primitive_type import PrimitiveType
+from ..types.composite_field import CompositeField
+from ..types.enum_type import EnumType
+from ..types.composite_type import CompositeType
+from ..types.subroutine_type import SubroutineType
+from ..types.enum_field import EnumField
+from ..lexical_declaration import LexicalDeclaration
 
 class CDeclaratorFactory():
     def __init__(self) -> None: pass

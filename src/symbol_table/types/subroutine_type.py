@@ -1,6 +1,6 @@
 from typing import Generic, List
-from .t_declaration import TDeclaration
-from .type import Type
+from . import Type
+from ..declaration import TDeclaration
 
 class SubroutineType(Generic[TDeclaration], Type):
     """Referred to as a function, procedure, method, and subprogram,

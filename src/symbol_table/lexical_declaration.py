@@ -1,5 +1,5 @@
 from .declaration import Declaration
-from .type import Type
+from .types.type import Type
 
 class LexicalDeclaration(Declaration):
     def __init__(self, identifier: str, type: Type, lexical_index: int) -> None:

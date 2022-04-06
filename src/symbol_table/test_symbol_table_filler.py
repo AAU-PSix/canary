@@ -1,14 +1,9 @@
 from unittest import TestCase
 from ts import LanguageLibrary, Parser, CSyntax
-from .composite_type import CompositeType
 from .declaration import Declaration
-from .enum_type import EnumType
-from .primitive_type import PrimitiveType
-from .subroutine_type import SubroutineType
-from .c_aggregate_type import CAggregateType
-from .c_pointer_type import CPointerType
-from .c_declaration import CDeclaration
-from .c_symbol_table_filler import CSymbolTableFiller
+from .types.primitive_type import PrimitiveType
+from .types.subroutine_type import SubroutineType
+from . import *
 
 class TestSymbolTableFiller(TestCase):
     def setUp(self) -> None:

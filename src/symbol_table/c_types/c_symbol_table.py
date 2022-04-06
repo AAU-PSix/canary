@@ -1,7 +1,7 @@
 from typing import List
-from .symbol_table import LexicalSymbolTable
-from .subroutine_type import SubroutineType
-from .lexical_declaration import LexicalDeclaration
+from ..lexical_symbol_table_builder import LexicalSymbolTable
+from ..types.subroutine_type import SubroutineType
+from ..lexical_declaration import LexicalDeclaration
 
 class CSymbolTable(LexicalSymbolTable["CSymbolTable"]):
     def __init__(

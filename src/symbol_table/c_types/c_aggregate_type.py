@@ -1,5 +1,7 @@
-from .type import Type
-from .aggregate_type import AggregateType
+from symbol_table.types import (
+    Type,
+    AggregateType
+)
 
 class CAggregateType(AggregateType):
     def __init__(self, type: Type) -> None:

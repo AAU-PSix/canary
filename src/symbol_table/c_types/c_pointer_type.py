@@ -1,5 +1,5 @@
 from .c_type import CType
-from .type import Type
+from symbol_table.types import Type
 
 class CPointerType(CType):
     def __init__(self, multiple_indirection: int, type: Type) -> None:

@@ -6,13 +6,12 @@ from ts import (
     CSyntax,
     Tree as TsTree
 )
-from .type import *
-from .symbol_table import LexicalSymbolTable
 from .c_symbol_table import CSymbolTable
 from .c_symbol_table_builder import CSymbolTableBuilder
 from .c_type_factory import CDeclaratorFactory, CTypeFactory
-from .symbol_table_filler import SymbolTableFiller
-from .tree import Tree
+from ..lexical_symbol_table_builder import LexicalSymbolTable
+from ..symbol_table_filler import SymbolTableFiller
+from ..tree import Tree
 
 class CSymbolTableFiller(SymbolTableFiller):
     def __init__(self,syntax: CSyntax) -> None:

@@ -1,4 +1,4 @@
-from .type import Type
+from ..types.type import Type
 
 class CType(Type):
     def __init__(

@@ -1,4 +1,4 @@
 from .c_type import CType
-from .primitive_type import PrimitiveType
+from symbol_table.types import PrimitiveType
 
 class CPrimitiveType(CType, PrimitiveType): pass

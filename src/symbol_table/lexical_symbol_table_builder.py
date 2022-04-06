@@ -1,7 +1,7 @@
 from typing import Generic, List
 from ts import Node as TsNode
-from .type import Type
-from .c_declaration import CDeclaration
+from .types import Type
+from .c_types import CDeclaration
 from .tree import Tree
 from .lexical_symbol_table import (
     LexicalSymbolTable,

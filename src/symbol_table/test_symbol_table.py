@@ -1,14 +1,7 @@
 import unittest
 from typing import List
-
 from graphviz import Digraph
-
-from . import (
-    LexicalSymbolTable,
-    CSymbolTableBuilder,
-    PrimitiveType,
-    SubroutineType
-)
+from . import *
 
 class TestSymbolTable(unittest.TestCase):
     def test_root_children_siblings(self) -> None:

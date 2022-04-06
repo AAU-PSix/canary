@@ -1,11 +1,12 @@
 from typing import List
-from .lexical_declaration import LexicalDeclaration
+from ..lexical_declaration import LexicalDeclaration
+from ..types.type import Type
 
 class CDeclaration(LexicalDeclaration):
     def __init__(
         self,
         identifier: str,
-        type: "Type",
+        type: Type,
         lexical_index: int,
         storage_class_specifiers: List[str],
         type_qualifiers: List[str],
