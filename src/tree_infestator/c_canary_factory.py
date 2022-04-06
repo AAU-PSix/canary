@@ -1,8 +1,7 @@
 from typing import Iterable
-from .tree_infection import TreeInfection
 from ts import Node, CNodeType
+from .tree_infection import TreeInfection
 from .canary_factory import CanaryFactory
-
 
 class CCanaryFactory(CanaryFactory):
     def __init__(self) -> None:
@@ -38,4 +37,3 @@ class CCanaryFactory(CanaryFactory):
             # Appends a location tweet after the "{" (index 0 child of the "consequence")
             return [ self.append_location_tweet(node.children[0]) ]
         return self.surround_insert_location_tweet(node, "{", "}")
-

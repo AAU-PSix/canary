@@ -30,49 +30,49 @@ class CanaryFactory(ABC):
     def create_state_tweet(self, _: Node, prefix: str, postfix: str) -> str:
         pass
 
-    def append(self, node: Node, text: str) -> TreeInfectionAppend:
+    def append(self, node: Node, text: str) -> TreeInfection:
         return TreeInfectionAppend(node, text)
 
-    def insert(self, node: Node, text: str) -> TreeInfectionInsert:
+    def insert(self, node: Node, text: str) -> TreeInfection:
         return TreeInfectionInsert(node, text)
 
-    def append_location_tweet(self, node: Node, prefix: str = "", postfix: str = "") -> TreeInfectionAppend:
+    def append_location_tweet(self, node: Node, prefix: str = "", postfix: str = "") -> TreeInfection:
         tweet: str = self.create_location_tweet(prefix, postfix)
         return self.append(node, tweet)
 
-    def insert_location_tweet(self, node: Node, prefix: str = "", postfix: str = "") -> TreeInfectionInsert:
+    def insert_location_tweet(self, node: Node, prefix: str = "", postfix: str = "") -> TreeInfection:
         tweet: str = self.create_location_tweet(prefix, postfix)
         return self.insert(node, tweet)
 
-    def append_state_tweet(self, node: Node, prefix: str = "", postfix: str = "") -> TreeInfectionAppend:
+    def append_state_tweet(self, node: Node, prefix: str = "", postfix: str = "") -> TreeInfection:
         tweet: str = self.create_state_tweet(node, prefix, postfix)
         return self.append(node, tweet)
 
-    def insert_state_tweet(self, node: Node, prefix: str = "", postfix: str = "") -> TreeInfectionInsert:
+    def insert_state_tweet(self, node: Node, prefix: str = "", postfix: str = "") -> TreeInfection:
         tweet: str = self.create_state_tweet(node, prefix, postfix)
         return self.insert(node, tweet)
 
-    def append_begin_unit_tweet(self, unit: str, node: Node, prefix: str = "", postfix: str = "") -> TreeInfectionAppend:
+    def append_begin_unit_tweet(self, unit: str, node: Node, prefix: str = "", postfix: str = "") -> TreeInfection:
         tweet: str = self.create_begin_unit_tweet(unit, prefix, postfix)
         return self.append(node, tweet)
 
-    def insert_begin_unit_tweet(self, unit: str, node: Node, prefix: str = "", postfix: str = "") -> TreeInfectionInsert:
+    def insert_begin_unit_tweet(self, unit: str, node: Node, prefix: str = "", postfix: str = "") -> TreeInfection:
         tweet: str = self.create_begin_unit_tweet(unit, prefix, postfix)
         return self.insert(node, tweet)
 
-    def append_end_unit_tweet(self, unit: str, node: Node, prefix: str = "", postfix: str = "") -> TreeInfectionAppend:
+    def append_end_unit_tweet(self, unit: str, node: Node, prefix: str = "", postfix: str = "") -> TreeInfection:
         tweet: str = self.create_end_unit_tweet(unit, prefix, postfix)
         return self.append(node, tweet)
 
-    def insert_end_unit_tweet(self, unit: str, node: Node, prefix: str = "", postfix: str = "") -> TreeInfectionInsert:
+    def insert_end_unit_tweet(self, unit: str, node: Node, prefix: str = "", postfix: str = "") -> TreeInfection:
         tweet: str = self.create_end_unit_tweet(unit, prefix, postfix)
         return self.insert(node, tweet)
 
-    def append_test_tweet(self, test: str, node: Node, prefix: str = "", postfix: str = "") -> TreeInfectionAppend:
+    def append_test_tweet(self, test: str, node: Node, prefix: str = "", postfix: str = "") -> TreeInfection:
         tweet: str = self.create_begin_test_tweet(test, prefix, postfix)
         return self.append(node, tweet)
 
-    def insert_test_tweet(self, test: str, node: Node, prefix: str = "", postfix: str = "") -> TreeInfectionInsert:
+    def insert_test_tweet(self, test: str, node: Node, prefix: str = "", postfix: str = "") -> TreeInfection:
         tweet: str = self.create_begin_test_tweet(test, prefix, postfix)
         return self.insert(node, tweet)
 

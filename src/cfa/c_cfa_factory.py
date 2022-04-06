@@ -15,7 +15,6 @@ from ts import (
 from .cfa_factory import CFAFactory
 from .cfa import CFA, CFANode
 
-
 class CCFAFactory(CFAFactory):
     _cfa: CFA
     _tree: Tree
