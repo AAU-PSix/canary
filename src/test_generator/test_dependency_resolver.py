@@ -1,6 +1,10 @@
-from tokenize import Double
 import unittest
 
+from symbol_table import (
+    SubroutineType,
+    PrimitiveType,
+    Declaration
+)
 from . import *
 
 class TestFunctionDeclaration(unittest.TestCase):
@@ -21,25 +25,25 @@ class TestFunctionDeclaration(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_resolve_void_int_int(self) -> None:
-        declaration = FunctionDeclaration(
-            "foo",
-            "void",
+        subroutine = SubroutineType(
+            PrimitiveType("void"),
             [
-                FormalParameter("a", "int"),
-                FormalParameter("a", "int"),
+                Declaration(PrimitiveType("int"), "a"),
+                Declaration(PrimitiveType("double"), "a")
             ]
         )
+        function_declaration = Declaration(subroutine, "foo")
         resolver = DependencyResolver()
 
-        actual: Tuple[List[Statement], Statement] = resolver.resolve(declaration)
-        arrange: List[Statement] = actual[0]
-        arrange_0: Declaration = arrange[0]
-        arrange_1: Declaration = arrange[1]
-        act: ExpressionStatement = actual[1]
+        actual: Tuple[List[AstStatement], AstStatement] = resolver.resolve(function_declaration)
+        arrange: List[AstStatement] = actual[0]
+        arrange_0: AstDeclaration = arrange[0]
+        arrange_1: AstDeclaration = arrange[1]
+        act: AstExpressionStatement = actual[1]
 
         self.assertEqual(len(arrange), 2)
         self.assertEqual(arrange_0.identifier, "a_0")
         self.assertEqual(arrange_1.identifier, "a_1")
-        self.assertIsInstance(act.epxression, FunctionCall)
+        self.assertIsInstance(act.epxression, AstFunctionCall)
         self.assertEqual(act.epxression.name, "foo")
         self.assertEqual(len(act.epxression.actual_parameters), 2)

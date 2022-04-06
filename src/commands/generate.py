@@ -25,6 +25,8 @@ from ts import (
     Parser,
 )
 
+from symbol_table import CSymbolTableFiller, CSyntax
+
 def generate(
     file: str,
     build_cmd: Union[str, List[str]],
@@ -51,10 +53,16 @@ def generate(
         unit_analysis_request
     )
 
-    # Step 2: Create initial test case for FUT
+    # Step 2.0: Create symbol table
+    filler = CSymbolTableFiller(CSyntax())
+    symbol_table = filler.fill(
+        unit_analysis_response.tree
+    )
+
+    # Step 2.1: Create initial test case for FUT
     create_initial_test_case_request = CreateInitialTestCasesRequest(
-        unit_analysis_response.tree,
-        unit_analysis_response.unit_function,
+        symbol_table.root,
+        "add",
         f'{test_directory}',
         f'{test_directory}/CanaryCuTest.h',
     )

@@ -91,6 +91,8 @@ class CNodeType(NodeType):
     ARRAY_DECLARATOR = "array_declarator"
     POINTER_DECLARATOR = "pointer_declarator"
     PARAMETER_DECLARATION = "parameter_declaration"
+    PREPROC_IFDEF = "preproc_ifdef"
+    PREPROC_DEF = "preproc_def"
 
 class CSyntax(Syntax):
     @property

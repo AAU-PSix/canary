@@ -3,7 +3,6 @@ from .ast_expression_statement import ExpressionStatement
 from .ast_expression import Expression
 from .ast_statement import Statement
 
-
 class Assignment(Statement):
     def __init__(self, lhs: str, rhs: ExpressionStatement = None) -> None:
         self._lhs = lhs

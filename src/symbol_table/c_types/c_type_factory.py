@@ -112,7 +112,7 @@ class CTypeFactory():
         self._primitives: Dict[str, PrimitiveType] = {
             "int": PrimitiveType("int"),
             "double": PrimitiveType("double"),
-            "void": PrimitiveType("void")
+            "void": PrimitiveType("void"),
         }
 
     def create_type_for(

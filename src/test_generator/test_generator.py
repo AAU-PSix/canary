@@ -1,7 +1,12 @@
 import unittest
 
 from . import *
-from ts import LanguageLibrary, Parser
+from ts import (
+    LanguageLibrary,
+    Parser,
+    Tree,
+    Node
+)
 
 class TestFunctionDeclaration(unittest.TestCase):
     def setUp(self) -> None:
@@ -131,27 +136,27 @@ class TestFunctionDeclaration(unittest.TestCase):
         self.assertEqual(lines[4].strip(), "// Assert")
         self.assertEqual(lines[5].strip(), "}")
 
-    def test_generate_for_resolver(self) -> None:
-        program: str = "int foo(int bar) { }"
-        tree: Tree = self._parser.parse(program)
-        function_decl_node: Node = tree.root_node.named_children[0]
-        function_decl = FunctionDeclaration.create_c(tree, function_decl_node)
-        resolver = DependencyResolver()
-        resolution = resolver.resolve(function_decl)
-        testcase = TestCase(
-            "test",
-            resolution[0],
-            resolution[1],
-            list()
-        )
-        generator = CuTestSuiteCodeGenerator()
-        lines: List[str] = generator.visit_test_case(testcase)
-        self.assertEqual(len(lines), 7)
-        self.assertEqual(lines[0].strip(), "void test(CuTest *ct) {")
-        self.assertEqual(lines[1].strip(), "// Arrange")
-        self.assertTrue(lines[2].strip().startswith("int bar_0 = "), lines[3])
-        self.assertTrue(lines[2].strip().endswith(";"), lines[3])
-        self.assertEqual(lines[3].strip(), "// Act")
-        self.assertEqual(lines[4].strip(), "CANARY_ACT(int actual = foo(bar_0););")
-        self.assertEqual(lines[5].strip(), "// Assert")
-        self.assertEqual(lines[6].strip(), "}")
+    # def test_generate_for_resolver(self) -> None:
+    #     program: str = "int foo(int bar) { }"
+    #     tree: Tree = self._parser.parse(program)
+    #     function_decl_node: Node = tree.root_node.named_children[0]
+    #     function_decl = FunctionDeclaration.create_c(tree, function_decl_node)
+    #     resolver = DependencyResolver()
+    #     resolution = resolver.resolve(function_decl)
+    #     testcase = TestCase(
+    #         "test",
+    #         resolution[0],
+    #         resolution[1],
+    #         list()
+    #     )
+    #     generator = CuTestSuiteCodeGenerator()
+    #     lines: List[str] = generator.visit_test_case(testcase)
+    #     self.assertEqual(len(lines), 7)
+    #     self.assertEqual(lines[0].strip(), "void test(CuTest *ct) {")
+    #     self.assertEqual(lines[1].strip(), "// Arrange")
+    #     self.assertTrue(lines[2].strip().startswith("int bar_0 = "), lines[3])
+    #     self.assertTrue(lines[2].strip().endswith(";"), lines[3])
+    #     self.assertEqual(lines[3].strip(), "// Act")
+    #     self.assertEqual(lines[4].strip(), "CANARY_ACT(int actual = foo(bar_0););")
+    #     self.assertEqual(lines[5].strip(), "// Assert")
+    #     self.assertEqual(lines[6].strip(), "}")

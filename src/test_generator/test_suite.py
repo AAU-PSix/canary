@@ -1,5 +1,5 @@
 from typing import List
-from .ast_test_case import TestCase
+from .test_case import TestCase
 
 class TestSuite:
     def __init__(self, name: str, test_cases: List[TestCase]) -> None:

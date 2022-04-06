@@ -10,8 +10,8 @@ from .ast_assignment import Assignment
 from .ast_declaration import Declaration
 from .ast_function_call import FunctionCall
 from .ast_assertion import Assertion
-from .ast_test_suite import TestSuite
-from .ast_test_case import TestCase
+from .test_suite import TestSuite
+from .test_case import TestCase
 
 class CodeGenerator(ABC):
     def __init__(self) -> None:
@@ -105,7 +105,7 @@ class CuTestSuiteCodeGenerator(CodeGenerator, ASTVisitor):
 
     def visit_declaration(self, declaration: Declaration):
         self._write_line()
-        self._write(f'{declaration._type} {declaration._identifier}')
+        self._write(f'{declaration.type.name} {declaration.identifier}')
         if declaration.initialization is not None:
             self._write(" = ")
             declaration.initialization.accept(self)

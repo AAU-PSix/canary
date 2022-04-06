@@ -1,7 +1,8 @@
 from typing import Any
 from .ast_expression import Expression
+from .ast_statement import Statement
 
-class Assertion:
+class Assertion(Statement):
     def __init__(self, actual: Expression, expected: Expression) -> None:
         self._actual = actual
         self._expected = expected

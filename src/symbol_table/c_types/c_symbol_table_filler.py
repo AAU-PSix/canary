@@ -32,6 +32,8 @@ class CSymbolTableFiller(SymbolTableFiller):
             CNodeType.STRUCT_SPECIFIER.value: self._visit_struct_specifier,
             CNodeType.UNION_SPECIFIER.value: self._visit_union_specifier,
             CNodeType.ENUM_SPECIFIER.value: self._visit_enum_specifier,
+            CNodeType.PREPROC_IFDEF.value: self._visit_preproc_ifdef,
+            CNodeType.PREPROC_DEF.value: self._visit_preproc_def,
         }
         super().__init__()
 
@@ -78,6 +80,26 @@ class CSymbolTableFiller(SymbolTableFiller):
             tree, root, builder
         )
         return builder.build()
+
+    def _visit_preproc_ifdef(
+        self,
+        tree: TsTree,
+        preproc_ifdef: Node,
+        builder: CSymbolTableBuilder
+    ) -> None:
+        self._accept_children(
+            tree, preproc_ifdef, builder
+        )
+
+    def _visit_preproc_def(
+        self,
+        tree: TsTree,
+        preproc_def: Node,
+        builder: CSymbolTableBuilder
+    ) -> None:
+        self._accept_children(
+            tree, preproc_def, builder
+        )
 
     def _visit_translation_unit(
         self,
