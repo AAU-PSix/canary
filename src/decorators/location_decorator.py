@@ -68,7 +68,7 @@ class LocationDecorator(CFADecorator):
     def decorate(self) -> LocalisationResult:
         syntax = CSyntax()
         searched_nodes = []
-        for cfa_node in self.cfa.depth_first_traverse():
+        for cfa_node in self.cfa.breadth_first_traverse():
             if cfa_node in searched_nodes:
                 continue
     

@@ -241,23 +241,13 @@ class CFA(CFAGeneric[CFANode, CFAEdge]):
                     visited.append(outgoing.destination)
 
 
-    def _depth_first_util(self, v:CFANode, visited: List[Boolean]):
-        visited[v] = True
-        for edge in self.outgoing_edges(v):
-            if not visited[edge.destination]:
-                self._depth_first_util(edge.destination, visited)
+    def depth_first_traverse(self, node:NodeType, visited: List[CFANode] = list()) -> Iterable[NodeType]:
+        visited.append(node)
+        if self._outgoing_edges[node] is not None:
+            for outgoing in self._outgoing_edges[node]:
+                if outgoing.destination not in visited:
+                    self.depth_first_traverse(outgoing.destination, visited=visited)
+        yield node
 
-    def depth_first_traverse(self) -> Iterable[NodeType]:
-        
-        V = len(self.nodes)
-        visited = [False] * V
-
-        for i in range(V):
-            if not visited[i]:
-                self._depth_first_util(i, visited)
-
-        visited.insert(0, True)
-        return visited
-                
 
 

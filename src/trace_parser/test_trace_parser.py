@@ -1,7 +1,6 @@
 import unittest
 from typing import List
 
-from numpy import test
 from symbol_table.tree import Tree, Node, TNode
 
 
