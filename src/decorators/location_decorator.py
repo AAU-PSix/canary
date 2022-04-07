@@ -61,7 +61,7 @@ class LocationDecorator(CFADecorator):
         self.location = ''
 
 
-    def extract_location_text(self, cfa_node: CFANode) -> str:
+    def extract_location_text_from_tweet(self, cfa_node: CFANode) -> str:
         text = self.tree.contents_of(cfa_node.node)
         if "CANARY_TWEET_LOCATION(" in text:
             return text.split("CANARY_TWEET_LOCATION(").pop()[:-2]
@@ -71,7 +71,6 @@ class LocationDecorator(CFADecorator):
         
 
     def decorate(self) -> LocalisationResult:
-        syntax = CSyntax()
         searched_nodes = []
         result: Dict[str:List[CFANode]] = {self.location: []}
         for cfa_node in self.cfa.depth_first_traverse():
@@ -79,9 +78,13 @@ class LocationDecorator(CFADecorator):
                 continue
 
             searched_nodes.append(cfa_node)
-            if self.extract_location_text(cfa_node) != '':
-                pass
-            else:   
+            node_text = self.extract_location_text_from_tweet(cfa_node)
+            if node_text != '':
+                self.location = node_text
+            else:
+                if len(self.cfa.ingoing_edges[cfa_node]) >= 2:
+                    pass
+
                 pass
                 
                 

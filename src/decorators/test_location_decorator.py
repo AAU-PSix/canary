@@ -31,7 +31,7 @@ class TestLocationDecorator(TestCase):
         decorator = LocationDecorator(factory, p)
 
         a = cfa.nodes[0]
-        text = decorator.extract_location_text(a)
+        text = decorator.extract_location_text_from_tweet(a)
         self.assertIsNotNone(text)
         self.assertEqual('',text)
         self.assertNotEqual(' ', text)
@@ -49,7 +49,7 @@ class TestLocationDecorator(TestCase):
 
 
         a = cfa.nodes[0]
-        text = decorator.extract_location_text(a)
+        text = decorator.extract_location_text_from_tweet(a)
         self.assertEqual(location_text, text)
 
     def test_can_detect_location_tweet_special_chars(self):
@@ -62,7 +62,7 @@ class TestLocationDecorator(TestCase):
 
 
         a = cfa.nodes[0]
-        text = decorator.extract_location_text(a)
+        text = decorator.extract_location_text_from_tweet(a)
         self.assertEqual(location_text, text)
 
     def test_can_detect_location_tweet_special_ends_with_parenthesis_and_semi_colon(self):
@@ -75,5 +75,5 @@ class TestLocationDecorator(TestCase):
 
 
         a = cfa.nodes[0]
-        text = decorator.extract_location_text(a)
+        text = decorator.extract_location_text_from_tweet(a)
         self.assertEqual(location_text, text)
