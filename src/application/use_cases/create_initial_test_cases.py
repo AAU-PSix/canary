@@ -1,6 +1,6 @@
 from utilities import FileHandler
+from symbol_table import LexicalSymbolTable
 from test_generator import (
-    FunctionDeclaration,
     DependencyResolver,
     CuTestSuiteCodeGenerator,
     TestCase,
@@ -9,31 +9,30 @@ from test_generator import (
 )
 from ts import (
     Node,
-    Tree,
 )
 from .use_case import *
 
 class CreateInitialTestCasesRequest(UseCaseRequest):
     def __init__(
         self,
-        tree: Tree,
-        function: Node,
+        symbols: LexicalSymbolTable,
+        unit_identifier: str,
         test_filepath: str,
         linker_filepath: str,
     ) -> None:
-        self._tree = tree
-        self._function = function
+        self._symbols = symbols
+        self._unit_identifier = unit_identifier
         self._test_filepath = test_filepath
         self._linker_filepath = linker_filepath
         super().__init__()
 
     @property
-    def tree(self) -> Tree:
-        return self._tree
+    def symbols(self) -> LexicalSymbolTable:
+        return self._symbols
 
     @property
-    def function(self) -> Node:
-        return self._function
+    def unit_identifier(self) -> str:
+        return self._unit_identifier
 
     @property
     def test_directory(self) -> str:
@@ -50,21 +49,20 @@ class CreateInitialTestCasesUseCase(
 ):
     def do(self, request: CreateInitialTestCasesRequest) -> CreateInitialTestCasesResponse:
         # Step 1: Create function declaration
-        declaration = FunctionDeclaration.create_c(
-            request.tree,
-            request.function
+        function = request.symbols.lookup(
+            request.unit_identifier
         )
 
         # Step 2: Create test suite for the declaration
         resolver = DependencyResolver()
-        arrange_act = resolver.resolve(declaration)
+        arrange_act = resolver.resolve(function)
         test_case = TestCase(
-            f'test_{declaration.name}',
+            f'test_{function.identifier}',
             arrange_act[0],
             arrange_act[1],
             list()
         )
-        test_suite = TestSuite(declaration.name, [ test_case ])
+        test_suite = TestSuite(function.identifier, [ test_case ])
 
         # Step 3: Generate code for test suite
         code_generator = CuTestSuiteCodeGenerator()

@@ -1,18 +1,14 @@
-
-from dataclasses import dataclass
-from math import factorial
-from cfa import (
-    CCFAFactory
-)
 from decorators import *
-from cfa.c_cfa_factory import CCFAFactory
 from unittest import TestCase
 from ts import (
     LanguageLibrary,
     Parser
 )
 
-from decorators.location_decorator import CFADecorator, LocationDecorator, LocalisedCFACFactory
+from decorators.location_decorator import (
+    LocationDecorator,
+    LocalisedCFACFactory
+)
 
 
 class TestLocationDecorator(TestCase):

@@ -1,14 +1,7 @@
 import unittest
 from typing import List
-
 from graphviz import Digraph
-
-from . import (
-    LexicalSymbolTable,
-    CSymbolTableBuilder,
-    PrimitiveType,
-    SubroutineType
-)
+from . import *
 
 class TestSymbolTable(unittest.TestCase):
     def test_root_children_siblings(self) -> None:
@@ -63,14 +56,14 @@ class TestSymbolTable(unittest.TestCase):
 
         self.assertEqual(root.child_count, 1)
         self.assertEqual(child.sibling_count, 1)
-        self.assertEqual(root.lookup("foo"), type_int)
+        self.assertEqual(root.lookup("foo").type, type_int)
         self.assertTrue(root.has("foo"))
         self.assertEqual(root.lookup("bar"), None)
         self.assertFalse(root.has("bar"))
         # Only the child has access to both types
-        self.assertEqual(child.lookup("foo"), type_int)
+        self.assertEqual(child.lookup("foo").type, type_int)
         self.assertTrue(child.has("foo"))
-        self.assertEqual(child.lookup("bar"), type_double)
+        self.assertEqual(child.lookup("bar").type, type_double)
         self.assertTrue(child.has("bar"))
 
     def test_lexical_traversal_trivial_child(self) -> None:
@@ -203,11 +196,11 @@ class TestSymbolTable(unittest.TestCase):
         self.assertTrue("sum" in sum_scope_identifiers)
         self.assertEqual(len(sum_scope_identifiers), 3)
 
-        global_sum_type = global_scope.lookup("sum")
-        sum_sum_type = sum_scope.lookup("sum")
-        sum_a_type = sum_scope.lookup("a")
-        sum_b_type = sum_scope.lookup("b")
-        
+        global_sum_type = global_scope.lookup("sum").type
+        sum_sum_type = sum_scope.lookup("sum").type
+        sum_a_type = sum_scope.lookup("a").type
+        sum_b_type = sum_scope.lookup("b").type
+
         # Secondly we want to ensure looking these identifiers up
         #   we are finding the correct types in their respective scopes
         self.assertIsInstance(global_sum_type, SubroutineType)
@@ -309,24 +302,24 @@ class TestSymbolTable(unittest.TestCase):
         self.assertTrue("i" in b_identifiers)
         self.assertEqual(len(b_identifiers), 1 + 1 + 2)
 
-        self.assertIsInstance(g_scope.lookup("sum"), SubroutineType)
-        self.assertEqual(f_scope.lookup("sum"), g_scope.lookup("sum"))
-        self.assertIsInstance(f_scope.lookup("a"), PrimitiveType)
-        self.assertIsInstance(f_scope.lookup("b"), PrimitiveType)
-        self.assertIsInstance(f_scope.lookup("imm"), PrimitiveType)
-        self.assertEqual(i_scope.lookup("a"), f_scope.lookup("a"))
-        self.assertEqual(i_scope.lookup("b"), f_scope.lookup("b"))
-        self.assertEqual(i_scope.lookup("imm"), f_scope.lookup("imm"))
-        self.assertIsInstance(i_scope.lookup("z"), PrimitiveType)
-        self.assertEqual(e_scope.lookup("a"), f_scope.lookup("a"))
-        self.assertEqual(e_scope.lookup("b"), f_scope.lookup("b"))
-        self.assertEqual(e_scope.lookup("imm"), f_scope.lookup("imm"))
-        self.assertIsInstance(e_scope.lookup("z"), PrimitiveType)
-        self.assertEqual(i_scope.lookup("z"), e_scope.lookup("z"))
-        self.assertEqual(b_scope.lookup("a"), f_scope.lookup("a"))
-        self.assertEqual(b_scope.lookup("b"), f_scope.lookup("b"))
-        self.assertEqual(b_scope.lookup("imm"), f_scope.lookup("imm"))
-        self.assertIsInstance(b_scope.lookup("i"), PrimitiveType)
+        self.assertIsInstance(g_scope.lookup("sum").type, SubroutineType)
+        self.assertEqual(f_scope.lookup("sum").type, g_scope.lookup("sum").type)
+        self.assertIsInstance(f_scope.lookup("a").type, PrimitiveType)
+        self.assertIsInstance(f_scope.lookup("b").type, PrimitiveType)
+        self.assertIsInstance(f_scope.lookup("imm").type, PrimitiveType)
+        self.assertEqual(i_scope.lookup("a").type, f_scope.lookup("a").type)
+        self.assertEqual(i_scope.lookup("b").type, f_scope.lookup("b").type)
+        self.assertEqual(i_scope.lookup("imm").type, f_scope.lookup("imm").type)
+        self.assertIsInstance(i_scope.lookup("z").type, PrimitiveType)
+        self.assertEqual(e_scope.lookup("a").type, f_scope.lookup("a").type)
+        self.assertEqual(e_scope.lookup("b").type, f_scope.lookup("b").type)
+        self.assertEqual(e_scope.lookup("imm").type, f_scope.lookup("imm").type)
+        self.assertIsInstance(e_scope.lookup("z").type, PrimitiveType)
+        self.assertEqual(i_scope.lookup("z").type, e_scope.lookup("z").type)
+        self.assertEqual(b_scope.lookup("a").type, f_scope.lookup("a").type)
+        self.assertEqual(b_scope.lookup("b").type, f_scope.lookup("b").type)
+        self.assertEqual(b_scope.lookup("imm").type, f_scope.lookup("imm").type)
+        self.assertIsInstance(b_scope.lookup("i").type, PrimitiveType)
 
     def test_bounded_identifiers_single_scope(self) -> None:
         # The lines of code can be viewed like this:
