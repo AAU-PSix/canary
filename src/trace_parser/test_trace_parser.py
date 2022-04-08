@@ -2,162 +2,340 @@ import unittest
 from typing import List
 
 from symbol_table.tree import Tree
-from symbol_table.node import Node, TNode
+from .trace_tree_builder import (
+    TraceParser,
+    TraceTreeBuilder,
+    Trace, Test, Unit, Location
+)
 
 class TestTraceParser(unittest.TestCase):
-    def test_parse_trace_single_unit(self) -> None:
+    def test_trace_tree_builder_empty_test_trace(self) -> None:
+        builder = TraceTreeBuilder()
 
-        root_node = LocationNode(None, list(), 'AddTest', None, None)
-        tree = Tree[LocationNode](root_node)
-    
-        node1 = LocationNode(None, list(), 'AddTest', 'unit1', 'loc1')
-        node2 = LocationNode(None, list(), 'AddTest', 'unit1', 'loc2')
+        builder \
+            .start_test("Tommy") \
+            .end_test() \
+            .build()
 
-        node1._idStateList.append(('ida','state1'))
-        node2._idStateList.append(('idb','state2'))
+        self.assertIsNone(builder.current_unit)
+        self.assertEqual(builder.current_depth, 0)
+        self.assertIsNotNone(builder.current_test)
+        self.assertEqual(builder.current_test.name, "Tommy")
 
-        root_node.children.append(node1)
-        root_node.children.append(node2)
-        root_node.children[-1].children.append(node1)
-        #print(root_node.children[-1].unitName)
-        #print(root_node.children[-1].child_count)
+    def test_trace_tree_builder_single_unit_test_trace(self) -> None:
+        builder = TraceTreeBuilder()
 
-        test_string = ['StartTest=AddTest', 'UnitStart=newUnit', 'location=a1', 'location=a2', 'UnitEnd=newUnit', 'EndTest=AddTest']
+        builder \
+            .start_test("Andreas") \
+            .start_unit("Tommy")
 
-        parser_trace = Parser_trace()
-        ParseTrace = parser_trace.parse_list(test_string)
+        self.assertEqual(builder.current_test.name, "Andreas")
+        self.assertEqual(builder.current_depth, 1)
+        self.assertEqual(builder.current_unit.name, "Tommy")
+
+    def test_trace_tree_builder_two_unit_test_trace(self) -> None:
+        builder = TraceTreeBuilder()
+
+        builder \
+            .start_test("Andreas") \
+            .start_unit("Tommy") \
+            .start_unit("Magnus") \
+            .end_unit()
+
+        self.assertEqual(builder.current_test.name, "Andreas")
+        self.assertEqual(builder.current_depth, 1)
+        self.assertEqual(builder.current_unit.name, "Tommy")
+
+    def test_trace_tree_builder_single_unit_single_location_test_trace(self) -> None:
+        builder = TraceTreeBuilder()
+
+        trace = builder \
+            .start_test("Andreas") \
+            .start_unit("Tommy") \
+            .enter_location("1") \
+            .end_unit() \
+            .end_test() \
+            .build()
+
+        sequence = [ *trace.sequence ]
+
+        self.assertEqual(len(sequence), 1)
+
+        location_1: Location = sequence[0]
+        self.assertIsInstance(location_1, Location)
+        self.assertEqual(location_1.test.name, "Andreas")
+        self.assertEqual(location_1.unit.name, "Tommy")
+        self.assertEqual(location_1.id, "1")
+
+    def test_trace_tree_builder_two_units_two_locations_test_trace(self) -> None:
+        builder = TraceTreeBuilder()
+
+        trace = builder \
+            .start_test("Andreas") \
+            .start_unit("Tommy1") \
+            .enter_location("1") \
+                .start_unit("Tommy2") \
+                .enter_location("2") \
+                .end_unit() \
+            .end_unit() \
+            .end_test() \
+            .build()
+
+        sequence = [ *trace.sequence ]
+
+        self.assertEqual(len(sequence), 2)
+
+        location_1: Location = sequence[0]
+        self.assertEqual(location_1.test.name, "Andreas")
+        self.assertEqual(location_1.unit.name, "Tommy1")
+        self.assertEqual(location_1.id, "1")
+
+        location_2: Location = sequence[1]
+        self.assertEqual(location_2.test.name, "Andreas")
+        self.assertEqual(location_2.unit.name, "Tommy2")
+        self.assertEqual(location_2.id, "2")
         
-        self.assertEqual(tree.root.testName, 'AddTest')
-        self.assertTrue(len(ParseTrace) != 0)
-        #print(tree.root.child_count)
-        #print(tree.root.children[0])
-        #print(ParseTrace[0].root.child_count)
-        #print(ParseTrace[0].root.sibling_count)
-        print(ParseTrace[0].root.children[0].sibling_count)
-        print(node1.sibling_count)
+        self.assertEqual(location_1.test, location_2.test)
 
-class LocationNode(Node):
-    def __init__(self, parent: TNode, children: List[TNode], testName: str, unitName: str = None, locationName: str = None, ) -> None:
-        super().__init__(parent, children)
-        self._testName = testName
-        self._unitName = unitName
-        self._locationName = locationName
-        self._idStateList : List[tuple] = []
-    
-    @property
-    def testName(self) -> str:
-        return self._testName
-    
-    @property
-    def unitName(self) -> str:
-        return self._unitName
-    
-    @property
-    def locationName(self) -> str:
-        return self._locationName
+    def test_trace_tree_builder_two_units_three_locations_test_trace(self) -> None:
+        builder = TraceTreeBuilder()
 
-    @property
-    def idStateList(self) -> List[tuple]:
-        return self._idStateList
+        trace = builder \
+            .start_test("Andreas") \
+            .start_unit("Tommy1") \
+            .enter_location("1") \
+                .start_unit("Tommy2") \
+                .enter_location("2") \
+                .end_unit() \
+            .enter_location("3") \
+            .end_unit() \
+            .end_test() \
+            .build()
 
-class Parser_trace():
-    def __init__(self) -> None:
-        pass  
-    
-    def parse_list(self, trace_list: List[str]) -> List[Tree[LocationNode]]:
+        sequence = [ *trace.sequence ]
+
+        self.assertEqual(len(sequence), 3)
+
+        location_1: Location = sequence[0]
+        self.assertEqual(location_1.unit.name, "Tommy1")
+        self.assertEqual(location_1.id, "1")
+
+        location_2: Location = sequence[1]
+        self.assertEqual(location_2.unit.name, "Tommy2")
+        self.assertEqual(location_2.id, "2")
+
+        location_3: Location = sequence[2]
+        self.assertEqual(location_3.unit.name, "Tommy1")
+        self.assertEqual(location_3.id, "3")
         
-        #return list
-        traceTreeList: List[Tree[LocationNode]] = []
+        self.assertEqual(location_1.test, location_2.test)
+        self.assertEqual(location_2.test, location_3.test)
 
-        testTreeStack: List[Tree[LocationNode]] = []
+    def test_trace_tree_builder_many_units_many_locations_test_trace(self) -> None:
+        builder = TraceTreeBuilder()
 
-        testNameStack: List[str] = []
-        unitNameStack: List[str] = []
+        trace = builder \
+            .start_test("Andreas") \
+            .start_unit("Tommy1") \
+            .enter_location("1") \
+                .start_unit("Tommy2") \
+                .enter_location("2") \
+                .enter_location("3") \
+                    .start_unit("Tommy3") \
+                    .enter_location("4") \
+                    .end_unit() \
+                .enter_location("5") \
+                .end_unit() \
+            .enter_location("6") \
+                .start_unit("Tommy4") \
+                .enter_location("7") \
+                    .start_unit("Tommy5") \
+                    .enter_location("8") \
+                    .end_unit() \
+                .enter_location("9") \
+                .end_unit() \
+            .enter_location("10") \
+            .end_unit() \
+            .end_test() \
+            .build()
 
-        treeRootNodeStack: List[LocationNode] = []
-        locationNodeStack: List[LocationNode] = []
-    
-        prevTrace : str = ''
-        idStateTuple = (None, None)
-        
-        for trace in trace_list:
-            
-            trace = trace.split("=")
+        sequence = [ *trace.sequence ]
+        self.assertEqual(len(sequence), 10)
 
-            if "StartTest" in trace[0]:
-            
-                rootNode = LocationNode(None, list(), trace[1] ,None, None)
+        location_1: Location = sequence[0]
+        self.assertEqual(location_1.test.name, "Andreas")
+        self.assertEqual(location_1.unit.name, "Tommy1")
+        self.assertEqual(location_1.id, "1")
 
-                testNameStack.append(trace[1])       
+        location_2: Location = sequence[1]
+        self.assertEqual(location_2.test.name, "Andreas")
+        self.assertEqual(location_2.unit.name, "Tommy2")
+        self.assertEqual(location_2.id, "2")
 
-                treeRootNodeStack.append(rootNode)
+        location_3: Location = sequence[2]
+        self.assertEqual(location_3.test.name, "Andreas")
+        self.assertEqual(location_3.unit.name, "Tommy2")
+        self.assertEqual(location_3.id, "3")
 
-                #testTreeStack.append(tree)
+        location_4: Location = sequence[3]
+        self.assertEqual(location_4.test.name, "Andreas")
+        self.assertEqual(location_4.unit.name, "Tommy3")
+        self.assertEqual(location_4.id, "4")
 
-            if "EndTest" in trace[0]:
-                if trace[1] != testNameStack[-1]:
-                    raise Exception('Test has not been ended correctly')
+        location_5: Location = sequence[4]
+        self.assertEqual(location_5.test.name, "Andreas")
+        self.assertEqual(location_5.unit.name, "Tommy2")
+        self.assertEqual(location_5.id, "5")
 
-                tree = Tree[LocationNode](treeRootNodeStack[-1])
-                tree.root.children.append(locationNodeStack[-1])
+        location_6: Location = sequence[5]
+        self.assertEqual(location_6.test.name, "Andreas")
+        self.assertEqual(location_6.unit.name, "Tommy1")
+        self.assertEqual(location_6.id, "6")
 
-                testNameStack.pop()
-                #traceTreeList[-1].root.children.append()
-                traceTreeList.append(tree)
-                #locationStack = []
+        location_7: Location = sequence[6]
+        self.assertEqual(location_7.test.name, "Andreas")
+        self.assertEqual(location_7.unit.name, "Tommy4")
+        self.assertEqual(location_7.id, "7")
 
-            if "location" in trace[0]:
-                
-                if testNameStack[-1] is None:
-                    raise Exception('top element in testNameStack is None')
+        location_8: Location = sequence[7]
+        self.assertEqual(location_8.test.name, "Andreas")
+        self.assertEqual(location_8.unit.name, "Tommy5")
+        self.assertEqual(location_8.id, "8")
 
-                if unitNameStack[-1] is None:
-                    raise Exception('top element in unitNameStack is None')
+        location_9: Location = sequence[8]
+        self.assertEqual(location_9.test.name, "Andreas")
+        self.assertEqual(location_9.unit.name, "Tommy4")
+        self.assertEqual(location_9.id, "9")
 
-                if trace[1] is None:
-                    raise Exception('value from trace is None')  
+        location_10: Location = sequence[9]
+        self.assertEqual(location_10.test.name, "Andreas")
+        self.assertEqual(location_10.unit.name, "Tommy1")
+        self.assertEqual(location_10.id, "10")
 
-                newlocationNode = LocationNode(None, list(), testNameStack[-1], unitNameStack[-1], trace[1])
-                
-                locationNodeStack.append(newlocationNode)
+    def test_trace_in_unit(self) -> None:
+        builder = TraceTreeBuilder()
 
-                if newlocationNode.unitName != unitNameStack[-1]:
-                    locationNodeStack[-1].children.append(newlocationNode)
-                else:
-                    locationNodeStack[-1].siblings.append(newlocationNode)
+        trace = builder \
+            .start_test("Andreas") \
+            .start_unit("Tommy1") \
+            .enter_location("1") \
+                .start_unit("Tommy2") \
+                .enter_location("2") \
+                .enter_location("3") \
+                    .start_unit("Tommy3") \
+                    .enter_location("4") \
+                    .end_unit() \
+                .enter_location("5") \
+                .end_unit() \
+            .enter_location("6") \
+                .start_unit("Tommy4") \
+                .enter_location("7") \
+                    .start_unit("Tommy5") \
+                    .enter_location("8") \
+                    .end_unit() \
+                .enter_location("9") \
+                .end_unit() \
+            .enter_location("10") \
+            .end_unit() \
+            .end_test() \
+            .build()
 
-            if "UnitStart" in trace[0]:
-                unitNameStack.append(trace[1])
-                
-            if "UnitEnd" in trace[0]:
-                if trace[1] == unitNameStack[-1]:
-                    unitNameStack.pop()
-                else:
-                    raise Exception('locationStack top element does not match with UnitEnd')                
-            
-            # if "id" in trace[0]:
-            #     if not idStateTuple:
-            #         raise Exception('Id_state tuple is not empty!')
+        actual = [ *trace.in_unit("Tommy1") ]
+        self.assertEqual(len(actual), 3)
 
-            #     prevTrace = 'id'
-            #     idStateTuple[0] = trace[1]
-                
-            # if "state" in trace[0]:
-            #     if idStateTuple[0] is None:
-            #         raise Exception('id in id_state tuple is None')
-            #     if idStateTuple[1] is not None:
-            #         raise Exception('state in id_state tuple is not None!')
+        location_1: Location = actual[0]
+        self.assertEqual(location_1.test.name, "Andreas")
+        self.assertEqual(location_1.unit.name, "Tommy1")
+        self.assertEqual(location_1.id, "1")
 
-            #     if prevTrace != "id":
-            #         raise Exception('previous trace was not an id!')
-                
-            #     if trace[1] in locationStack[-1].idStateList:
-            #         [x for x, y in enumerate(locationStack[-1].idStateList) if y[0] == idStateTuple[0]]
-            #         [trace[1]]
+        location_6: Location = actual[1]
+        self.assertEqual(location_6.test.name, "Andreas")
+        self.assertEqual(location_6.unit.name, "Tommy1")
+        self.assertEqual(location_6.id, "6")
 
-            #     idStateTuple[1] = trace[1]
-            #     prevTrace = ""
-            #     locationNodeStack[-1].idStateList.append(idStateTuple)
-            #     idStateTuple = (None, None)
+        location_10: Location = actual[2]
+        self.assertEqual(location_10.test.name, "Andreas")
+        self.assertEqual(location_10.unit.name, "Tommy1")
+        self.assertEqual(location_10.id, "10")
 
-        return traceTreeList
+    def test_parse_trace_log(self) -> None:
+        parser = TraceParser()
+        lines = [
+            "BeginTest=Andreas",
+            "BeginUnit=Tommy1",
+            "Location=1",
+                "BeginUnit=Tommy2",
+                "Location=2",
+                "Location=3",
+                    "BeginUnit=Tommy3",
+                    "Location=4",
+                    "EndUnit",
+                "Location=5",
+                "EndUnit",
+            "Location=6",
+                "BeginUnit=Tommy4",
+                "Location=7",
+                    "BeginUnit=Tommy5",
+                    "Location=8",
+                    "EndUnit",
+                "Location=9",
+                "EndUnit",
+            "Location=10",
+            "EndUnit",
+            "EndTest",
+        ]
+        trace = parser.parse(lines)
+        sequence = [ *trace.sequence ]
+
+        sequence = [ *trace.sequence ]
+        self.assertEqual(len(sequence), 10)
+
+        location_1: Location = sequence[0]
+        self.assertEqual(location_1.test.name, "Andreas")
+        self.assertEqual(location_1.unit.name, "Tommy1")
+        self.assertEqual(location_1.id, "1")
+
+        location_2: Location = sequence[1]
+        self.assertEqual(location_2.test.name, "Andreas")
+        self.assertEqual(location_2.unit.name, "Tommy2")
+        self.assertEqual(location_2.id, "2")
+
+        location_3: Location = sequence[2]
+        self.assertEqual(location_3.test.name, "Andreas")
+        self.assertEqual(location_3.unit.name, "Tommy2")
+        self.assertEqual(location_3.id, "3")
+
+        location_4: Location = sequence[3]
+        self.assertEqual(location_4.test.name, "Andreas")
+        self.assertEqual(location_4.unit.name, "Tommy3")
+        self.assertEqual(location_4.id, "4")
+
+        location_5: Location = sequence[4]
+        self.assertEqual(location_5.test.name, "Andreas")
+        self.assertEqual(location_5.unit.name, "Tommy2")
+        self.assertEqual(location_5.id, "5")
+
+        location_6: Location = sequence[5]
+        self.assertEqual(location_6.test.name, "Andreas")
+        self.assertEqual(location_6.unit.name, "Tommy1")
+        self.assertEqual(location_6.id, "6")
+
+        location_7: Location = sequence[6]
+        self.assertEqual(location_7.test.name, "Andreas")
+        self.assertEqual(location_7.unit.name, "Tommy4")
+        self.assertEqual(location_7.id, "7")
+
+        location_8: Location = sequence[7]
+        self.assertEqual(location_8.test.name, "Andreas")
+        self.assertEqual(location_8.unit.name, "Tommy5")
+        self.assertEqual(location_8.id, "8")
+
+        location_9: Location = sequence[8]
+        self.assertEqual(location_9.test.name, "Andreas")
+        self.assertEqual(location_9.unit.name, "Tommy4")
+        self.assertEqual(location_9.id, "9")
+
+        location_10: Location = sequence[9]
+        self.assertEqual(location_10.test.name, "Andreas")
+        self.assertEqual(location_10.unit.name, "Tommy1")
+        self.assertEqual(location_10.id, "10")

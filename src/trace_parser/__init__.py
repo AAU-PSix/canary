@@ -1,1 +1,1 @@
-from .test_trace_parser import *
+from .trace_tree_builder import *

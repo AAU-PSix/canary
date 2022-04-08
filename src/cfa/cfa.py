@@ -143,8 +143,6 @@ class CFA(Generic[TCFANode]):
             sanitized_contents: str = tree.contents_of(node).replace(":", "")
             return f'l{location} {sanitized_contents} \n {node.type}, child of {node.parent.type}'
 
-
-
         dot.node("initial", shape="point")
         dot.edge("initial", node_name(self.root))
 
@@ -187,8 +185,6 @@ class CFA(Generic[TCFANode]):
          downwards_search_callback: Callable[[TCFANode], None] = None
          ) -> Iterable[TCFANode]:
 
-
-        
         visited.append(node)
         if self.outgoing_edges(node) is not None:
             for outgoing in self.outgoing_edges(node):

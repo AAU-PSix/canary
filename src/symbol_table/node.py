@@ -29,7 +29,7 @@ class Node(Generic[TNode]):
         if self.parent is None: return None
         index = self.siblings.index(self)
         # Check if the next siblings is out of bounds.
-        if index + 1 == len(self.siblings) - 1: return None
+        if index + 1 == len(self.siblings): return None
         return self.siblings[index + 1]
 
     @property
