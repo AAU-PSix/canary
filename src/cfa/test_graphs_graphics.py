@@ -16,7 +16,8 @@ from ts import (
 from . import (
     CFA,
     CFAFactory,
-    CCFAFactory
+    CCFAFactory,
+    CFANode
 )
 
 class TestGraphsGraphics(TestCase):
@@ -758,7 +759,12 @@ class TestGraphsGraphics(TestCase):
                             }
                             return FAIL;
                         }
-             """)
+             """),
+             ("program_4", 
+                """
+                a=2;
+                """
+             )
         ]
 
         def draw_normal_cfa(name: str, program: str):
@@ -769,12 +775,12 @@ class TestGraphsGraphics(TestCase):
             if root.named_children[0].type == "function_definition":
                 root = root.named_children[0].child_by_field_name("body")
 
-            cfa: CFA = visitor.create(root)
+            cfa: CFA[CFANode] = visitor.create(root)
             dot: Digraph = cfa.draw(tree, name)
             dot.save(directory="graphs")
             draw_infected_cfa(name, tree, cfa)
 
-        def draw_infected_cfa(name: str, tree: Tree, cfa: CFA):
+        def draw_infected_cfa(name: str, tree: Tree, cfa: CFA[CFANode]):
             try:
                 infestator: TreeInfestator = CTreeInfestator(self._parser, CCanaryFactory())
                 infested_tree: Tree = infestator.infect(tree, cfa)
@@ -788,7 +794,7 @@ class TestGraphsGraphics(TestCase):
 
 
                 infested_visitor: CFAFactory = CCFAFactory(infested_tree)
-                infested_cfa: CFA = infested_visitor.create(root)
+                infested_cfa: CFA[CFANode] = infested_visitor.create(root)
                 infested_dot: Digraph = infested_cfa.draw(infested_tree, f'{name}_infested')
                 infested_dot.save(directory="graphs")
             except:

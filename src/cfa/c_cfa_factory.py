@@ -5,6 +5,7 @@ from typing import (
     List
 )
 from collections import deque
+from src.cfa.cfa_edge import CFAEdge
 from ts import (
     Node,
     Tree,
@@ -16,7 +17,7 @@ from .cfa_factory import CFAFactory
 from .cfa import CFA, CFANode
 
 class CCFAFactory(CFAFactory):
-    _cfa: CFA
+    _cfa: CFA[CFANode]
     _tree: Tree
     _continue_break_stack: "deque[Tuple[CFANode, CFANode]]"
     _current: CFANode
@@ -45,12 +46,12 @@ class CCFAFactory(CFAFactory):
         self._tree = tree
         self._syntax = CSyntax()
 
-    def create(self, root: Node) -> CFA:
+    def create(self, root: Node) -> CFA[CFANode]:
         self._continue_break_stack = deque()
         self._labels = list()
         self._gotos = list()
         cfa_root: CFANode = CFANode(None)
-        self._cfa = CFA(cfa_root)
+        self._cfa = CFA[CFANode](cfa_root)
         self._next(cfa_root)
 
         self._accept(root)

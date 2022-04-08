@@ -7,7 +7,10 @@ from ts import (
     CNodeType,
     CField
 )
-from cfa import CFA
+from cfa import (
+    CFA,
+    CFANode
+)
 from .c_canary_factory import CCanaryFactory
 from .tree_infection import TreeInfection
 from .tree_infestator import TreeInfestator
@@ -59,7 +62,7 @@ class CTreeInfestator(TreeInfestator):
         function_definition = descendent.get_descendent_of_types([ CNodeType.FUNCTION_DEFINITION.value ])
         return [ function_definition ]
 
-    def nests(self, cfa: CFA) -> List[Node]:
+    def nests(self, cfa: CFA[CFANode]) -> List[Node]:
         nests: List[Node] = list()
         for cfa_node in cfa.nodes:
             node: Node = cfa_node.node
@@ -167,7 +170,7 @@ class CTreeInfestator(TreeInfestator):
             self._canary_factory.insert_end_unit_tweet("unit", right_parent)
         ]
 
-    def infect(self, tree: Tree, cfa: CFA) -> Tree:
+    def infect(self, tree: Tree, cfa: CFA[CFANode]) -> Tree:
         probes: Dict[str, Callable[[Node], List[TreeInfection]]] = {
             # Sequential statements
             CNodeType.EXPRESSION_STATEMENT.value: self.infection_spore_for_expression_statement,

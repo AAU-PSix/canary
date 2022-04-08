@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from ts import Node
-from .cfa import CFA
+from .cfa import CFA, CFANode
 
 class CFAFactory(ABC):
     @abstractmethod
-    def create(self, root: Node) -> CFA: pass
+    def create(self, root: Node) -> CFA[CFANode]: pass

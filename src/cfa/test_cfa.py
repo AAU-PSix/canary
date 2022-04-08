@@ -5,7 +5,7 @@ class TestCFA(TestCase):
     def test_outgoing(self) -> None:
         root: CFANode = CFANode(None)
         node_1: CFANode = CFANode(None)
-        cfa: CFA = CFA(root)
+        cfa: CFA[CFANode] = CFA(root)
         cfa.branch(root, node_1)
         outgoing: List[CFANode] = cfa.outgoing(root)
         self.assertEqual(len(outgoing), 1)
@@ -14,7 +14,7 @@ class TestCFA(TestCase):
     def test_ingoing(self) -> None:
         root: CFANode = CFANode(None)
         node_1: CFANode = CFANode(None)
-        cfa: CFA = CFA(root)
+        cfa: CFA[CFANode] = CFA(root)
         cfa.branch(root, node_1)
         ingoing: List[CFANode] = cfa.ingoing(node_1)
         self.assertEqual(len(ingoing), 1)
@@ -24,7 +24,7 @@ class TestCFA(TestCase):
         root: CFANode = CFANode(None)
         node_1: CFANode = CFANode(None)
         node_2: CFANode = CFANode(None)
-        cfa: CFA = CFA(root)
+        cfa: CFA[CFANode] = CFA(root)
 
         cfa.branch(root, node_1)
         cfa.branch(node_1, node_2)
@@ -55,7 +55,7 @@ class TestCFA(TestCase):
         root: CFANode = CFANode(None)
         node_1: CFANode = CFANode(None)
         node_2: CFANode = CFANode(None)
-        cfa: CFA = CFA(root)
+        cfa: CFA[CFANode] = CFA(root)
 
         cfa.branch(root, node_1)
         cfa.branch(node_1, node_2)
@@ -86,7 +86,7 @@ class TestCFA(TestCase):
         node_3: CFANode = CFANode(None)
         node_4: CFANode = CFANode(None)
 
-        cfa: CFA = CFA(node_2)
+        cfa: CFA[CFANode] = CFA(node_2)
 
         cfa.branch(node_0, node_2)
         cfa.branch(node_1, node_2)
@@ -132,7 +132,7 @@ class TestCFA(TestCase):
         root: CFANode = CFANode(None)
         node_1: CFANode = CFANode(None)
         node_2: CFANode = CFANode(None)
-        cfa: CFA = CFA(root)
+        cfa: CFA[CFANode] = CFA(root)
 
         cfa.branch(root, node_1)
         cfa.replace(node_1, node_2)
