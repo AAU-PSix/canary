@@ -11,7 +11,7 @@ int add(int a, int b) {CANARY_TWEET_BEGIN_UNIT(unit);
 
     for (;0;) {CANARY_TWEET_LOCATION(4);a=a;}
 
-    if (a==a) {CANARY_TWEET_LOCATION(5); a/=a;CANARY_TWEET_LOCATION(l); }
+    if (a>>a) {CANARY_TWEET_LOCATION(5); a=a;CANARY_TWEET_LOCATION(l); }
     else if(b==b) {CANARY_TWEET_LOCATION(6); b=b;CANARY_TWEET_LOCATION(l); }
     else {CANARY_TWEET_LOCATION(7); b=b;CANARY_TWEET_LOCATION(l); }
 

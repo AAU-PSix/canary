@@ -1,6 +1,7 @@
 from unittest import TestCase
 from typing import List, Tuple
 from graphviz import Digraph
+from symbol_table import CSymbolTableFiller
 from tree_infestator import (
     TreeInfestator,
     CTreeInfestator,
@@ -12,6 +13,7 @@ from ts import (
     Query,
     Tree,
     Node,
+    CSyntax,
 )
 from . import (
     CFA,
@@ -419,18 +421,15 @@ class TestGraphsGraphics(TestCase):
                 char_u *p = arg;
                 int c;
                 int i;
-
                 if (newargs != NULL) {
                     ga_init(newargs, (int)sizeof(char_u *), 3);
                 }
                 if (default_args != NULL) {
                     ga_init(default_args, (int)sizeof(char_u *), 3);
                 }
-
                 if (varargs != NULL) {
                     *varargs = false;
                 }
-
                 // Isolate the arguments: "arg1, arg2, ...)"
                 bool any_default = false;
                 while (*p != endchar) {
@@ -458,7 +457,6 @@ class TestGraphsGraphics(TestCase):
                         c = *p;
                         *p = NUL;
                         arg = vim_strsave(arg);
-
                         // Check for duplicate argument name.
                         for (i = 0; i < newargs->ga_len; i++) {
                         if (STRCMP(((char_u **)(newargs->ga_data))[i], arg) == 0) {
@@ -469,19 +467,16 @@ class TestGraphsGraphics(TestCase):
                         }
                         ((char_u **)(newargs->ga_data))[newargs->ga_len] = arg;
                         newargs->ga_len++;
-
                         *p = c;
                     }
                     if (*skipwhite(p) == '=' && default_args != NULL) {
                         typval_T rettv;
-
                         any_default = true;
                         p = skipwhite(p) + 1;
                         p = skipwhite(p);
                         char_u *expr = p;
                         if (eval1(&p, &rettv, false) != FAIL) {
                         ga_grow(default_args, 1);
-
                         // trim trailing whitespace
                         while (p > expr && ascii_iswhite(p[-1])) {
                             p--;
@@ -518,10 +513,8 @@ class TestGraphsGraphics(TestCase):
                     goto err_ret;
                 }
                 p++;  // skip "endchar"
-
                 *argp = p;
                 return OK;
-
                 err_ret:
                 if (newargs != NULL) {
                     ga_clear_strings(newargs);
@@ -647,18 +640,15 @@ class TestGraphsGraphics(TestCase):
                             char_u * p = arg;
                             int c;
                             int i;
-
                             if (newargs != NULL) {
                                 ga_init(newargs, (int) sizeof(char_u * ), 3);
                             }
                             if (default_args != NULL) {
                                 ga_init(default_args, (int) sizeof(char_u * ), 3);
                             }
-
                             if (varargs != NULL) {
                                 * varargs = false;
                             }
-
                             // Isolate the arguments: "arg1, arg2, ...)"
                             bool any_default = false;
                             while ( * p != endchar) {
@@ -686,7 +676,6 @@ class TestGraphsGraphics(TestCase):
                                         c = * p;
                                         * p = NUL;
                                         arg = vim_strsave(arg);
-
                                         // Check for duplicate argument name.
                                         for (i = 0; i < newargs -> ga_len; i++) {
                                             if (STRCMP(((char_u ** )(newargs -> ga_data))[i], arg) == 0) {
@@ -697,19 +686,16 @@ class TestGraphsGraphics(TestCase):
                                         }
                                         ((char_u ** )(newargs -> ga_data))[newargs -> ga_len] = arg;
                                         newargs -> ga_len++;
-
                                         * p = c;
                                     }
                                     if ( * skipwhite(p) == '=' && default_args != NULL) {
                                         typval_T rettv;
-
                                         any_default = true;
                                         p = skipwhite(p) + 1;
                                         p = skipwhite(p);
                                         char_u * expr = p;
                                         if (eval1( & p, & rettv, false) != FAIL) {
                                             ga_grow(default_args, 1);
-
                                             // trim trailing whitespace
                                             while (p > expr && ascii_iswhite(p[-1])) {
                                                 p--;
@@ -745,10 +731,8 @@ class TestGraphsGraphics(TestCase):
                                 goto err_ret;
                             }
                             p++; // skip "endchar"
-
                             * argp = p;
                             return OK;
-
                             err_ret:
                                 if (newargs != NULL) {
                                     ga_clear_strings(newargs);
@@ -758,6 +742,66 @@ class TestGraphsGraphics(TestCase):
                             }
                             return FAIL;
                         }
+             """),
+            ("program_4", """
+             void foo() {
+                 int a = 0;
+                 int b;
+                 double c;
+                 for (int p = 0; b < 10; ++b) {
+                     print(p);
+                 }
+                 return;
+             }
+             void bar(int *a) {
+                 double c;
+                 return;
+             }
+             """),
+            ("program_5", """
+             typedef struct Foo {
+                 int b;
+             } Foo;
+             struct Bar {
+                 foo Foo;
+             };
+             typedef struct Bar Bar;
+             void foo() {
+                 int a = 0;
+                 int b;
+                 double c;
+                 for (int p = 0; b < 10; ++b) {
+                     print(p);
+                 }
+                 return;
+             }
+             void bar(int *a) {
+                 double c;
+                 return;
+                 if (a) {
+                     if (b) {
+                         int q = 0;
+                     }
+                 }
+             }
+             """),
+            ("program_6", """
+             void foo(int a) {
+                 int b,c,d = 0;
+                 if (a) {
+                     int e = 0;
+                 } else {
+                     int f = 0;
+                 }
+                 do { int g = 0; } while(a);
+                 while (a) { int h = 0; }
+                 for (int i = 0, j = 0;;) { int k = 0; }
+             }
+             """),
+            ("program_7", """
+             void tommy1(int a) {
+                 int b = tommy3() + tommy2();
+             }
              """)
         ]
 
@@ -772,7 +816,9 @@ class TestGraphsGraphics(TestCase):
             cfa: CFA = visitor.create(root)
             dot: Digraph = cfa.draw(tree, name)
             dot.save(directory="graphs")
+
             draw_infected_cfa(name, tree, cfa)
+            draw_symbol_table(name, tree)
 
         def draw_infected_cfa(name: str, tree: Tree, cfa: CFA):
             try:
@@ -786,13 +832,24 @@ class TestGraphsGraphics(TestCase):
                 if root.named_children[0].type == "function_definition":
                     root = root.named_children[0].child_by_field_name("body")
 
-
                 infested_visitor: CFAFactory = CCFAFactory(infested_tree)
                 infested_cfa: CFA = infested_visitor.create(root)
                 infested_dot: Digraph = infested_cfa.draw(infested_tree, f'{name}_infested')
                 infested_dot.save(directory="graphs")
             except:
                 self.assertEqual(name, "", "Infestation failed for this program")
+
+        def draw_symbol_table(name: str, tree: Tree):
+            try:
+                symbol_filler = CSymbolTableFiller(CSyntax())
+                root_table = symbol_filler.fill(tree)
+                table_tree = root_table.root.draw(f'{name}_symbols')
+                table_tree.save(directory="graphs")
+            except:
+                # For now we ignore mistakes in certain programs
+                if name == "program_2": return
+                if name == "program_3": return
+                self.assertEqual(name, "", "Symbol filling failed for this program")
 
         for program in programs:
             name: str = program[0]
