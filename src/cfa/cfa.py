@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Generic, List, Iterable, TypeVar
+from typing import Dict, Generic, List, Iterable, TypeVar, Callable
 from queue import Queue
 from xmlrpc.client import Boolean
 from graphviz import Digraph
@@ -65,10 +65,11 @@ class CFAGeneric(Generic[NodeType, EdgeType], ABC):
     def breadth_first_traverse(self) -> Iterable[NodeType]:
         pass
 
-    @abstractmethod
-    def depth_first_traverse(self) -> Iterable[NodeType]:
-        pass
-
+    def depth_first_traverse(self,
+         node:NodeType, visited: List[NodeType] = [],
+         downwards_search_callback: Callable[[NodeType], None] = None
+         ) -> Iterable[NodeType]:
+         pass
 
 class CFA(CFAGeneric[CFANode, CFAEdge]):
     _root: CFANode
@@ -196,13 +197,20 @@ class CFA(CFAGeneric[CFANode, CFAEdge]):
     def draw(self, tree: Tree, name: str, dot: Digraph = None) -> Digraph:
         if dot is None: dot = Digraph(name)
 
-        def node_name(cfa_node: CFANode) -> str:
+        def node_name(cfa_node: any) -> str:
             if cfa_node is None: return f'None'
             node: Node = cfa_node.node
             if node is None: return f'None'
             location: int = cfa_node.node.end_byte
             sanitized_contents: str = tree.contents_of(node).replace(":", "")
-            return f'l{location} {sanitized_contents} \n {node.type}, child of {node.parent.type}'
+
+            if hasattr(cfa_node, "location") and cfa_node.location != '':
+                return f'l{location} {sanitized_contents} \n {node.type}, child of djkasæjdaklæ djkalsæ {node.parent.type}' +\
+                f"location: {cfa_node.location}" 
+            else:
+                return f'l{location} {sanitized_contents} \n {node.type}, child of {node.parent.type}'
+
+
 
         dot.node("initial", shape="point")
         dot.edge("initial", node_name(self.root))
@@ -241,13 +249,21 @@ class CFA(CFAGeneric[CFANode, CFAEdge]):
                     visited.append(outgoing.destination)
 
 
-    def depth_first_traverse(self, node:NodeType, visited: List[CFANode] = list()) -> Iterable[NodeType]:
-        visited.append(node)
-        if self._outgoing_edges[node] is not None:
-            for outgoing in self._outgoing_edges[node]:
-                if outgoing.destination not in visited:
-                    self.depth_first_traverse(outgoing.destination, visited=visited)
+    def depth_first_traverse(self,
+         node:NodeType, visited: List[NodeType] = [],
+         downwards_search_callback: Callable[[NodeType], None] = None
+         ) -> Iterable[NodeType]:
+
+
         
+        visited.append(node)
+        if self.outgoing_edges(node) is not None:
+            for outgoing in self.outgoing_edges(node):
+                if outgoing.destination not in visited:
+                    if downwards_search_callback is None:
+                        downwards_search_callback(outgoing.destination)
+                    self.depth_first_traverse(outgoing.destination, visited=visited)
+    
         yield node
 
 

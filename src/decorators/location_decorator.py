@@ -1,3 +1,4 @@
+from tkinter import E
 from ts.tree import Tree
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -6,95 +7,29 @@ from cfa import CFANode, CFAEdge, CFAGeneric, CFA, CFAFactory
 from cfa.c_cfa_factory import CCFAFactory
 from ts.c_syntax import *
 from typing import List, Dict
-
+from graphviz import Digraph
 
 
 class LocalisedNode(CFANode):
     def __init__(self, node: Node) -> None:
-        self.location = -99
+        self.location: str = ''
         super().__init__(node)
 
-class LocalisedCFA(CFAGeneric[LocalisedNode, CFAEdge]):
+class LocalisedCFA(CFA):
     pass
-
-class LocalisedCFACFactory(CCFAFactory):
-    pass
-
-
-class ScopeContent:
-    def __init__(self) -> None:
-        self.statements: List[LocalisedNode] = []
-
-    def add_to_scope(self, node : LocalisedNode):
-        self.statements.append(node)
-
-def peek(stack: Dict[int, ScopeContent]) -> ScopeContent:
-    if stack == {}:
-        return None
-    else:
-        top = len(stack)-1
-        return stack[top]
-
 
 
 @dataclass
 class DecorationResult():
     cfa: LocalisedCFA = None
 
-@dataclass
-class LocalisationResult(DecorationResult):
-    Scopes: Dict[int, ScopeContent] = None
 
 class CFADecorator(ABC):
-
     @abstractmethod
     def decorate(self) -> DecorationResult:
         pass
 
 
-
-class LocationDecorator(CFADecorator):
-
-    def __init__(self, cfa_factory: LocalisedCFACFactory, tree:Tree) -> None:
-        self.tree: Tree = tree
-        self.cfa = cfa_factory.create(tree.root_node)
-        self.location = ''
-
-
-    def extract_location_text_from_tweet(self, cfa_node: CFANode) -> str:
-        text = self.tree.contents_of(cfa_node.node)
-        if "CANARY_TWEET_LOCATION(" in text:
-            return text.split("CANARY_TWEET_LOCATION(").pop()[:-2]
-
-        return ''
-
-        
-
-    def decorate(self) -> LocalisationResult:
-        searched_nodes = []
-        result: Dict[str:List[CFANode]] = {self.location: []}
-        for cfa_node in self.cfa.depth_first_traverse():
-            if cfa_node in searched_nodes:
-                continue
-
-            searched_nodes.append(cfa_node)
-            node_text = self.extract_location_text_from_tweet(cfa_node)
-            if node_text != '':
-                self.location = node_text
-            else:
-                if len(self.cfa.ingoing_edges[cfa_node]) >= 2:
-                    pass
-
-                pass
-                
-                
-                
-
-
-
-
-
-    
 
 from typing import (
     Callable,
@@ -114,7 +49,7 @@ from cfa.cfa_factory import CFAFactory
 from cfa import CFA
 
 
-class CCFADecoratorFactory(CFAFactory):
+class LocalisedCFACFactory(CFAFactory):
     _cfa: CFA
     _tree: Tree
     _continue_break_stack: "deque[Tuple[LocalisedNode, LocalisedNode]]"
@@ -149,7 +84,7 @@ class CCFADecoratorFactory(CFAFactory):
         self._labels = list()
         self._gotos = list()
         cfa_root: LocalisedNode = LocalisedNode(None)
-        self._cfa = CFA(cfa_root)
+        self._cfa = LocalisedCFA(cfa_root)
         self._next(cfa_root)
 
         self._accept(root)
@@ -228,7 +163,7 @@ class CCFADecoratorFactory(CFAFactory):
             last = self._accept(sibling)
             sibling = sibling.next_named_sibling
         return last
-    
+
     def _accept_children(self, node: Node) -> LocalisedNode:
         last: LocalisedNode = None
         for child in node.named_children:
@@ -486,3 +421,93 @@ class CCFADecoratorFactory(CFAFactory):
         return_node = self._next(LocalisedNode(node))
         self._cfa.add_final(return_node)
         return return_node
+
+    def draw(self, tree: Tree, name: str, dot: Digraph = None) -> Digraph:
+        if dot is None: dot = Digraph(name)
+
+        def node_name(cfa_node: CFANode) -> str:
+            if cfa_node is None: return f'None'
+            node: Node = cfa_node.node
+            if node is None: return f'None'
+            location: int = cfa_node.node.end_byte
+            sanitized_contents: str = tree.contents_of(node).replace(":", "")
+            return f'l{location} {sanitized_contents} \n {node.type}, child of {node.parent.type}'
+
+        dot.node("initial", shape="point")
+        dot.edge("initial", node_name(self.root))
+
+        finals: List[LocalisedNode] = self.finals
+        if len(finals) > 0:
+            dot.node("final", shape="point")
+            for final in self.finals:
+                dot.edge(node_name(final), "final")
+
+        for node in self._nodes:
+            dot.node(node_name(node) + "location: " + node.location)
+            for outgoing in self.outgoing_edges(node):
+                dot.edge(
+                    node_name(outgoing.source),
+                    node_name(outgoing.destination),
+                    outgoing.label
+                )
+
+        # dot.comment = tree.text
+        dot.attr(label=tree.text.replace(":", "|"))
+        dot.attr(label='locations: ' + self.location)
+        return dot
+
+
+
+
+class LocationDecorator(CFADecorator):
+
+    def __init__(self, cfa_factory: CFAFactory, tree:Tree) -> None:
+        self.tree: Tree = tree
+        self.cfa = cfa_factory.create(root=tree.root_node)
+        self.location = ''
+        self.decorated_nodes: Dict[str, List[LocalisedNode]] = {}
+
+
+    def extract_location_text_from_tweet(self, cfa_node: CFANode) -> str:
+        try: 
+            text = self.tree.contents_of(cfa_node.node)
+            if "CANARY_TWEET_LOCATION(" in text:
+                return text.split("CANARY_TWEET_LOCATION(").pop()[:-2]
+
+            return ''
+        except:
+            return ''
+
+    def downwards_handling(self, node:LocalisedNode):
+        ingoing = self.cfa.ingoing_edges[node]
+        if ingoing is None or len(ingoing) <= 1:
+            return
+
+        node_text = self.extract_location_text_from_tweet(node)
+        # It is location
+        if node_text != '':
+            self.location = node_text
+            node.location = node_text
+        else:
+            self.add_to_location_dict(node)
+            node.location = self.location
+
+
+
+    def add_to_location_dict(self, node : LocalisedNode):
+        nodes_for_location:List[LocalisedNode] = self.decorated_nodes.get(node.location)
+        if nodes_for_location is not None:
+            nodes_for_location.append(node)
+        else:
+            self.decorated_nodes[node.location] = [node]
+
+
+    def decorate(self) -> None:
+        for cfa_node in self.cfa.depth_first_traverse(self.cfa.root, downwards_search_callback=self.downwards_handling):
+            node_text = self.extract_location_text_from_tweet(cfa_node)
+            if node_text != '': # it is location tweet
+                self.location = node_text
+                continue
+            if cfa_node.location == '': #if node is not already decorated
+                self.add_to_location_dict(cfa_node)
+                cfa_node.location = self.location
