@@ -1,7 +1,26 @@
 from typing import Iterable, List
 
-from symbol_table.tree import Tree
-from symbol_table.node import Node, TNode
+class TraceParser():
+    def parse(self, lines: List[str]) -> "Trace":
+        builder = TraceTreeBuilder()
+        for line in lines:
+            split_line = line.split("=")
+            action = split_line[0]
+            
+            information = split_line[1] if len(split_line) is 2 else None
+            
+            if action == "BeginTest":
+                builder.start_test(information)
+            elif action == "EndTest":
+                builder.end_test()
+            elif action == "BeginUnit":
+                builder.start_unit(information)
+            elif action == "EndUnit":
+                builder.end_unit()
+            elif action == "Location":
+                builder.enter_location(information)
+
+        return builder.build()
 
 class TraceTreeBuilder():
     def __init__(self) -> None:
@@ -48,7 +67,10 @@ class TraceTreeBuilder():
         self._unit_stack.pop()
         return self
 
-    def end_test(self) -> "Trace":
+    def end_test(self) -> "TraceTreeBuilder":
+        return self
+
+    def build(self) -> "Trace":
         return Trace(
             self._sequence
         )

@@ -3,6 +3,7 @@ from typing import List
 
 from symbol_table.tree import Tree
 from .trace_tree_builder import (
+    TraceParser,
     TraceTreeBuilder,
     Trace, Test, Unit, Location
 )
@@ -13,7 +14,8 @@ class TestTraceParser(unittest.TestCase):
 
         builder \
             .start_test("Tommy") \
-            .end_test()
+            .end_test() \
+            .build()
 
         self.assertIsNone(builder.current_unit)
         self.assertEqual(builder.current_depth, 0)
@@ -52,7 +54,8 @@ class TestTraceParser(unittest.TestCase):
             .start_unit("Tommy") \
             .enter_location("1") \
             .end_unit() \
-            .end_test()
+            .end_test() \
+            .build()
 
         sequence = [ *trace.sequence ]
 
@@ -75,7 +78,8 @@ class TestTraceParser(unittest.TestCase):
                 .enter_location("2") \
                 .end_unit() \
             .end_unit() \
-            .end_test()
+            .end_test() \
+            .build()
 
         sequence = [ *trace.sequence ]
 
@@ -105,7 +109,8 @@ class TestTraceParser(unittest.TestCase):
                 .end_unit() \
             .enter_location("3") \
             .end_unit() \
-            .end_test()
+            .end_test() \
+            .build()
 
         sequence = [ *trace.sequence ]
 
@@ -151,8 +156,9 @@ class TestTraceParser(unittest.TestCase):
                 .end_unit() \
             .enter_location("10") \
             .end_unit() \
-            .end_test()
-            
+            .end_test() \
+            .build()
+
         sequence = [ *trace.sequence ]
         self.assertEqual(len(sequence), 10)
 
@@ -231,7 +237,8 @@ class TestTraceParser(unittest.TestCase):
                 .end_unit() \
             .enter_location("10") \
             .end_unit() \
-            .end_test()
+            .end_test() \
+            .build()
 
         actual = [ *trace.in_unit("Tommy1") ]
         self.assertEqual(len(actual), 3)
@@ -247,6 +254,88 @@ class TestTraceParser(unittest.TestCase):
         self.assertEqual(location_6.id, "6")
 
         location_10: Location = actual[2]
+        self.assertEqual(location_10.test.name, "Andreas")
+        self.assertEqual(location_10.unit.name, "Tommy1")
+        self.assertEqual(location_10.id, "10")
+
+    def test_parse_trace_log(self) -> None:
+        parser = TraceParser()
+        lines = [
+            "BeginTest=Andreas",
+            "BeginUnit=Tommy1",
+            "Location=1",
+                "BeginUnit=Tommy2",
+                "Location=2",
+                "Location=3",
+                    "BeginUnit=Tommy3",
+                    "Location=4",
+                    "EndUnit",
+                "Location=5",
+                "EndUnit",
+            "Location=6",
+                "BeginUnit=Tommy4",
+                "Location=7",
+                    "BeginUnit=Tommy5",
+                    "Location=8",
+                    "EndUnit",
+                "Location=9",
+                "EndUnit",
+            "Location=10",
+            "EndUnit",
+            "EndTest",
+        ]
+        trace = parser.parse(lines)
+        sequence = [ *trace.sequence ]
+
+        sequence = [ *trace.sequence ]
+        self.assertEqual(len(sequence), 10)
+
+        location_1: Location = sequence[0]
+        self.assertEqual(location_1.test.name, "Andreas")
+        self.assertEqual(location_1.unit.name, "Tommy1")
+        self.assertEqual(location_1.id, "1")
+
+        location_2: Location = sequence[1]
+        self.assertEqual(location_2.test.name, "Andreas")
+        self.assertEqual(location_2.unit.name, "Tommy2")
+        self.assertEqual(location_2.id, "2")
+
+        location_3: Location = sequence[2]
+        self.assertEqual(location_3.test.name, "Andreas")
+        self.assertEqual(location_3.unit.name, "Tommy2")
+        self.assertEqual(location_3.id, "3")
+
+        location_4: Location = sequence[3]
+        self.assertEqual(location_4.test.name, "Andreas")
+        self.assertEqual(location_4.unit.name, "Tommy3")
+        self.assertEqual(location_4.id, "4")
+
+        location_5: Location = sequence[4]
+        self.assertEqual(location_5.test.name, "Andreas")
+        self.assertEqual(location_5.unit.name, "Tommy2")
+        self.assertEqual(location_5.id, "5")
+
+        location_6: Location = sequence[5]
+        self.assertEqual(location_6.test.name, "Andreas")
+        self.assertEqual(location_6.unit.name, "Tommy1")
+        self.assertEqual(location_6.id, "6")
+
+        location_7: Location = sequence[6]
+        self.assertEqual(location_7.test.name, "Andreas")
+        self.assertEqual(location_7.unit.name, "Tommy4")
+        self.assertEqual(location_7.id, "7")
+
+        location_8: Location = sequence[7]
+        self.assertEqual(location_8.test.name, "Andreas")
+        self.assertEqual(location_8.unit.name, "Tommy5")
+        self.assertEqual(location_8.id, "8")
+
+        location_9: Location = sequence[8]
+        self.assertEqual(location_9.test.name, "Andreas")
+        self.assertEqual(location_9.unit.name, "Tommy4")
+        self.assertEqual(location_9.id, "9")
+
+        location_10: Location = sequence[9]
         self.assertEqual(location_10.test.name, "Andreas")
         self.assertEqual(location_10.unit.name, "Tommy1")
         self.assertEqual(location_10.id, "10")
