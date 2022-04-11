@@ -62,8 +62,18 @@ class CTreeInfestator(TreeInfestator):
         function_definition = descendent.get_descendent_of_types([ CNodeType.FUNCTION_DEFINITION.value ])
         return [ function_definition ]
 
+    def nests_of_translation_unit(self, translation_unit: Node) -> List[Node]:
+        return [ translation_unit ]
+
     def nests(self, cfa: CFA[CFANode]) -> List[Node]:
         nests: List[Node] = list()
+
+        ascendent = cfa.root.node.get_immediate_descendent_of_types(
+            [ CNodeType.FUNCTION_DEFINITION.value, CNodeType.TRANSLATION_UNIT.value ]
+        )
+        if ascendent.is_type(CNodeType.TRANSLATION_UNIT):
+            nests.extend(self.nests_of_translation_unit(ascendent))
+
         for cfa_node in cfa.nodes:
             node: Node = cfa_node.node
             # Case 1: if-statements (Including "else if" and "else")
@@ -94,13 +104,14 @@ class CTreeInfestator(TreeInfestator):
                 # TODO: Declarations nests should not be added,
                 #   if they are the intiialization of a for-loop.
                 nests.extend(self.nests_of_declaration(node))
-            # Case 8: Return statement
+            # Case 9: Return statement
             elif self._syntax.is_return_statement(node):
                 nests.extend(self.nests_of_return_statement(node))
 
             # Case 1: First function definition (Begin/end unit)
             if self._syntax.is_immediate_of_function_definition(node):
                 nests.extend(self.nests_of_function_definition(node))
+
         return nests
 
     def infection_spore_for_expression_statement(self, _: Node) -> List[TreeInfection]:
@@ -111,8 +122,8 @@ class CTreeInfestator(TreeInfestator):
         # return [ self._canary_factory.append_state_tweet(node) ]
         return [ ]
 
-    def infection_spore_for_return_statement(self, node: Node) -> List[TreeInfection]:
-        return [ self._canary_factory.insert_end_unit_tweet("unit", node) ]
+    def infection_spore_for_return_statement(self, _: Node) -> List[TreeInfection]:
+        return [ ]
 
     def infection_spore_for_declaration(self, _: Node) -> List[TreeInfection]:
         # return [ self._canary_factory.append_state_tweet(node) ]
@@ -120,15 +131,30 @@ class CTreeInfestator(TreeInfestator):
 
     def infection_spore_if_statement(self, if_stmt: Node) -> List[TreeInfection]:
         infections: List[TreeInfection] = [ ]
+
+        consequence: Node = if_stmt.child_by_field(CField.CONSEQUENCE)
+        alternative: Node = if_stmt.child_by_field(CField.ALTERNATIVE)
+
+        consequence_postfix: str = ""
+        alternative_postfix: str = ""
+
+        if alternative is None:
+            consequence_postfix = self._canary_factory.create_location_tweet()
+        elif not self._syntax.has_else_if(if_stmt):
+            alternative_postfix = self._canary_factory.create_location_tweet()
+
         # We dont have to check if "consequence" is None, because every
         #   "if_statement" has a consequence of its "condition"
-        consequence: Node = if_stmt.child_by_field(CField.CONSEQUENCE)
-        infections.extend(self._canary_factory.create_location_tweets(consequence))
+        infections.extend(self._canary_factory.create_location_tweets(
+            consequence, postfix=consequence_postfix
+        ))
 
         # If it is an "else if", then it is handled as a seperate "if"
-        alternative: Node = if_stmt.child_by_field(CField.ALTERNATIVE)
-        if alternative is not None and not self._syntax.is_else_if(if_stmt):
-            infections.extend(self._canary_factory.create_location_tweets(alternative))
+        if alternative is not None and not self._syntax.has_else_if(if_stmt):
+            infections.extend(self._canary_factory.create_location_tweets(
+                alternative, postfix=alternative_postfix
+            ))
+
         return infections
 
     def infection_spore_while_statement(self, while_stmt: Node) -> List[TreeInfection]:
@@ -167,11 +193,12 @@ class CTreeInfestator(TreeInfestator):
     def infection_spore_function_definition(self, node: Node) -> List[TreeInfection]:
         body = node.child_by_field(CField.BODY)
         left_paren = body.children[0]
-        right_parent = body.children[-1]
         return [ 
-            self._canary_factory.append_begin_unit_tweet("unit", left_paren),
-            self._canary_factory.insert_end_unit_tweet("unit", right_parent)
+            self._canary_factory.append_location_tweet(left_paren),
         ]
+
+    def infection_spore_translation_unit(self, node: Node) -> List[TreeInfection]:
+        return [ self._canary_factory.insert_location_tweet(node) ]
 
     def infect(self, tree: Tree, cfa: CFA[CFANode]) -> Tree:
         probes: Dict[str, Callable[[Node], List[TreeInfection]]] = {
@@ -190,6 +217,7 @@ class CTreeInfestator(TreeInfestator):
             CNodeType.LABELED_STATEMENT.value: self.infection_spore_labeled_statement,
             # Additional
             CNodeType.FUNCTION_DEFINITION.value: self.infection_spore_function_definition,
+            CNodeType.TRANSLATION_UNIT.value: self.infection_spore_translation_unit
         }
 
         # Step 1: Find the infections

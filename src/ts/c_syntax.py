@@ -295,7 +295,7 @@ class CSyntax(Syntax):
             node, CNodeType.SWITCH_STATEMENT, CField.CONDITION
         )
 
-    def is_else_if(self, node: Node) -> bool:
+    def has_else_if(self, node: Node) -> bool:
         alternative: Node = node.child_by_field(CField.ALTERNATIVE)
         return alternative is not None and alternative.is_type(CNodeType.IF_STATEMENT)
 
@@ -314,6 +314,11 @@ class CSyntax(Syntax):
     def is_immediate_of_function_definition(self, node: Node) -> bool:
         return node is not None and node.get_immediate_descendent_of_types_field(
             [ CNodeType.FUNCTION_DEFINITION.value ], CField.BODY
+        ) is not None
+
+    def is_immediate_of_translation_unit(self, node: Node) -> bool:
+        return node is not None and node.get_immediate_descendent_of_types(
+            [ CNodeType.TRANSLATION_UNIT ]
         ) is not None
 
     def node_field(self, node_type: str) -> CNodeType:

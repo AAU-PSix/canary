@@ -841,8 +841,10 @@ class TestGraphsGraphics(TestCase):
 
                 infested_visitor: CFAFactory = CCFAFactory(infested_tree)
                 infested_cfa: CFA[CFANode] = infested_visitor.create(root)
+
                 location_decorator = LocationDecorator(infested_tree)
                 localised_cfa = location_decorator.decorate(infested_cfa)
+
                 infested_dot: Digraph = localised_cfa.draw(infested_tree, f'{name}_infested')
                 infested_dot.save(directory="graphs")
             except:
