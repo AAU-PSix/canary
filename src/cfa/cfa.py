@@ -1,19 +1,16 @@
-from abc import ABC, abstractmethod
-from typing import Dict, Generic, List, Iterable, TypeVar, Callable
+from typing import Dict, Generic, List, Iterable, Callable
 from queue import Queue
-from xmlrpc.client import Boolean
 from graphviz import Digraph
+from src.cfa.cfa_node import CFANode
 from ts import Tree, Node
 from .cfa_edge import CFAEdge
-from .cfa_node import CFANode
-
-TCFANode = TypeVar('TCFANode', bound=CFANode)
+from .t_cfa_node import TCFANode
 
 class CFA(Generic[TCFANode]):
     _root: TCFANode
     _nodes: List[TCFANode]
-    _outgoing_edges: Dict[TCFANode, List[CFAEdge]]
-    _ingoing_edges: Dict[TCFANode, List[CFAEdge]]
+    _outgoing_edges: Dict[TCFANode, List[CFAEdge[TCFANode]]]
+    _ingoing_edges: Dict[TCFANode, List[CFAEdge[TCFANode]]]
     _additional_finals: List[TCFANode]
 
     def __init__(self, root: TCFANode) -> None:
@@ -61,7 +58,7 @@ class CFA(Generic[TCFANode]):
             children.append(edge.destination)
         return children
 
-    def outgoing_edges(self, source: TCFANode) -> List[CFAEdge]:
+    def outgoing_edges(self, source: TCFANode) -> List[CFAEdge[TCFANode]]:
         if source not in self._nodes:
             return list()
         return self._outgoing_edges[source]
@@ -74,7 +71,7 @@ class CFA(Generic[TCFANode]):
             children.append(edge.source)
         return children
 
-    def ingoing_edges(self, source: TCFANode) -> List[CFAEdge]:
+    def ingoing_edges(self, source: TCFANode) -> List[CFAEdge[TCFANode]]:
         return self._ingoing_edges[source]
 
     def branch(self, source: TCFANode, destination: TCFANode, label: str = None) -> None:
@@ -87,11 +84,11 @@ class CFA(Generic[TCFANode]):
             self._outgoing_edges[destination] = list()
             self._ingoing_edges[destination] = list()
 
-        edge: CFAEdge = CFAEdge(source, destination, label)
+        edge: CFAEdge[TCFANode] = CFAEdge(source, destination, label)
         self._outgoing_edges[source].append(edge)
         self._ingoing_edges[destination].append(edge)
 
-    def _remove_edge(self, edge: CFAEdge) -> None:
+    def _remove_edge(self, edge: CFAEdge[TCFANode]) -> None:
         # b -> a
         self._outgoing_edges[edge.source].remove(edge)
         self._ingoing_edges[edge.destination].remove(edge)
@@ -137,11 +134,11 @@ class CFA(Generic[TCFANode]):
 
         def node_name(cfa_node: TCFANode) -> str:
             if cfa_node is None: return f'None'
-            node: Node = cfa_node.node
-            if node is None: return f'None'
-            location: int = cfa_node.node.end_byte
-            sanitized_contents: str = tree.contents_of(node).replace(":", "")
-            return f'l{location} {sanitized_contents} \n {node.type}, child of {node.parent.type}'
+            if cfa_node.node is None: return f'None'
+            cfa_node_str = str(cfa_node)
+
+            sanitized_contents: str = tree.contents_of(cfa_node.node).replace(":", "")
+            return f'{cfa_node_str} {sanitized_contents} \n child of {cfa_node.node.parent.type}'
 
         dot.node("initial", shape="point")
         dot.edge("initial", node_name(self.root))

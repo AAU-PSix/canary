@@ -5,7 +5,6 @@ from typing import (
     List
 )
 from collections import deque
-from src.cfa.cfa_edge import CFAEdge
 from ts import (
     Node,
     Tree,
@@ -14,7 +13,8 @@ from ts import (
     CSyntax
 )
 from .cfa_factory import CFAFactory
-from .cfa import CFA, CFANode
+from .cfa import CFA
+from .cfa_node import CFANode
 
 class CCFAFactory(CFAFactory):
     _cfa: CFA[CFANode]

@@ -1,6 +1,7 @@
 from unittest import TestCase
 from typing import List, Tuple
 from graphviz import Digraph
+from src.decorators.location_decorator import LocationDecorator
 from symbol_table import CSymbolTableFiller
 from tree_infestator import (
     TreeInfestator,
@@ -765,13 +766,6 @@ class TestGraphsGraphics(TestCase):
              }
              """),
             ("program_6", """
-             typedef struct Foo {
-                 int b;
-             } Foo;
-             struct Bar {
-                 foo Foo;
-             };
-             typedef struct Bar Bar;
              void foo() {
                  int a = 0;
                  int b;
@@ -781,6 +775,13 @@ class TestGraphsGraphics(TestCase):
                  }
                  return;
              }
+             typedef struct Foo {
+                 int b;
+             } Foo;
+             struct Bar {
+                 foo Foo;
+             };
+             typedef struct Bar Bar;
              void bar(int *a) {
                  double c;
                  return;
@@ -840,7 +841,9 @@ class TestGraphsGraphics(TestCase):
 
                 infested_visitor: CFAFactory = CCFAFactory(infested_tree)
                 infested_cfa: CFA[CFANode] = infested_visitor.create(root)
-                infested_dot: Digraph = infested_cfa.draw(infested_tree, f'{name}_infested')
+                location_decorator = LocationDecorator(infested_tree)
+                localised_cfa = location_decorator.decorate(infested_cfa)
+                infested_dot: Digraph = localised_cfa.draw(infested_tree, f'{name}_infested')
                 infested_dot.save(directory="graphs")
             except:
                 self.assertEqual(name, "", "Infestation failed for this program")
