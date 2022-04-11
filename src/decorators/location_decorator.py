@@ -1,8 +1,7 @@
 from typing import List, Dict
-from src.cfa.cfa_edge import CFAEdge
 from ts.c_syntax import CNodeType, CSyntax
 from ts import Tree, Node
-from cfa import CFANode, CFA
+from cfa import CFANode, CFA, CFAEdge
 
 class LocalisedNode(CFANode):
     def __init__(self, node: Node, location: str = None) -> None:

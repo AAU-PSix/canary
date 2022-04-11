@@ -1,7 +1,7 @@
 from unittest import TestCase
 from typing import List, Tuple
 from graphviz import Digraph
-from src.decorators.location_decorator import LocationDecorator
+from decorators import LocationDecorator
 from symbol_table import CSymbolTableFiller
 from tree_infestator import (
     TreeInfestator,
