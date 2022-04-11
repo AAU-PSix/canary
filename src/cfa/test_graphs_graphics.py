@@ -809,7 +809,13 @@ class TestGraphsGraphics(TestCase):
              void tommy1(int a) {
                  int b = tommy3() + tommy2();
              }
-             """)
+             """),
+            ("program_9","""
+             int a = 0;
+             int b = 2;
+             int c = 1;
+             """
+            )
         ]
 
         def draw_normal_cfa(name: str, program: str):

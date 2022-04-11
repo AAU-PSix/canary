@@ -1,6 +1,6 @@
 from typing import List, Dict
 from src.cfa.cfa_edge import CFAEdge
-from ts.c_syntax import CNodeType
+from ts.c_syntax import CNodeType, CSyntax
 from ts import Tree, Node
 from cfa import CFANode, CFA
 
@@ -19,6 +19,7 @@ class LocalisedCFA(CFA[LocalisedNode]):
 class LocationDecorator():
     def __init__(self, tree: Tree) -> None:
         self.tree: Tree = tree
+        self._syntax = CSyntax()
 
     def is_location_tweet(self, node: Node) -> bool:
         text = self.tree.contents_of(node)
@@ -92,5 +93,28 @@ class LocationDecorator():
                 cfa_node.location = location
 
         # Step 2: Propagate seeds downwards
+        frontier: List[LocalisedNode] = list()
+        visited: List[LocalisedNode] = list()
+        frontier.append(localised_cfa.root)
+
+        while len(frontier) > 0:
+            cfa_node = frontier.pop(-1)
+            location = cfa_node.location
+            visited.append(cfa_node)
+
+            for edge in localised_cfa.outgoing_edges(cfa_node):
+                if edge.destination not in visited and\
+                    edge.destination not in frontier:
+                    frontier.append(edge.destination)
+                if edge.destination.location is None:
+                    edge.destination.location = location
+
+        # Step 3: Fixes where TWEETS comes after construct
+        for cfa_node in localised_cfa.nodes:
+            # Case 1: Switch cases propagation
+            if self._syntax.is_switch_case(cfa_node.node):
+                outgoings = localised_cfa.outgoing(cfa_node)
+                # We can assume that each case is followed by a location tweet
+                cfa_node.location = outgoings[0].location
 
         return localised_cfa

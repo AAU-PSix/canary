@@ -93,6 +93,7 @@ class CNodeType(NodeType):
     PARAMETER_DECLARATION = "parameter_declaration"
     PREPROC_IFDEF = "preproc_ifdef"
     PREPROC_DEF = "preproc_def"
+    CASE_STATEMENT = "case_statement"
 
 class CSyntax(Syntax):
     @property
@@ -257,6 +258,11 @@ class CSyntax(Syntax):
         if self.is_default_switch_case(case):
             return case.named_child_count < 1
         return case.named_child_count == 1
+
+    def is_switch_case(self, case: Node) -> bool:
+        if not case.parent.is_type(CNodeType.CASE_STATEMENT):
+            return False
+        return case.parent.child_by_field(CField.VALUE) == case
 
     def is_field_of_type(self, node: Node, structure: CNodeType, field: CField) -> bool:
         if node is None: return False
