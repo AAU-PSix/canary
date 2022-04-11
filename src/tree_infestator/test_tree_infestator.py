@@ -432,7 +432,7 @@ class TestTreeInfestator(unittest.TestCase):
 
         expected =  """
             switch(a) {
-                case 3:CANARY_TWEET_LOCATION(0); { int a=3;CANARY_TWEET_LOCATION(l); }
+                case 3:CANARY_TWEET_LOCATION(0); { int a=3; }
                 default:CANARY_TWEET_LOCATION(1);
             }
         """
@@ -461,7 +461,7 @@ class TestTreeInfestator(unittest.TestCase):
         expected: str = """
             goto SUM;
         SUM:CANARY_TWEET_LOCATION(0);
-            sum = a + b;CANARY_TWEET_LOCATION(l);
+            sum = a + b;
         """
         actual = self._infestator.infect(tree, cfa)
 
@@ -473,7 +473,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root_node)
         
-        expected: str = "if (a) {CANARY_TWEET_LOCATION(0);a=2;CANARY_TWEET_LOCATION(l);}"
+        expected: str = "if (a) {CANARY_TWEET_LOCATION(0);a=2;}"
         actual = self._infestator.infect(tree, cfa).text
 
         self.assertEqual(expected, actual)
@@ -483,7 +483,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root_node)
         
-        expected: str = "if (a) {CANARY_TWEET_LOCATION(0);a=2;CANARY_TWEET_LOCATION(l);} else {CANARY_TWEET_LOCATION(1);a=3;CANARY_TWEET_LOCATION(l);}"
+        expected: str = "if (a) {CANARY_TWEET_LOCATION(0);a=2;} else {CANARY_TWEET_LOCATION(1);a=3;}"
         actual = self._infestator.infect(tree, cfa).text
 
         self.assertEqual(expected, actual)
@@ -500,7 +500,7 @@ class TestTreeInfestator(unittest.TestCase):
 
         expected: str = """
         void Foo() {CANARY_TWEET_BEGIN_UNIT(unit);
-            a = b;CANARY_TWEET_LOCATION(l);
+            a = b;
             CANARY_TWEET_END_UNIT(unit);return;
         CANARY_TWEET_END_UNIT(unit);}
         """
@@ -513,88 +513,88 @@ class TestTreeInfestator(unittest.TestCase):
         programs: List[Tuple[str, str, str]] = [
             ("if_1", 
             "a=1; if(a==2) { }",
-            "a=1;TWEET(); if(a==2) {TWEET(); }"),
+            "a=1; if(a==2) {TWEET(); }"),
             ("if_2", 
             "if(a==2) { } else { }",
             "if(a==2) {TWEET(); } else {TWEET(); }"),
             ("if_3", 
             "a=1; if(a==2) { } else { } a=2;",
-            "a=1;TWEET(); if(a==2) {TWEET(); } else {TWEET(); } a=2;TWEET();"),
+            "a=1; if(a==2) {TWEET(); } else {TWEET(); } a=2;"),
             ("if_4", 
             "a=1; if(a==2) { } else if(a==3) { } else { }",
-            "a=1;TWEET(); if(a==2) {TWEET(); } else if(a==3) {TWEET(); } else {TWEET(); }"),
+            "a=1; if(a==2) {TWEET(); } else if(a==3) {TWEET(); } else {TWEET(); }"),
             ("if_5", 
             "a=1; if(a==2) { } else if(a==3) { } a=2;",
-            "a=1;TWEET(); if(a==2) {TWEET(); } else if(a==3) {TWEET(); } a=2;TWEET();"),
+            "a=1; if(a==2) {TWEET(); } else if(a==3) {TWEET(); } a=2;"),
             ("if_6", 
             "a=1; if(a==1) { a=2; }",
-            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); }"),
+            "a=1; if(a==1) {TWEET(); a=2; }"),
             ("if_7", 
             "a=1; if(a==1) { a=2; } a=3;",
-            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } a=3;TWEET();"),
+            "a=1; if(a==1) {TWEET(); a=2; } a=3;"),
             ("if_8", 
             "a=1; if(a==1) { a=2; } else { a=3; }",
-            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } else {TWEET(); a=3;TWEET(); }"),
+            "a=1; if(a==1) {TWEET(); a=2; } else {TWEET(); a=3; }"),
             ("if_9", 
             "a=1; if(a==1) { a=2; } else { a=3; } a=4;",
-            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } else {TWEET(); a=3;TWEET(); } a=4;TWEET();"),
+            "a=1; if(a==1) {TWEET(); a=2; } else {TWEET(); a=3; } a=4;"),
             ("if_10",
             "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } a=4;",
-            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } else if(a==2) {TWEET(); a=3;TWEET(); } a=4;TWEET();"),
+            "a=1; if(a==1) {TWEET(); a=2; } else if(a==2) {TWEET(); a=3; } a=4;"),
             ("if_11",
             "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } a=4;",
-            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } else if(a==2) {TWEET(); a=3;TWEET(); } a=4;TWEET();"),
+            "a=1; if(a==1) {TWEET(); a=2; } else if(a==2) {TWEET(); a=3; } a=4;"),
             ("if_12",
             "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } else { a=4; } a=5; a=6;",
-            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } else if(a==2) {TWEET(); a=3;TWEET(); } else {TWEET(); a=4;TWEET(); } a=5;TWEET(); a=6;TWEET();"),
+            "a=1; if(a==1) {TWEET(); a=2; } else if(a==2) {TWEET(); a=3; } else {TWEET(); a=4; } a=5; a=6;"),
             ("if_13",
             "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } else if(a==3) { a=4; } a=5;",
-            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } else if(a==2) {TWEET(); a=3;TWEET(); } else if(a==3) {TWEET(); a=4;TWEET(); } a=5;TWEET();"),
+            "a=1; if(a==1) {TWEET(); a=2; } else if(a==2) {TWEET(); a=3; } else if(a==3) {TWEET(); a=4; } a=5;"),
             ("if_14",
             "a=1; if(a==1) { a=2; } else if(a==2) { } else if(a==3) { a=4; } else if(a==4) { a=5; } else { a=6; } a=7;",
-            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } else if(a==2) {TWEET(); } else if(a==3) {TWEET(); a=4;TWEET(); } else if(a==4) {TWEET(); a=5;TWEET(); } else {TWEET(); a=6;TWEET(); } a=7;TWEET();"),
+            "a=1; if(a==1) {TWEET(); a=2; } else if(a==2) {TWEET(); } else if(a==3) {TWEET(); a=4; } else if(a==4) {TWEET(); a=5; } else {TWEET(); a=6; } a=7;"),
             ("if_15",
             "a=1; if(a==1) { a=2; } else if(a==2) { a=3; } else if(a==3) { a=4; } else if(a==4) { a=5; } else { a=6; } a=7;",
-            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } else if(a==2) {TWEET(); a=3;TWEET(); } else if(a==3) {TWEET(); a=4;TWEET(); } else if(a==4) {TWEET(); a=5;TWEET(); } else {TWEET(); a=6;TWEET(); } a=7;TWEET();"),
+            "a=1; if(a==1) {TWEET(); a=2; } else if(a==2) {TWEET(); a=3; } else if(a==3) {TWEET(); a=4; } else if(a==4) {TWEET(); a=5; } else {TWEET(); a=6; } a=7;"),
             ("if_16",
             "a=1; if(a==1) { a=2; } a=3; if(a==2) { a=2; } a=3; if(a==3) { a=2; } a=3;",
-            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } a=3;TWEET(); if(a==2) {TWEET(); a=2;TWEET(); } a=3;TWEET(); if(a==3) {TWEET(); a=2;TWEET(); } a=3;TWEET();"),
+            "a=1; if(a==1) {TWEET(); a=2; } a=3; if(a==2) {TWEET(); a=2; } a=3; if(a==3) {TWEET(); a=2; } a=3;"),
             ("if_17",
             "a=1; if((((a==1)))) { a=2; }",
-            "a=1;TWEET(); if((((a==1)))) {TWEET(); a=2;TWEET(); }"),
+            "a=1; if((((a==1)))) {TWEET(); a=2; }"),
             ("if_18",
             "a=1; if(a==1) { } a=3;",
-            "a=1;TWEET(); if(a==1) {TWEET(); } a=3;TWEET();"),
+            "a=1; if(a==1) {TWEET(); } a=3;"),
             ("if_18",
             "a=1; if(a==1) { a=2; } else { } a=3;",
-            "a=1;TWEET(); if(a==1) {TWEET(); a=2;TWEET(); } else {TWEET(); } a=3;TWEET();"),
+            "a=1; if(a==1) {TWEET(); a=2; } else {TWEET(); } a=3;"),
             ("if_19",
             "if(a==1) { } if(a==3) { b=2; }",
-            "if(a==1) {TWEET(); } if(a==3) {TWEET(); b=2;TWEET(); }"),
+            "if(a==1) {TWEET(); } if(a==3) {TWEET(); b=2; }"),
             ("if_20",
             "if(a==1) { a=1; a=2; } if(a==3) { b=2; }",
-            "if(a==1) {TWEET(); a=1;TWEET(); a=2;TWEET(); } if(a==3) {TWEET(); b=2;TWEET(); }"),
+            "if(a==1) {TWEET(); a=1; a=2; } if(a==3) {TWEET(); b=2; }"),
             ("if_21",
             "if (a) { { { { { } } } } } else { a=2; } a=2;",
-            "if (a) {TWEET(); { { { { } } } } } else {TWEET(); a=2;TWEET(); } a=2;TWEET();"),
+            "if (a) {TWEET(); { { { { } } } } } else {TWEET(); a=2; } a=2;"),
             ("if_22",
             "if (a) { { A=1; { { { } b=2; } } } } else { a=2; } a=2;",
-            "if (a) {TWEET(); { A=1;TWEET(); { { { } b=2;TWEET(); } } } } else {TWEET(); a=2;TWEET(); } a=2;TWEET();"),
+            "if (a) {TWEET(); { A=1; { { { } b=2; } } } } else {TWEET(); a=2; } a=2;"),
             ("if_23",
             "if(a) { if(a) { } }",
             "if(a) {TWEET(); if(a) {TWEET(); } }"),
             ("if_24",
             "if(a) a=1;",
-            "if(a) {TWEET();a=1;TWEET();}"),
+            "if(a) {TWEET();a=1;}"),
             ("if_25",
             "if(a) a=1; else a=2;",
-            "if(a) {TWEET();a=1;TWEET();} else {TWEET();a=2;TWEET();}"),
+            "if(a) {TWEET();a=1;} else {TWEET();a=2;}"),
             ("if_26",
             "if(a) a=1; else if(a) a=2;",
-            "if(a) {TWEET();a=1;TWEET();} else if(a) {TWEET();a=2;TWEET();}"),
+            "if(a) {TWEET();a=1;} else if(a) {TWEET();a=2;}"),
             ("if_27",
             "if(a) a=1; else if(a) a=2; else a=3;",
-            "if(a) {TWEET();a=1;TWEET();} else if(a) {TWEET();a=2;TWEET();} else {TWEET();a=3;TWEET();}"),
+            "if(a) {TWEET();a=1;} else if(a) {TWEET();a=2;} else {TWEET();a=3;}"),
             ("if_28",
             "if(a) { { { { { } } } } }",
             "if(a) {TWEET(); { { { { } } } } }"),

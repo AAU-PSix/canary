@@ -103,17 +103,20 @@ class CTreeInfestator(TreeInfestator):
                 nests.extend(self.nests_of_function_definition(node))
         return nests
 
-    def infection_spore_for_expression_statement(self, node: Node) -> List[TreeInfection]:
-        return [ self._canary_factory.append_state_tweet(node) ]
+    def infection_spore_for_expression_statement(self, _: Node) -> List[TreeInfection]:
+        # return [ self._canary_factory.append_state_tweet(node) ]
+        return [ ]
 
-    def infection_spore_for_assignment_statement(self, node: Node) -> List[TreeInfection]:
-        return [ self._canary_factory.append_state_tweet(node) ]
+    def infection_spore_for_assignment_statement(self, _: Node) -> List[TreeInfection]:
+        # return [ self._canary_factory.append_state_tweet(node) ]
+        return [ ]
 
     def infection_spore_for_return_statement(self, node: Node) -> List[TreeInfection]:
         return [ self._canary_factory.insert_end_unit_tweet("unit", node) ]
 
-    def infection_spore_for_declaration(self, node: Node) -> List[TreeInfection]:
-        return [ self._canary_factory.append_state_tweet(node) ]
+    def infection_spore_for_declaration(self, _: Node) -> List[TreeInfection]:
+        # return [ self._canary_factory.append_state_tweet(node) ]
+        return [ ]
 
     def infection_spore_if_statement(self, if_stmt: Node) -> List[TreeInfection]:
         infections: List[TreeInfection] = [ ]
