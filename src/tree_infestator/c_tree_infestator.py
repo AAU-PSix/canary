@@ -39,7 +39,9 @@ class CTreeInfestator(TreeInfestator):
         return [ condition.parent ]
 
     def nests_of_for_loop_body(self, body: Node) -> List[Node]:
-        return [ body.parent ]
+        return [ body.get_immediate_descendent_of_types(
+            [ CNodeType.FOR_STATEMENT.value ]
+        ) ]
 
     def nests_of_case_value_for_switch(self, condition: Node) -> List[Node]:
         # The parent of a switch condition is the condition itself
@@ -114,19 +116,16 @@ class CTreeInfestator(TreeInfestator):
 
         return nests
 
-    def infection_spore_for_expression_statement(self, _: Node) -> List[TreeInfection]:
-        # return [ self._canary_factory.append_state_tweet(node) ]
+    def infection_spore_expression_statement(self, _: Node) -> List[TreeInfection]:
         return [ ]
 
-    def infection_spore_for_assignment_statement(self, _: Node) -> List[TreeInfection]:
-        # return [ self._canary_factory.append_state_tweet(node) ]
+    def infection_spore_assignment_statement(self, _: Node) -> List[TreeInfection]:
         return [ ]
 
-    def infection_spore_for_return_statement(self, _: Node) -> List[TreeInfection]:
+    def infection_spore_return_statement(self, _: Node) -> List[TreeInfection]:
         return [ ]
 
-    def infection_spore_for_declaration(self, _: Node) -> List[TreeInfection]:
-        # return [ self._canary_factory.append_state_tweet(node) ]
+    def infection_spore_declaration(self, _: Node) -> List[TreeInfection]:
         return [ ]
 
     def infection_spore_if_statement(self, if_stmt: Node) -> List[TreeInfection]:
@@ -167,7 +166,15 @@ class CTreeInfestator(TreeInfestator):
 
     def infection_spore_for_statement(self, for_stmt: Node) -> List[TreeInfection]:
         body: Node = self._syntax.get_for_loop_body(for_stmt)
-        return self._canary_factory.create_location_tweets(body)
+        # If it is a expression statement then the body is just a ";"
+        if body.is_type(CNodeType.EXPRESSION_STATEMENT):
+            return self._canary_factory.create_location_tweets(
+                body, postfix=self._canary_factory.create_location_tweet()
+            )
+        else:
+            infections: List[TreeInfection] = self._canary_factory.create_location_tweets(body)
+            infections.append(self._canary_factory.append_location_tweet(for_stmt))
+            return infections
 
     def infection_spore_switch_statement(self, switch_stmt: Node) -> List[TreeInfection]:
         infections: List[TreeInfection] = [ ]
@@ -184,6 +191,9 @@ class CTreeInfestator(TreeInfestator):
                     # The second (index 1) child is the ":" character for normal cases
                     self._canary_factory.append_location_tweet(case.children[2])
                 )
+        infections.append(
+            self._canary_factory.append_location_tweet(switch_stmt)
+        )
         return infections
 
     def infection_spore_labeled_statement(self, node: Node) -> List[TreeInfection]:
@@ -203,10 +213,10 @@ class CTreeInfestator(TreeInfestator):
     def infect(self, tree: Tree, cfa: CFA[CFANode]) -> Tree:
         probes: Dict[str, Callable[[Node], List[TreeInfection]]] = {
             # Sequential statements
-            CNodeType.EXPRESSION_STATEMENT.value: self.infection_spore_for_expression_statement,
-            CNodeType.ASSIGNMENT_EXPRESSION.value: self.infection_spore_for_expression_statement,
-            CNodeType.RETURN_STATEMENT.value: self.infection_spore_for_return_statement,
-            CNodeType.DECLARATION.value: self.infection_spore_for_declaration,
+            CNodeType.EXPRESSION_STATEMENT.value: self.infection_spore_expression_statement,
+            CNodeType.ASSIGNMENT_EXPRESSION.value: self.infection_spore_expression_statement,
+            CNodeType.RETURN_STATEMENT.value: self.infection_spore_return_statement,
+            CNodeType.DECLARATION.value: self.infection_spore_declaration,
             # Control structures
             CNodeType.IF_STATEMENT.value: self.infection_spore_if_statement,
             CNodeType.WHILE_STATEMENT.value: self.infection_spore_while_statement,

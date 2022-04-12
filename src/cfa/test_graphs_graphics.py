@@ -123,6 +123,7 @@ class TestGraphsGraphics(TestCase):
             ("for_32", "a=1; for(; i<0; ) { a=2; } a=2;"),
             ("for_33", "a=1; for(; ; ) { a=2; } a=2;"),
             ("for_34", "for(;;) { a=1; a=2; }"),
+            ("for_35", "for(;;) { if(a) { a = 1; } }"),
             ("switch_1", """
             switch (a)
             {

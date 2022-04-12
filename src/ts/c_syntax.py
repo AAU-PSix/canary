@@ -294,7 +294,10 @@ class CSyntax(Syntax):
         for_statement: Node = self.get_structure_descendent(node)
         if for_statement is None or not for_statement.is_type(CNodeType.FOR_STATEMENT):
             return False
-        return for_statement.named_children[-1] == node
+        # The last named child of the for_statement node is the body of the loop
+        for_body = self.get_for_loop_body(for_statement)
+        return for_body == node or \
+            node.is_immediate_descendent_of_node(for_body)
 
     def is_condition_of_switch(self, node: Node) -> bool:
         return self.is_field_of_type(

@@ -150,6 +150,14 @@ class Node:
             current = current.parent
         return False
 
+    def is_immediate_descendent_of_node(self, target: "Node") -> bool:
+        current: Node = self
+        while current.parent is not None:
+            if current.parent.named_children[0] != current: return False
+            if current.parent == target: return True
+            current = current.parent
+        return False
+
     def is_immediate_descendt_of_type(self, type: str) -> bool:
         current: Node = self
         while current.parent is not None:

@@ -206,13 +206,13 @@ class CCFAFactory(CFAFactory):
     def _visit_switch_statement(self, node: Node) -> CFANode:
         # Because of fallthrough for now we assume that the end of
         #   the first case is connected with the start of the next.
-        #   p
-        #  /|\
-        # v v v
-        # |/|/|
-        # c c c
-        #  \|/
-        #   s
+        # +---p
+        # |  /|\
+        # | v v v
+        # | |/|/|
+        # | c c c
+        # |  \|/
+        # +---s
 
         p: CFANode = CFANode(node.child_by_field(CField.CONDITION))
         p = self._next(p)
@@ -261,7 +261,7 @@ class CCFAFactory(CFAFactory):
         for case in cases:
             prev_end: CFANode = case[1]
             self._branch(prev_end, s)
-        return s
+        return self._branch(p, s)
 
     def _visit_while_statement(self, node: Node) -> CFANode:
         # While-loop with "p" condition, and "b" body which when "c"
