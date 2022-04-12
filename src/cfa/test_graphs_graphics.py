@@ -308,6 +308,15 @@ class TestGraphsGraphics(TestCase):
                 default: printf("I am default");
             }
              """),
+            ("switch_18", """
+            switch (a)
+            {
+                case 1: 
+                case 2: a=1;  a=1;
+                case 3: { }
+                default: a=3;
+            }
+             """),
             ("function_1", """
             void foo() {
                 a=2;
@@ -869,11 +878,11 @@ class TestGraphsGraphics(TestCase):
             dot: Digraph = cfa.draw(tree, name)
             dot.save(directory="graphs")
             
-            # for node in cfa.nodes:
-            #     self.assertIsNotNone(node.node, f'A node is None {name}')
+            for node in cfa.nodes:
+                self.assertIsNotNone(node.node, f'A node is None {name}')
 
-            # draw_infected_cfa(name, tree, cfa)
-            # draw_symbol_table(name, tree)
+            draw_infected_cfa(name, tree, cfa)
+            draw_symbol_table(name, tree)
 
         def draw_infected_cfa(name: str, tree: Tree, cfa: CFA[CFANode]):
             try:
