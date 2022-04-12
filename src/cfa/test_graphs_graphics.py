@@ -278,6 +278,19 @@ class TestGraphsGraphics(TestCase):
             }
             a=10;
              """),
+             ("switch_16", """
+            a = 2; 
+            switch (a) {
+                case 1: printf("I am One");
+                        break;
+                case 2: printf("I am Two");
+                        break;
+                case 3: printf("I an Three");
+                        break;
+                default: printf("I am default");
+            }
+            a = 3;
+             """),
             ("function_1", """
             void foo() {
                 a=2;
