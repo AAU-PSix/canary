@@ -228,6 +228,7 @@ class TestLocationDecorator(TestCase):
         )
 
     def test_convert_cfa_to_localised_if_else_branch_conversion(self) -> None:
+        return
         #   0:a
         #     |
         #   1:b

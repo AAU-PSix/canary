@@ -124,6 +124,10 @@ class TestGraphsGraphics(TestCase):
             ("for_33", "a=1; for(; ; ) { a=2; } a=2;"),
             ("for_34", "for(;;) { a=1; a=2; }"),
             ("for_35", "for(;;) { if(a) { a = 1; } }"),
+            ("for_36", "for(;;) { while(a) { a = 1; } }"),
+            ("for_37", "for(;;) { do { a = 1; } while(a) }"),
+            ("for_38", "for(;;) { for(;;); }"),
+            ("for_39", "for(;;) { int a = 0; if(a) { a = 1; } }"),
             ("switch_1", """
             switch (a)
             {
@@ -291,6 +295,18 @@ class TestGraphsGraphics(TestCase):
                 default: printf("I am default");
             }
             a = 3;
+             """),
+             ("switch_17", """
+            a = 2; 
+            switch (a) {
+                case 1: printf("I am One");
+                        break;
+                case 2: printf("I am Two");
+                        break;
+                case 3: printf("I an Three");
+                        break;
+                default: printf("I am default");
+            }
              """),
             ("function_1", """
             void foo() {
@@ -829,6 +845,15 @@ class TestGraphsGraphics(TestCase):
              int b = 2;
              int c = 1;
              """
+            ),
+            ("program_10","""
+             a=2;
+              if(b == 2) {
+                  c = 1;
+              } else {
+                  d = 3;
+              }
+             """
             )
         ]
 
@@ -843,9 +868,12 @@ class TestGraphsGraphics(TestCase):
             cfa: CFA[CFANode] = visitor.create(root)
             dot: Digraph = cfa.draw(tree, name)
             dot.save(directory="graphs")
+            
+            # for node in cfa.nodes:
+            #     self.assertIsNotNone(node.node, f'A node is None {name}')
 
-            draw_infected_cfa(name, tree, cfa)
-            draw_symbol_table(name, tree)
+            # draw_infected_cfa(name, tree, cfa)
+            # draw_symbol_table(name, tree)
 
         def draw_infected_cfa(name: str, tree: Tree, cfa: CFA[CFANode]):
             try:

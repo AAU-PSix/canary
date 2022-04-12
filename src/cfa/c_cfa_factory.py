@@ -46,6 +46,11 @@ class CCFAFactory(CFAFactory):
         self._tree = tree
         self._syntax = CSyntax()
 
+    def _create_cfa_node(self, node: Node, description: str = None):
+        cfa_node = CFANode(node)
+        if description is not None: cfa_node.secret = description
+        return cfa_node
+
     def create(self, root: Node) -> CFA[CFANode]:
         self._continue_break_stack = deque()
         self._labels = list()
@@ -57,6 +62,8 @@ class CCFAFactory(CFAFactory):
         self._accept(root)
 
         if self._current is not None and self._current.node is None:
+            ingoing_edges = self._cfa.ingoing_edges(self._current)
+            for edge in ingoing_edges: self._cfa.add_final(edge.source)
             self._cfa.remove(self._current)
 
         return self._cfa
@@ -201,7 +208,7 @@ class CCFAFactory(CFAFactory):
                 self._cfa.remove(a)
         else:
             self._branch(p, s, "F")
-        return s
+        return self._next(s)
 
     def _visit_switch_statement(self, node: Node) -> CFANode:
         # Because of fallthrough for now we assume that the end of
@@ -262,7 +269,7 @@ class CCFAFactory(CFAFactory):
         for case in cases:
             prev_end: CFANode = case[1]
             self._branch(prev_end, s)
-            
+
         self._continue_break_stack.pop()
         return s
 
@@ -311,9 +318,7 @@ class CCFAFactory(CFAFactory):
         #   |
         # --c--
         # | | |
-        # | j n
-        # | | |
-        # | b f
+        # | j f
         # | |
         # --u
         f: CFANode = CFANode(None)
@@ -352,7 +357,10 @@ class CCFAFactory(CFAFactory):
             j: CFANode = CFANode(None)
             j = self._next(j)
             c = self._accept(body)
-            self._branch(c, j)
+
+            q: CFANode = self._branch(c, j)
+            if c.node is None: self._cfa.remove(c)
+            c = q
 
         self._continue_break_stack.pop()
 

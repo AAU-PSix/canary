@@ -1,3 +1,4 @@
+from random import random
 from typing import Dict, Generic, List, Iterable, Callable
 from queue import Queue
 from graphviz import Digraph
@@ -42,6 +43,8 @@ class CFA(Generic[TCFANode]):
         for node in self._nodes:
             if len(self.outgoing_edges(node)) is 0:
                 finals.append(node)
+        for node in self._additional_finals:
+            finals.append(node)
         return finals
 
     def add_final(self, final: TCFANode) -> bool:
@@ -132,8 +135,9 @@ class CFA(Generic[TCFANode]):
         if dot is None: dot = Digraph(name)
 
         def node_name(cfa_node: TCFANode) -> str:
-            if cfa_node is None: return f'None'
-            if cfa_node.node is None: return f'None'
+            secret = cfa_node.secret if hasattr(cfa_node, "secret") else ""
+            if cfa_node is None: return f'CFA node is None {secret}'
+            if cfa_node.node is None: return f'TS node is None {secret}'
             cfa_node_str = str(cfa_node)
 
             sanitized_contents: str = tree.contents_of(cfa_node.node).replace(":", "")
