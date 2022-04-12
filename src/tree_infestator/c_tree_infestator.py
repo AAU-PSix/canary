@@ -1,3 +1,4 @@
+from distutils.command.install_egg_info import install_egg_info
 from typing import List, Dict, Callable
 from ts import (
     Node,
@@ -158,11 +159,19 @@ class CTreeInfestator(TreeInfestator):
 
     def infection_spore_while_statement(self, while_stmt: Node) -> List[TreeInfection]:
         body: Node = while_stmt.child_by_field(CField.BODY)
-        return self._canary_factory.create_location_tweets(body)
+        infections: List[TreeInfection] = self._canary_factory.create_location_tweets(body)
+        infections.append(
+            self._canary_factory.append_location_tweet(while_stmt)
+        )
+        return infections
 
     def infection_spore_do_statement(self, do_stmt: Node) -> List[TreeInfection]:
         body: Node = do_stmt.child_by_field(CField.BODY)
-        return self._canary_factory.create_location_tweets(body)
+        infections: List[TreeInfection] = self._canary_factory.create_location_tweets(body)
+        infections.append(
+            self._canary_factory.append_location_tweet(do_stmt)
+        )
+        return infections
 
     def infection_spore_for_statement(self, for_stmt: Node) -> List[TreeInfection]:
         body: Node = self._syntax.get_for_loop_body(for_stmt)

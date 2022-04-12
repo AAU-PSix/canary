@@ -91,7 +91,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root_node)
 
-        expected = "CANARY_TWEET_LOCATION(0);while(a) {CANARY_TWEET_LOCATION(1); }"
+        expected = "CANARY_TWEET_LOCATION(0);while(a) {CANARY_TWEET_LOCATION(1); }CANARY_TWEET_LOCATION(2);"
         actual = self._infestator.infect(tree, cfa).text
         nests = self._infestator.nests(cfa)
 
@@ -299,7 +299,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root_node)
 
-        expected =  "CANARY_TWEET_LOCATION(0);do {CANARY_TWEET_LOCATION(1); } while(a);"
+        expected =  "CANARY_TWEET_LOCATION(0);do {CANARY_TWEET_LOCATION(1); } while(a);CANARY_TWEET_LOCATION(2);"
         actual = self._infestator.infect(tree, cfa).text
         nests = self._infestator.nests(cfa)
 
