@@ -44,7 +44,8 @@ class CFA(Generic[TCFANode]):
             if len(self.outgoing_edges(node)) is 0:
                 finals.append(node)
         for node in self._additional_finals:
-            finals.append(node)
+            if node not in finals:
+                finals.append(node)
         return finals
 
     def add_final(self, final: TCFANode) -> bool:
