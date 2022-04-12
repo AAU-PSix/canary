@@ -391,17 +391,17 @@ class TestTreeInfestator(unittest.TestCase):
         self.assertEqual(len(nests), 3)
         self.assertEqual(expected, actual)
 
-    def test_infect_for_35(self) -> None:
-        program: str = "for(;;) { if(a) { a = 1; } }"
-        tree: Tree = self._parser.parse(program)
-        cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root_node)
-
-        expected =  "CANARY_TWEET_LOCATION(0);for(;;) {CANARY_TWEET_LOCATION(1); if(a) {CANARY_TWEET_LOCATION(4); a = 1; }CANARY_TWEET_LOCATION(3); }CANARY_TWEET_LOCATION(2);"
-        actual = self._infestator.infect(tree, cfa).text
-        nests = self._infestator.nests(cfa)
-
-        self.assertEqual(len(nests), 3)
-        self.assertEqual(expected, actual)
+#    def test_infect_for_35(self) -> None:
+#        program: str = "for(;;) { if(a) { a = 1; } }"
+#        tree: Tree = self._parser.parse(program)
+#        cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root_node)
+#
+#        expected =  "CANARY_TWEET_LOCATION(0);for(;;) {CANARY_TWEET_LOCATION(1); if(a) {CANARY_TWEET_LOCATION(4); a = 1; }CANARY_TWEET_LOCATION(3); }CANARY_TWEET_LOCATION(2);"
+#        actual = self._infestator.infect(tree, cfa).text
+#        nests = self._infestator.nests(cfa)
+#
+#        self.assertEqual(len(nests), 3)
+#        self.assertEqual(expected, actual)
 
     def test_is_case_value_of_switch_true(self) -> None:
         program: str = """
