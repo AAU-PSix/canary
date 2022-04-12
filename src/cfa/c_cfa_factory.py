@@ -217,6 +217,7 @@ class CCFAFactory(CFAFactory):
         p: CFANode = CFANode(node.child_by_field(CField.CONDITION))
         p = self._next(p)
         s: CFANode = CFANode(None)
+        self._continue_break_stack.append((None, s))
 
         cases: List[Tuple[CFANode, CFANode]] = list()
 
@@ -261,7 +262,9 @@ class CCFAFactory(CFAFactory):
         for case in cases:
             prev_end: CFANode = case[1]
             self._branch(prev_end, s)
-        return self._branch(p, s)
+            
+        self._continue_break_stack.pop()
+        return s
 
     def _visit_while_statement(self, node: Node) -> CFANode:
         # While-loop with "p" condition, and "b" body which when "c"

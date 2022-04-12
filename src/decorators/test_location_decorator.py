@@ -349,3 +349,29 @@ class TestLocationDecorator(TestCase):
 
         self.assertEqual(localised_cfa.nodes[0].location, "a")
         self.assertEqual(localised_cfa.nodes[-1].location, "b")
+
+    # def test_decorate_check_switch_statement(self):
+    #     program = """
+    #     a = 2; 
+    #     switch (a) {
+    #         case 1: printf("I am One");
+    #                 break;
+    #         case 2: printf("I am Two");
+    #                 break;
+    #         case 3: printf("I an Three");
+    #                 break;
+    #         default: printf("I am default");
+    #     }
+    #     """
+    #     tree = self._parser.parse(program)
+    #     factory=  CCFAFactory(tree)
+    #     cfa = factory.create(tree.root_node)
+    #     decorator = LocationDecorator(cfa)
+
+    #     localised_cfa = decorator.decorate(cfa)
+
+
+    #     self.assertEqual(localised_cfa.nodes[0].location, "0")
+    #     self.assertEqual(localised_cfa.nodes[1].location, "1")
+
+        
