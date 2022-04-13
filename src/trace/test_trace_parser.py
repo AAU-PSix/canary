@@ -1,6 +1,6 @@
 import unittest
 
-from .trace_tree_builder import (
+from . import (
     TraceParser,
     TraceTreeBuilder,
     Location
