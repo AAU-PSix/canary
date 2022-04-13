@@ -83,10 +83,7 @@ class LocationDecorator():
     def decorate(self, cfa: CFA[CFANode]) -> CFA[LocalisedNode]:
         localised_cfa: CFA[LocalisedNode] = self.convert_cfa_to_localised(cfa)
         # Step 1: Seed locations at tweet
-        for cfa_node in localised_cfa.nodes:
-            if self.is_location_tweet(cfa_node.node):
-                location = self.extract_location_text_from_tweet(cfa_node.node)
-                cfa_node.location = location
+        self._decorate_initial_locations(localised_cfa)
 
         # Step 2: Propagate seeds downwards
         frontier: List[LocalisedNode] = list()
@@ -97,13 +94,8 @@ class LocationDecorator():
             cfa_node = frontier.pop(-1)
             location = cfa_node.location
             visited.append(cfa_node)
-
             for edge in localised_cfa.outgoing_edges(cfa_node):
-                if edge.destination not in visited and\
-                    edge.destination not in frontier:
-                    frontier.append(edge.destination)
-                if edge.destination.location is None:
-                    edge.destination.location = location
+                self._decorate_frontier(frontier, visited, location, edge)
 
         # Step 3: Fixes where TWEETS comes after construct
         for cfa_node in localised_cfa.nodes:
@@ -114,3 +106,18 @@ class LocationDecorator():
                 cfa_node.location = outgoings[0].location
 
         return localised_cfa
+
+    def _decorate_frontier(self, frontier: List[LocalisedNode], visited: List[LocalisedNode],
+                        location: str, edge: CFAEdge):
+
+        if edge.destination not in visited and\
+                    edge.destination not in frontier:
+            frontier.append(edge.destination)
+        if edge.destination.location is None:
+            edge.destination.location = location
+
+    def _decorate_initial_locations(self, localised_cfa: LocalisedCFA):
+        for cfa_node in localised_cfa.nodes:
+            if self.is_location_tweet(cfa_node.node):
+                location = self.extract_location_text_from_tweet(cfa_node.node)
+                cfa_node.location = location
