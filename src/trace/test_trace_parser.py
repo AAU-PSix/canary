@@ -1,11 +1,9 @@
 import unittest
-from typing import List
 
-from symbol_table.tree import Tree
 from .trace_tree_builder import (
     TraceParser,
     TraceTreeBuilder,
-    Trace, Test, Unit, Location
+    Location
 )
 
 class TestTraceParser(unittest.TestCase):
