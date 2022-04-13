@@ -132,7 +132,7 @@ class TestLocationDecorator(TestCase):
         cfa = factory.create(tree.root_node)
         decorator = LocationDecorator(tree)
 
-        tweet_nodes = decorator.get_all_location_tweet_nodes(cfa)
+        tweet_nodes = decorator.tweet_handler.get_all_location_tweet_nodes(cfa)
         tweet_a = cfa.root
         tweet_b = cfa.nodes[1]
 

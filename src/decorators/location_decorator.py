@@ -1,39 +1,25 @@
-from platform import node
+
+from abc import ABC, abstractmethod
 from typing import List, Dict
-from src.cfa import cfa_edge
+from cfa.t_cfa_node import TCFANode
 from ts.c_syntax import CNodeType, CSyntax
 from ts import Tree, Node
 from cfa import CFANode, CFA, CFAEdge
+from .localised_cfa import LocalisedCFA, LocalisedNode
+class TweetHandler:
 
-class LocalisedNode(CFANode):
-    def __init__(self, node: Node, location: str = None) -> None:
-        self.location: str = location
-        super().__init__(node)
-
-    def __str__(self) -> str:
-        return f'loc. {self.location}\n[{self.node.start_byte}, {self.node.end_byte}] {self.node.type}'
-
-class LocalisedCFA(CFA[LocalisedNode]):
-    def __init__(self, root: LocalisedNode) -> None:
-        super().__init__(root)
-
-class LocationDecorator():
     def __init__(self, tree: Tree) -> None:
-        self.tree: Tree = tree
-        self._syntax = CSyntax()
-
-    def is_location_tweet(self, node: Node) -> bool:
-        text = self.tree.contents_of(node)
-        return text.startswith("CANARY_TWEET_LOCATION(")
+        self.tree = tree
+        pass
 
     def extract_location_text_from_tweet(self, node: Node) -> str:
-        if not node.is_type(CNodeType.EXPRESSION_STATEMENT):
+            if not node.is_type(CNodeType.EXPRESSION_STATEMENT):
+                return None
+            
+            if self.is_location_tweet(node):
+                text = self.tree.contents_of(node)
+                return text.split("CANARY_TWEET_LOCATION(").pop()[:-2]
             return None
-        
-        if self.is_location_tweet(node):
-            text = self.tree.contents_of(node)
-            return text.split("CANARY_TWEET_LOCATION(").pop()[:-2]
-        return None
 
     def get_all_location_tweet_nodes(self, cfa: CFA[CFANode]) -> List[CFANode]:
         tweet_nodes: List[CFANode] = []
@@ -42,8 +28,35 @@ class LocationDecorator():
                 tweet_nodes.append(node)
         return tweet_nodes
 
+    def is_location_tweet(self, node: Node) -> bool:
+        text = self.tree.contents_of(node)
+        return text.startswith("CANARY_TWEET_LOCATION(")
+
+
+class LocationDecorator():
+    def __init__(self, tree: Tree) -> None:
+        self.tree: Tree = tree
+        self._syntax = CSyntax()
+        self.tweet_handler = TweetHandler(self.tree)
+
+    
+        
+
+
+    def extract_location_text_from_tweet(self, node: Node) -> str:
+        if not node.is_type(CNodeType.EXPRESSION_STATEMENT):
+            return None
+        
+        if self.tweet_handler.is_location_tweet(node):
+            text = self.tree.contents_of(node)
+            return text.split("CANARY_TWEET_LOCATION(").pop()[:-2]
+        return None
+
+    
+
+
     def map_node_to_location(self, cfa: CFA[CFANode]) -> Dict[CFANode, str]:
-        location_tweets = self.get_all_location_tweet_nodes(cfa)
+        location_tweets = self.tweet_handler.get_all_location_tweet_nodes(cfa)
         result: Dict[CFANode, str] = dict()
 
         for tweet in location_tweets:
@@ -118,6 +131,6 @@ class LocationDecorator():
 
     def _decorate_initial_locations(self, localised_cfa: LocalisedCFA):
         for cfa_node in localised_cfa.nodes:
-            if self.is_location_tweet(cfa_node.node):
-                location = self.extract_location_text_from_tweet(cfa_node.node)
+            if self.tweet_handler.is_location_tweet(cfa_node.node):
+                location = self.tweet_handler.extract_location_text_from_tweet(cfa_node.node)
                 cfa_node.location = location

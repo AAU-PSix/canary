@@ -1,7 +1,6 @@
 from cfa import CFANode, CFA
 from ts import Node
 
-
 class LocalisedNode(CFANode):
     def __init__(self, node: Node, location: str = None) -> None:
         self.location: str = location
@@ -13,4 +12,3 @@ class LocalisedNode(CFANode):
 class LocalisedCFA(CFA[LocalisedNode]):
     def __init__(self, root: LocalisedNode) -> None:
         super().__init__(root)
-
