@@ -19,11 +19,7 @@ class TweetHandler:
             return None
 
     def get_all_location_tweet_nodes(self, cfa: CFA[CFANode]) -> List[CFANode]:
-        tweet_nodes: List[CFANode] = []
-        for node in cfa.nodes:
-            if self.is_location_tweet(node.node):
-                tweet_nodes.append(node)
-        return tweet_nodes
+        return [node for node in cfa.nodes if self.is_location_tweet(node.node)]
     
 
 
