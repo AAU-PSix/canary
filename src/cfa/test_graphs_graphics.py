@@ -3,7 +3,7 @@ from typing import List, Tuple
 from graphviz import Digraph
 from decorators import LocationDecorator
 from symbol_table import CSymbolTableFiller
-from tree_infestator import (
+from instrumentor import (
     TreeInfestator,
     CTreeInfestator,
     CCanaryFactory

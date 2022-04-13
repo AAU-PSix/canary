@@ -2,8 +2,7 @@
 from cfa import (
     CCFAFactory
 )
-from tree_infestator.c_canary_factory import CCanaryFactory
-from tree_infestator.c_tree_infestator import CTreeInfestator
+from instrumentor import CCanaryFactory, CTreeInfestator
 from cfa import Node
 from cfa.c_cfa_factory import CCFAFactory
 
