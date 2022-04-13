@@ -74,7 +74,7 @@ class TestLocationDecorator(TestCase):
         decorator = LocationDecorator(tree)
         expr_stmt = tree.root_node.first_named_child    
 
-        text = decorator.extract_location_text_from_tweet(expr_stmt)
+        text = decorator.tweet_handler.extract_location_text_from_tweet(expr_stmt)
 
         self.assertIsNone(text)
   
@@ -85,7 +85,7 @@ class TestLocationDecorator(TestCase):
         decorator = LocationDecorator(tree)
         expr_stmt = tree.root_node.first_named_child    
 
-        text = decorator.extract_location_text_from_tweet(expr_stmt)
+        text = decorator.tweet_handler.extract_location_text_from_tweet(expr_stmt)
 
         self.assertEqual(location_text, text)
 
@@ -96,7 +96,7 @@ class TestLocationDecorator(TestCase):
         decorator = LocationDecorator(tree)
         expr_stmt = tree.root_node.first_named_child    
 
-        text = decorator.extract_location_text_from_tweet(expr_stmt)
+        text = decorator.tweet_handler.extract_location_text_from_tweet(expr_stmt)
 
         self.assertEqual(location_text, text)
 
@@ -107,7 +107,7 @@ class TestLocationDecorator(TestCase):
         decorator = LocationDecorator(tree)
         expr_stmt = tree.root_node.first_named_child    
 
-        text = decorator.extract_location_text_from_tweet(expr_stmt)
+        text = decorator.tweet_handler.extract_location_text_from_tweet(expr_stmt)
 
         self.assertEqual(location_text, text)
     
@@ -118,7 +118,7 @@ class TestLocationDecorator(TestCase):
         decorator = LocationDecorator(tree)
         expr_stmt = tree.root_node.first_named_child
 
-        text = decorator.extract_location_text_from_tweet(expr_stmt)
+        text = decorator.tweet_handler.extract_location_text_from_tweet(expr_stmt)
         
         self.assertEqual(location_text, text)
 
@@ -167,8 +167,7 @@ class TestLocationDecorator(TestCase):
         factory = CCFAFactory(tree)
         cfa = factory.create(tree.root_node)
         decorator = LocationDecorator(tree)
-
-        localised_cfa = decorator.decorate(cfa)
+        decorator.decorate(cfa)
 
     def test_convert_cfa_to_localised_root_conversion(self) -> None:
         program = """
