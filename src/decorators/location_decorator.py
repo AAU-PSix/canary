@@ -1,4 +1,6 @@
+from platform import node
 from typing import List, Dict
+from src.cfa import cfa_edge
 from ts.c_syntax import CNodeType, CSyntax
 from ts import Tree, Node
 from cfa import CFANode, CFA, CFAEdge
@@ -50,6 +52,17 @@ class LocationDecorator():
 
         return result
 
+    def _convert_edges(self, edges: List[CFAEdge], converted_edges:List[CFAEdge],
+                       localised_cfa:LocalisedCFA, converted_nodes: List[CFANode]):
+        for edge in edges:
+            if edge in converted_edges: continue
+            localised_cfa.branch(
+                converted_nodes[edge.source],
+                converted_nodes[edge.destination],
+                edge.label
+            )
+            converted_edges.append(edge)
+
     def convert_cfa_to_localised(self, cfa: CFA[CFANode]) -> LocalisedCFA:
         # Step 1: Convert all CFANodes to Localised CFA Nodes (CFANode -> Localised CFA Node)
         converted_nodes: Dict[CFANode, LocalisedNode] = dict()
@@ -62,25 +75,9 @@ class LocationDecorator():
         # Step 2: Reconstruct all edges
         converted_edges: List[CFAEdge[CFANode]] = list()
         for cfa_node in cfa.nodes:
-            for outgoing in cfa.outgoing_edges(cfa_node):
-                if outgoing in converted_edges: continue
+            self._convert_edges(cfa.outgoing_edges(cfa_node),converted_edges, localised_cfa, converted_nodes)
+            self._convert_edges(cfa.ingoing_edges(cfa_node),converted_edges, localised_cfa, converted_nodes)
 
-                localised_cfa.branch(
-                    converted_nodes[outgoing.source],
-                    converted_nodes[outgoing.destination],
-                    outgoing.label
-                )
-                converted_edges.append(outgoing)
-
-            for ingoing in cfa.ingoing_edges(cfa_node):
-                if ingoing in converted_edges: continue
-
-                localised_cfa.branch(
-                    converted_nodes[ingoing.source],
-                    converted_nodes[ingoing.destination],
-                    ingoing.label
-                )
-                converted_edges.append(ingoing)
         return localised_cfa
 
     def decorate(self, cfa: CFA[CFANode]) -> CFA[LocalisedNode]:
