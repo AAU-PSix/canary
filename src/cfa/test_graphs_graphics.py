@@ -128,6 +128,14 @@ class TestGraphsGraphics(TestCase):
             ("for_37", "for(;;) { do { a = 1; } while(a) }"),
             ("for_38", "for(;;) { for(;;); }"),
             ("for_39", "for(;;) { int a = 0; if(a) { a = 1; } }"),
+            ("for_40", """
+             for(int i = 0; i < n; i++) {
+                 for (int j = 0; j < m; j++) {
+                     print(a);
+                 }
+                 print(b);
+             }
+             """),
             ("switch_1", """
             switch (a)
             {

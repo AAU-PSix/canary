@@ -1,4 +1,3 @@
-from distutils.command.install_egg_info import install_egg_info
 from typing import List, Dict, Callable
 from ts import (
     Node,
@@ -176,12 +175,23 @@ class CTreeInfestator(TreeInfestator):
     def infection_spore_for_statement(self, for_stmt: Node) -> List[TreeInfection]:
         body: Node = self._syntax.get_for_loop_body(for_stmt)
         # If it is a expression statement then the body is just a ";"
+        #   I.e. for(int i = 0; i < 10; ++i);
+        #   I.e. for(int i = 0; i < 10; ++i) {TWEET();;TWEET()}
         if body.is_type(CNodeType.EXPRESSION_STATEMENT):
             return self._canary_factory.create_location_tweets(
-                body, postfix=self._canary_factory.create_location_tweet()
+                body,
+                post_infix=self._canary_factory.create_location_tweet(
+                    location=self._canary_factory.previous_location
+                ),
+                postfix=self._canary_factory.create_location_tweet()
             )
         else:
-            infections: List[TreeInfection] = self._canary_factory.create_location_tweets(body)
+            infections: List[TreeInfection] = self._canary_factory.create_location_tweets(
+                body,
+                post_infix=self._canary_factory.create_location_tweet(
+                    location=self._canary_factory.previous_location
+                ),
+            )
             infections.append(self._canary_factory.append_location_tweet(for_stmt))
             return infections
 
