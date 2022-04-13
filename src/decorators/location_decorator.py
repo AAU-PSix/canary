@@ -1,6 +1,5 @@
 
 from typing import List, Dict
-from cfa.t_cfa_node import TCFANode
 from ts.c_syntax import CSyntax
 from ts import Tree
 from cfa import CFANode, CFA, CFAEdge
@@ -10,13 +9,16 @@ from .decoration_strategy import StandardDecorationStrategy, DecorationStrategy
 from .conversion_strategy import ConversionStrategy
 
 class LocationDecorator():
-    def __init__(self, tree: Tree) -> None:
+    def __init__(self, tree: Tree,
+                 conversion_strategy: ConversionStrategy = None,
+                 tweet_handler: TweetHandler = None,
+                  decoration_strategy: DecorationStrategy = None) -> None:
         self.tree: Tree = tree
         self._syntax = CSyntax()
-        self.tweet_handler = TweetHandler(self.tree)
-        self.decoration_strategy = StandardDecorationStrategy(self.tweet_handler)
-        self.edge_converter = ConversionStrategy()
 
+        self.tweet_handler = tweet_handler if tweet_handler is not None else TweetHandler(self.tree)          
+        self.decoration_strategy = decoration_strategy if decoration_strategy is not None else StandardDecorationStrategy(self.tweet_handler)
+        self.edge_converter = conversion_strategy if conversion_strategy is not None else ConversionStrategy()
             
 
 
