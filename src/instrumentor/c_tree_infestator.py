@@ -158,7 +158,12 @@ class CTreeInfestator(TreeInfestator):
 
     def infection_spore_while_statement(self, while_stmt: Node) -> List[TreeInfection]:
         body: Node = while_stmt.child_by_field(CField.BODY)
-        infections: List[TreeInfection] = self._canary_factory.create_location_tweets(body)
+        infections: List[TreeInfection] = self._canary_factory.create_location_tweets(
+            body,
+            post_infix=self._canary_factory.create_location_tweet(
+                location=self._canary_factory.previous_location
+            )
+        )
         infections.append(
             self._canary_factory.append_location_tweet(while_stmt)
         )
