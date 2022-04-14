@@ -136,6 +136,7 @@ class TestGraphsGraphics(TestCase):
                  print(b);
              }
              """),
+            ("for_41", "for(int i = 0;;) { a=2; a=2; } a=3;"),
             ("switch_1", """
             switch (a)
             {
