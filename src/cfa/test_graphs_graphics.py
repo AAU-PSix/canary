@@ -352,6 +352,11 @@ class TestGraphsGraphics(TestCase):
                 a=2;
             }
              """),
+            ("goto_1", """
+                goto SUM;
+            SUM:
+                sum = a + b;
+             """),
             ("program_1", """
              void foo() {
                  int a = 0;

@@ -67,6 +67,9 @@ class CTreeInfestator(TreeInfestator):
     def nests_of_translation_unit(self, translation_unit: Node) -> List[Node]:
         return [ translation_unit ]
 
+    def nests_of_goto_statement(self, goto_statement: Node) -> List[Node]:
+        return [ goto_statement ]
+
     def nests(self, cfa: CFA[CFANode]) -> List[Node]:
         nests: List[Node] = list()
 
@@ -109,6 +112,9 @@ class CTreeInfestator(TreeInfestator):
             # Case 9: Return statement
             if self._syntax.is_return_statement(node):
                 nests.extend(self.nests_of_return_statement(node))
+            # Case 10: Goto
+            if self._syntax.is_goto_statement(node):
+                nests.extend(self.nests_of_goto_statement(node))
 
             # Case 1: First function definition (Begin/end unit)
             if self._syntax.is_immediate_of_function_definition(node):
@@ -234,6 +240,9 @@ class CTreeInfestator(TreeInfestator):
             self._canary_factory.append_location_tweet(left_paren),
         ]
 
+    def infection_spore_goto_statement(self, node: Node) -> List[TreeInfection]:
+        return [ self._canary_factory.insert_location_tweet(node) ]
+
     def infection_spore_translation_unit(self, node: Node) -> List[TreeInfection]:
         return [ self._canary_factory.insert_location_tweet(node) ]
 
@@ -252,6 +261,7 @@ class CTreeInfestator(TreeInfestator):
             CNodeType.SWITCH_STATEMENT.value: self.infection_spore_switch_statement,
             # Unconditional jump
             CNodeType.LABELED_STATEMENT.value: self.infection_spore_labeled_statement,
+            CNodeType.GOTO_STATEMENT.value: self.infection_spore_goto_statement,
             # Additional
             CNodeType.FUNCTION_DEFINITION.value: self.infection_spore_function_definition,
             CNodeType.TRANSLATION_UNIT.value: self.infection_spore_translation_unit

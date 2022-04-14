@@ -519,8 +519,8 @@ class TestTreeInfestator(unittest.TestCase):
         cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root_node)
 
         expected: str = """
-            CANARY_TWEET_LOCATION(0);goto SUM;
-        SUM:CANARY_TWEET_LOCATION(1);
+            CANARY_TWEET_LOCATION(3);CANARY_TWEET_LOCATION(1);CANARY_TWEET_LOCATION(0);goto SUM;
+        SUM:CANARY_TWEET_LOCATION(2);
             sum = a + b;
         """
         actual = self._infestator.infect(tree, cfa)

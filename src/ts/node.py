@@ -121,6 +121,12 @@ class Node:
     def is_type(self, nodeType: NodeType) -> bool:
         return self.type == nodeType.value
 
+    def is_either_type(self, node_types: list[NodeType]) -> bool:
+        for type in node_types:
+            if self.type == type.value:
+                return True
+        return False
+
     def child_by_field_id(self, id: int) -> "Node":
         result = self._node.child_by_field_id(id)
         if result is None:

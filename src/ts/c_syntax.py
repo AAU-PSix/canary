@@ -333,5 +333,8 @@ class CSyntax(Syntax):
             [ CNodeType.TRANSLATION_UNIT ]
         ) is not None
 
+    def is_goto_statement(self, node: Node) -> bool:
+        return node is not None and node.is_type(CNodeType.GOTO_STATEMENT)
+
     def node_field(self, node_type: str) -> CNodeType:
         return CNodeType(node_type)
