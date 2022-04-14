@@ -74,7 +74,7 @@ class TestLocationDecorator(TestCase):
         decorator = LocationDecorator(tree)
         expr_stmt = tree.root_node.first_named_child    
 
-        text = decorator.extract_location_text_from_tweet(expr_stmt)
+        text = decorator.tweet_handler.extract_location_text_from_tweet(expr_stmt)
 
         self.assertIsNone(text)
   
@@ -85,7 +85,7 @@ class TestLocationDecorator(TestCase):
         decorator = LocationDecorator(tree)
         expr_stmt = tree.root_node.first_named_child    
 
-        text = decorator.extract_location_text_from_tweet(expr_stmt)
+        text = decorator.tweet_handler.extract_location_text_from_tweet(expr_stmt)
 
         self.assertEqual(location_text, text)
 
@@ -96,7 +96,7 @@ class TestLocationDecorator(TestCase):
         decorator = LocationDecorator(tree)
         expr_stmt = tree.root_node.first_named_child    
 
-        text = decorator.extract_location_text_from_tweet(expr_stmt)
+        text = decorator.tweet_handler.extract_location_text_from_tweet(expr_stmt)
 
         self.assertEqual(location_text, text)
 
@@ -107,7 +107,7 @@ class TestLocationDecorator(TestCase):
         decorator = LocationDecorator(tree)
         expr_stmt = tree.root_node.first_named_child    
 
-        text = decorator.extract_location_text_from_tweet(expr_stmt)
+        text = decorator.tweet_handler.extract_location_text_from_tweet(expr_stmt)
 
         self.assertEqual(location_text, text)
     
@@ -118,7 +118,7 @@ class TestLocationDecorator(TestCase):
         decorator = LocationDecorator(tree)
         expr_stmt = tree.root_node.first_named_child
 
-        text = decorator.extract_location_text_from_tweet(expr_stmt)
+        text = decorator.tweet_handler.extract_location_text_from_tweet(expr_stmt)
         
         self.assertEqual(location_text, text)
 
@@ -132,7 +132,7 @@ class TestLocationDecorator(TestCase):
         cfa = factory.create(tree.root_node)
         decorator = LocationDecorator(tree)
 
-        tweet_nodes = decorator.get_all_location_tweet_nodes(cfa)
+        tweet_nodes = decorator.tweet_handler.get_all_location_tweet_nodes(cfa)
         tweet_a = cfa.root
         tweet_b = cfa.nodes[1]
 
@@ -167,8 +167,7 @@ class TestLocationDecorator(TestCase):
         factory = CCFAFactory(tree)
         cfa = factory.create(tree.root_node)
         decorator = LocationDecorator(tree)
-
-        localised_cfa = decorator.decorate(cfa)
+        decorator.decorate(cfa)
 
     def test_convert_cfa_to_localised_root_conversion(self) -> None:
         program = """
