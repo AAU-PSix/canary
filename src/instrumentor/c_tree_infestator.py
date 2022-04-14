@@ -82,32 +82,32 @@ class CTreeInfestator(TreeInfestator):
             if self._syntax.is_condition_of_if(node):
                 nests.extend(self.nests_of_if_condition(node))
             # Case 2: while-loops
-            elif self._syntax.is_condition_of_while(node):
+            if self._syntax.is_condition_of_while(node):
                 nests.extend(self.nests_of_while_condition(node))
             # Case 3: do-while-loops
-            elif self._syntax.is_condition_of_do_while(node):
+            if self._syntax.is_condition_of_do_while(node):
                 nests.extend(self.nests_of_do_while_condition(node))
             # Case 4: for-loop
             # Since a for-loop can exist without a "init", "cond", and "update"
             #   The only persistent aspect of it is the body, which is always included.
-            elif self._syntax.is_body_of_for_loop(node):
+            if self._syntax.is_body_of_for_loop(node):
                 nests.extend(self.nests_of_for_loop_body(node))
             # Case 5: Switch (Cases and default)
-            elif self._syntax.is_condition_of_switch(node):
+            if self._syntax.is_condition_of_switch(node):
                 nests.extend(self.nests_of_case_value_for_switch(node))
             # Case 6: Labels
-            elif self._syntax.is_labeled_statement(node):
+            if self._syntax.is_labeled_statement(node):
                 nests.extend(self.nests_of_labeled_statement(node))
             # Case 7: Expression statement
-            elif self._syntax.is_expression_statement(node):
+            if self._syntax.is_expression_statement(node):
                 nests.extend(self.nests_of_expression_statement(node))
             # Case 8: Declaration
-            elif self._syntax.is_declaration(node):
+            if self._syntax.is_declaration(node):
                 # TODO: Declarations nests should not be added,
                 #   if they are the intiialization of a for-loop.
                 nests.extend(self.nests_of_declaration(node))
             # Case 9: Return statement
-            elif self._syntax.is_return_statement(node):
+            if self._syntax.is_return_statement(node):
                 nests.extend(self.nests_of_return_statement(node))
 
             # Case 1: First function definition (Begin/end unit)

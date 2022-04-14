@@ -143,3 +143,36 @@ class TestCSyntax2(TestCase):
         is_immediate = syntax.is_immediate_of_function_definition(second_stmt)
 
         self.assertFalse(is_immediate)
+
+    def test_is_body_of_for_loop_1(self) -> None:
+        syntax = CSyntax()
+        tree: Tree = self._parser.parse(
+            """
+            for (;;) { if(a) { a=2; } }
+            """
+        )
+        for_statement = tree.root_node.first_named_child
+        compound_statement = for_statement.first_named_child
+        if_statement = compound_statement.first_named_child
+        condition = if_statement.child_by_field(CField.CONDITION)
+        consequence = if_statement.child_by_field(CField.CONSEQUENCE)
+
+        self.assertTrue(for_statement.is_type(CNodeType.FOR_STATEMENT))
+        actual = syntax.is_body_of_for_loop(for_statement)
+        self.assertFalse(actual)
+
+        self.assertTrue(compound_statement.is_type(CNodeType.COMPOUND_STATEMENT))
+        actual = syntax.is_body_of_for_loop(compound_statement)
+        self.assertTrue(actual)
+
+        self.assertTrue(if_statement.is_type(CNodeType.IF_STATEMENT))
+        actual = syntax.is_body_of_for_loop(if_statement)
+        self.assertTrue(actual)
+
+        self.assertTrue(condition.is_type(CNodeType.PARENTHESIZED_EXPRESSION))
+        actual = syntax.is_body_of_for_loop(condition)
+        self.assertTrue(actual)
+
+        self.assertTrue(consequence.is_type(CNodeType.COMPOUND_STATEMENT))
+        actual = syntax.is_body_of_for_loop(consequence)
+        self.assertFalse(actual)

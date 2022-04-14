@@ -94,6 +94,7 @@ class CNodeType(NodeType):
     PREPROC_IFDEF = "preproc_ifdef"
     PREPROC_DEF = "preproc_def"
     CASE_STATEMENT = "case_statement"
+    PARENTHESIZED_EXPRESSION = "parenthesized_expression"
 
 class CSyntax(Syntax):
     @property
@@ -291,9 +292,11 @@ class CSyntax(Syntax):
         # A for-loop does not have the "body" as a field.
         #   for this reason we just have to check if the for-loop
         #   is the first descendent of the structure.
-        for_statement: Node = self.get_structure_descendent(node)
-        if for_statement is None or not for_statement.is_type(CNodeType.FOR_STATEMENT):
-            return False
+        for_statement: Node = node.get_immediate_descendent_of_types(
+            [ CNodeType.FOR_STATEMENT.value ]
+        )
+        if for_statement is None: return False
+
         # The last named child of the for_statement node is the body of the loop
         for_body = self.get_for_loop_body(for_statement)
         return for_body == node or \
