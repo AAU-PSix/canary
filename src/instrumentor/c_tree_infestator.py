@@ -171,7 +171,10 @@ class CTreeInfestator(TreeInfestator):
 
     def infection_spore_do_statement(self, do_stmt: Node) -> List[TreeInfection]:
         body: Node = do_stmt.child_by_field(CField.BODY)
-        infections: List[TreeInfection] = self._canary_factory.create_location_tweets(body)
+        infections: List[TreeInfection] = self._canary_factory.create_location_tweets(
+            body,
+            post_infix=self._canary_factory.create_location_tweet()
+        )
         infections.append(
             self._canary_factory.append_location_tweet(do_stmt)
         )
