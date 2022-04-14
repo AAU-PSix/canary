@@ -137,6 +137,9 @@ class TestGraphsGraphics(TestCase):
              }
              """),
             ("for_41", "for(int i = 0;;) { a=2; a=2; } a=3;"),
+            ("for_42", "for(int i = 0;;) { a=2; a=2; a=2; } a=3;"),
+            ("for_43", "for(int i = 0;;) { a=2; } a=3;"),
+            ("for_44", "for(int i = 0;;) { a=2; }"),
             ("switch_1", """
             switch (a)
             {

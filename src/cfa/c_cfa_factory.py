@@ -359,8 +359,9 @@ class CCFAFactory(CFAFactory):
             c = self._accept(body)
 
             q: CFANode = self._branch(c, j)
-            if c.node is None: self._cfa.remove(c)
-            c = q
+            if c.node is None:
+                self._cfa.remove(c)
+                c = q
 
         self._continue_break_stack.pop()
 
