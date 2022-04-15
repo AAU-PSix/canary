@@ -55,6 +55,11 @@ class CCanaryFactory(CanaryFactory):
                 self.insert(node.children[-1], post_infix),
                 self.append(node, postfix),
             ]
+        else:
+            return [
+                self.insert(node, prefix + "{" + pre_infix),
+                self.append(node, post_infix + "}" + postfix),
+            ]
         return self.surround_scope_tweet(
             node,
             prefix,

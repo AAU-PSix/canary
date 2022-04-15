@@ -34,16 +34,16 @@ class Parser:
         return self.parse(new_source, tree, encoding)
 
     def wrap(self, tree: Tree, node: Node, prefix: str = "", postfix: str = "", encoding: str = "utf8") -> Tree:
-        replacement: str = f'{prefix}{tree.contents_of(node)}{postfix}'
+        replacement: str = prefix + tree.contents_of(node) + postfix
         return self.replace(tree, node, replacement, encoding)
 
     def insert(self, tree: Tree, node: Node, text: str, encoding: str = "utf8") -> Tree:
-        replacement: str = f'{text}{tree.contents_of(node)}'
+        replacement: str = text + tree.contents_of(node)
         return self.replace(tree, node, replacement, encoding)
 
 
     def append(self, tree: Tree, node: Node, text: str, encoding: str = "utf8") -> Tree:
-        replacement: str = f'{tree.contents_of(node)}{text}'
+        replacement: str = tree.contents_of(node) + text
         return self.replace(tree, node, replacement, encoding)
 
     def insert_line(self, tree: Tree, line_num: int, line: str, encoding: str = "utf8") -> Tree:

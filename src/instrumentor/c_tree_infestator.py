@@ -120,7 +120,13 @@ class CTreeInfestator(TreeInfestator):
             if self._syntax.is_immediate_of_function_definition(node):
                 nests.extend(self.nests_of_function_definition(node))
 
-        return nests
+        # Remove duplicates
+        corrected: List[Node] = list()
+        for nest in nests:
+            if nest not in corrected:
+                corrected.append(nest)
+
+        return corrected
 
     def infection_spore_expression_statement(self, _: Node) -> List[TreeInfection]:
         return [ ]

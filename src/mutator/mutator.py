@@ -17,7 +17,7 @@ class Mutator:
     def mutate(
         self,
         tree: Tree,
-        choose_randomly: bool = True,
+        node: Node,
         encoding: str = "utf8"
     ) -> Tree:
         if tree is None:
@@ -25,18 +25,15 @@ class Mutator:
 
         binary_expression_capture: Capture = self._language.query(
             self._syntax.binary_expression_query
-        ).captures(tree.root)
+        ).captures(node)
         binary_expression_nodes: List[Node] = binary_expression_capture.nodes(
             self._syntax.get_binary_expression_operator
         )
 
         mutated_tree: Tree = tree
 
-        node: Node = None
-        if (choose_randomly): node = random.choice(binary_expression_nodes)
-        else: node = binary_expression_nodes[0]
         mutated_tree = self.mutate_binary_operator(
-            mutated_tree, node, encoding
+            mutated_tree, random.choice(binary_expression_nodes), encoding
         )
         binary_expression_nodes.remove(node)
 

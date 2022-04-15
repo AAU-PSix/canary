@@ -1,5 +1,6 @@
 from typing import List, Tuple
 import unittest
+from src.ts.c_syntax import CNodeType
 from ts import (
     LanguageLibrary,
     Tree,
@@ -484,12 +485,16 @@ class TestTreeInfestator(unittest.TestCase):
     def test_infect_for_with_only_break(self) -> None:
         program: str = "for(;;) break;"
         tree: Tree = self._parser.parse(program)
-        cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root)
-        expected =  ""
-        actual = self._infestator.infect(tree, cfa).text
+        cfg: CFA[CFANode] = CCFAFactory(tree).create(tree.root)
 
-        self.maxDiff = 1000
-        print("\n" + actual)
+        actual = self._infestator.nests(cfg)
+        
+
+        self.assertTrue(cfg.nodes[0].node.is_type(CNodeType.BREAK_STATEMENT))
+
+        self.assertEqual(len(actual), 2)
+        self.assertTrue(actual[0].is_type(CNodeType.TRANSLATION_UNIT))
+        self.assertTrue(actual[1].is_type(CNodeType.FOR_STATEMENT))
 
     def test_infect_switch(self) -> None:
         program: str = """
@@ -530,7 +535,7 @@ class TestTreeInfestator(unittest.TestCase):
         cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root)
 
         expected: str = """
-            CANARY_TWEET_LOCATION(3);CANARY_TWEET_LOCATION(1);CANARY_TWEET_LOCATION(0);goto SUM;
+            CANARY_TWEET_LOCATION(1);CANARY_TWEET_LOCATION(0);goto SUM;
         SUM:CANARY_TWEET_LOCATION(2);
             sum = a + b;
         """
