@@ -282,7 +282,8 @@ class TestTraceParser(unittest.TestCase):
             "EndUnit",
             "EndTest",
         ]
-        trace = parser.parse(lines)
+        parser.parse_lines(lines)
+        trace = parser.finish()
         sequence = [ *trace.sequence ]
 
         sequence = [ *trace.sequence ]

@@ -63,7 +63,8 @@ class RunSubsystemUseCase(
 ):
     def do(self, request: RunSubsystemRequest) -> RunSubsystemResponse:
         subprocess.run(
-            request.command,
+            # If we dont split it will attempt to open it as a file
+            request.command.split(),
             stdout=request.stdout
         )
         return RunSubsystemResponse()

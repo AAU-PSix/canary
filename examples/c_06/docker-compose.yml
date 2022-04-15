@@ -7,10 +7,20 @@ services:
     volumes:
       - ./:/input/:rw
     command:
-      - cfg
+      - mutate
       - --base=/input
       - --file=src/original.h
       - --unit=add
+      - --out=./
+      - --mutations=5
+      - --build_command=make -C /input/ build
+      - --test_command=/input/build/c_06_test
+      - --persist
+      - --log
+      # - cfg
+      # - --base=/input
+      # - --file=src/original.h
+      # - --unit=add
       # - generate
       # - --base=/input
       # - --file=src/original.h

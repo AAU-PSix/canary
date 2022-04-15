@@ -29,22 +29,25 @@ class RunTestRequest(UseCaseRequest):
 class RunTestResponse(UseCaseResponse): pass
 
 class RunTestUseCase(
-    UseCase[RunSubsystemRequest, RunSubsystemResponse]
+    UseCase[RunTestRequest, RunTestResponse]
 ):
-    def do(self, request: RunSubsystemRequest) -> RunSubsystemResponse:
+    def do(self, request: RunTestRequest) -> RunTestResponse:
         # If the stdout is a string, then create the output file
         if isinstance(request.test_stdout, str):
             test_output = open(request.test_stdout, 'w')
         else: test_output = request.test_stdout
 
         runner = RunSubsystemUseCase()
-        build_request = RunSubsystemRequest(request.build_command)
+        build_request = RunSubsystemRequest(
+            request.build_command
+        )
         test_request = RunSubsystemRequest(
             request.test_command, stdout=test_output
         )
+
         runner.do(build_request)
         runner.do(test_request)
 
         test_output.close()
 
-        return RunSubsystemResponse()
+        return RunTestResponse()

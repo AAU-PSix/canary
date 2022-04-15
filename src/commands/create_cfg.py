@@ -10,9 +10,9 @@ from ts import (
     Parser,
 )
 
-def create_cfg_from_file(
+def create_cfg(
     file: str,
-    target: str,
+    unit: str,
     out: str,
     base: str = "",
 ) -> None:
@@ -22,7 +22,7 @@ def create_cfg_from_file(
 
     # Step 1: Unit analysis
     unit_analysis_request = UnitAnalyseFileRequest(
-        f'{base}/{file}', Parser.c(), target
+        f'{base}/{file}', Parser.c(), unit
     )
     unit_analysis_response = UnitAnalyseFileUseCase().do(
         unit_analysis_request
@@ -39,6 +39,6 @@ def create_cfg_from_file(
 
     # Step 3: Draw and save cfg
     dot = create_cfg_response.cfa.draw(
-        unit_analysis_response.tree, f'{target}_cfg'
+        unit_analysis_response.tree, f'{unit}_cfg'
     )
     dot.save(directory=f'{base}/{out}')

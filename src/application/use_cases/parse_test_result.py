@@ -1,6 +1,6 @@
 
 from typing import List
-from cutest_parser import CuTestParser, FailedCuTest
+from test_results_parsing import CuTestParser, FailedCuTest
 from .use_case import *
 
 

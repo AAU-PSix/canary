@@ -4,7 +4,8 @@ from utilities import (
 )
 from commands import (
     generate_tests,
-    create_cfg
+    create_cfg,
+    mutation_analysis
 )
 
 def main():
@@ -20,10 +21,22 @@ def main():
             test=args.test
         )
     elif args.action == "cfg":
-        create_cfg.create_cfg_from_file(
+        create_cfg(
             args.file,
             args.unit,
             args.out,
+            args.base
+        )
+    elif args.action == "mutate":
+        mutation_analysis(
+            args.file,
+            args.unit,
+            args.out,
+            args.persist,
+            args.mutations,
+            args.log,
+            args.build_command,
+            args.test_command,
             args.base
         )
 

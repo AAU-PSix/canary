@@ -1,5 +1,5 @@
 import unittest
-from cutest_parser.parser_cutest import CuTestParser, FailedCuTest
+from test_results_parsing.parser_cutest import CuTestParser, FailedCuTest
 from typing import List
 
 from . import *

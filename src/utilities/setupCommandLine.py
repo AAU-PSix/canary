@@ -14,9 +14,21 @@ def setupCommandLine() -> ArgumentParser:
     )
     parser.add_argument(
         "-p", "--persist",
-        help="If true the mutants are not deleted",
+        help="If true mutated files and graphs will persist in 'out'",
         default=False,
         action="store_true"
+    )
+    parser.add_argument(
+        "-l", "--log",
+        help="If true the a log file is created at 'out'",
+        default=False,
+        action="store_true"
+    )
+    parser.add_argument(
+        "-m", "--mutations",
+        help="The amount of mutations",
+        type=int,
+        default=1000,
     )
     parser.add_argument(
         "-b", "--base",
@@ -44,6 +56,18 @@ def setupCommandLine() -> ArgumentParser:
         type=str,
         default="./",
         help="The output directory"
+    )
+    parser.add_argument(
+        "-bc", "--build_command",
+        type=str,
+        default=None,
+        help="The command used to build the project"
+    )
+    parser.add_argument(
+        "-tc", "--test_command",
+        type=str,
+        default=None,
+        help="The command used to test the project"
     )
     return parser
 
