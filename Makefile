@@ -3,7 +3,12 @@ run:
 	python3 ./src/
 
 .PHONY: test
-test:
+test: lint
+	rm -rf ./graphs/
+	python3 -m unittest discover -v src
+
+.PHONY: test-fast
+test-fast:
 	rm -rf ./graphs/
 	python3 -m unittest discover -v src
 
