@@ -107,12 +107,12 @@ def mutation_analysis(
     # Step 8: Find candidate nodes
     trace = unit_traces[0]
     candidates = [ *trace.follow(None, localised_cfg) ]
-    # tweet_handler = TweetHandler(instrumentation_response.instrumented_tree)
-    # candidates = list(filter(lambda x: not tweet_handler.is_location_tweet(x.node), candidates))
-    # candidates = list(filter(lambda x: x.node.is_either_type([
-    #     CNodeType.EXPRESSION_STATEMENT, CNodeType.RETURN_STATEMENT,
-    #     CNodeType.PARENTHESIZED_EXPRESSION, CNodeType.LABELED_STATEMENT
-    # ]), candidates))
+    tweet_handler = TweetHandler(instrumentation_response.instrumented_tree)
+    candidates = list(filter(lambda x: not tweet_handler.is_location_tweet(x.node), candidates))
+    candidates = list(filter(lambda x: x.node.is_either_type([
+        CNodeType.EXPRESSION_STATEMENT, CNodeType.RETURN_STATEMENT,
+        CNodeType.PARENTHESIZED_EXPRESSION, CNodeType.LABELED_STATEMENT
+    ]), candidates))
 
     trace_str = ""
     for location in unit_traces[0].sequence:
@@ -121,24 +121,16 @@ def mutation_analysis(
     dot = localised_cfg.draw(instrumentation_response.instrumented_tree, "localised_cfg")
     dot.save(directory=base)
     
-
-    for idx, candidate in enumerate(candidates):
-        print(candidate.node.type)
-        print(
-            instrumentation_response.instrumented_tree.contents_of(candidate.node)
-        )
-        print("\n")
-    return
     # Step 9: Run mutation analysis
     mutator = Mutator(Parser.c())
     for _ in range(1):
-        candidate = candidates[0]
-        print("Candidate")
+        # Should be the "a + b" for c_06
+        candidate = candidates[-2]
         print(
             instrumentation_response.instrumented_tree.contents_of(candidate.node)
         )
         mutated_tree = mutator.mutate(
             instrumentation_response.instrumented_tree,
-            candidate.node.named_children[0]
+            candidate.node
         )
         print(mutated_tree.text)

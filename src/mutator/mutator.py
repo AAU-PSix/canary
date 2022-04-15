@@ -30,12 +30,9 @@ class Mutator:
             self._syntax.get_binary_expression_operator
         )
 
-        mutated_tree: Tree = tree
-
         mutated_tree = self.mutate_binary_operator(
-            mutated_tree, random.choice(binary_expression_nodes), encoding
+            tree, random.choice(binary_expression_nodes), encoding
         )
-        binary_expression_nodes.remove(node)
 
         return mutated_tree
 

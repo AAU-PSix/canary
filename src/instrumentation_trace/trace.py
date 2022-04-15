@@ -35,22 +35,31 @@ class Trace():
             locations = [ location.id for location in self.sequence ]
 
         current = cfa.root
-        for location in locations:
+
+        for idx, location in enumerate(locations):
+            if idx + 1 < len(locations):
+                next_location = locations[idx + 1]
+            else: next_location = None
+
             # Step 1: Find the next location node
-            if current.location is not location:
-                outgoins = cfa.outgoing(current)
-                for outgoing in outgoins:
-                    if outgoing.location is location:
+            if current.location != location:
+                for outgoing in cfa.outgoing(current):
+                    if outgoing.location == location:
                         current = outgoing
-                        break
 
             # Step 2: Follow the current trace location
-            for trace_node in self.follow_location(location, current, cfa):
+            for trace_node in self.follow_location(
+                location,
+                current,
+                cfa,
+                next_location
+            ):
                 current = trace_node
                 yield trace_node
 
-    def follow_location(self, location: str, start: LocalisedNode, cfa: LocalisedCFA) -> Iterable[LocalisedNode]:
-        if start.location is not location: return
+    def follow_location(self, location: str, start: LocalisedNode, cfa: LocalisedCFA, next_location: str = None) -> Iterable[LocalisedNode]:
+        if start.location != location:
+            return
 
         found_end = False
         current = start
@@ -59,7 +68,12 @@ class Trace():
 
             found_end = True
             for outgoing in cfa.outgoing(current):
-                if outgoing.location is location:
+                if next_location is not None and \
+                    outgoing.location == next_location:
+                    found_end = True
+                    break
+
+                elif outgoing.location == location:
                     current = outgoing
                     found_end = False
 
