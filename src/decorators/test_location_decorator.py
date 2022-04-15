@@ -72,7 +72,7 @@ class TestLocationDecorator(TestCase):
         program = "a=2;"
         tree = self._parser.parse(program)
         decorator = LocationDecorator(tree)
-        expr_stmt = tree.root_node.first_named_child    
+        expr_stmt = tree.root.first_named_child    
 
         text = decorator.tweet_handler.extract_location_text_from_tweet(expr_stmt)
 
@@ -83,7 +83,7 @@ class TestLocationDecorator(TestCase):
         program = f"CANARY_TWEET_LOCATION({location_text});"
         tree = self._parser.parse(program)
         decorator = LocationDecorator(tree)
-        expr_stmt = tree.root_node.first_named_child    
+        expr_stmt = tree.root.first_named_child    
 
         text = decorator.tweet_handler.extract_location_text_from_tweet(expr_stmt)
 
@@ -94,7 +94,7 @@ class TestLocationDecorator(TestCase):
         program = f"CANARY_TWEET_LOCATION({location_text});"
         tree = self._parser.parse(program)
         decorator = LocationDecorator(tree)
-        expr_stmt = tree.root_node.first_named_child    
+        expr_stmt = tree.root.first_named_child    
 
         text = decorator.tweet_handler.extract_location_text_from_tweet(expr_stmt)
 
@@ -105,7 +105,7 @@ class TestLocationDecorator(TestCase):
         program = f"CANARY_TWEET_LOCATION({location_text});"
         tree = self._parser.parse(program)
         decorator = LocationDecorator(tree)
-        expr_stmt = tree.root_node.first_named_child    
+        expr_stmt = tree.root.first_named_child    
 
         text = decorator.tweet_handler.extract_location_text_from_tweet(expr_stmt)
 
@@ -116,7 +116,7 @@ class TestLocationDecorator(TestCase):
         program = f"CANARY_TWEET_LOCATION({location_text});"
         tree = self._parser.parse(program)
         decorator = LocationDecorator(tree)
-        expr_stmt = tree.root_node.first_named_child
+        expr_stmt = tree.root.first_named_child
 
         text = decorator.tweet_handler.extract_location_text_from_tweet(expr_stmt)
         
@@ -129,7 +129,7 @@ class TestLocationDecorator(TestCase):
         """
         tree = self._parser.parse(program)
         factory = CCFAFactory(tree)
-        cfa = factory.create(tree.root_node)
+        cfa = factory.create(tree.root)
         decorator = LocationDecorator(tree)
 
         tweet_nodes = decorator.tweet_handler.get_all_location_tweet_nodes(cfa)
@@ -147,7 +147,7 @@ class TestLocationDecorator(TestCase):
         """
         tree = self._parser.parse(program)
         factory = CCFAFactory(tree)
-        cfa = factory.create(tree.root_node)
+        cfa = factory.create(tree.root)
         decorator = LocationDecorator(tree)
 
         locations = decorator.map_node_to_location(cfa)
@@ -165,7 +165,7 @@ class TestLocationDecorator(TestCase):
         """
         tree = self._parser.parse(program)
         factory = CCFAFactory(tree)
-        cfa = factory.create(tree.root_node)
+        cfa = factory.create(tree.root)
         decorator = LocationDecorator(tree)
         decorator.decorate(cfa)
 
@@ -175,7 +175,7 @@ class TestLocationDecorator(TestCase):
         """
         tree = self._parser.parse(program)
         factor = CCFAFactory(tree)
-        cfa = factor.create(tree.root_node)
+        cfa = factor.create(tree.root)
         decorator = LocationDecorator(tree)
 
         localised_cfa = decorator.convert_cfa_to_localised(cfa)
@@ -190,7 +190,7 @@ class TestLocationDecorator(TestCase):
         """
         tree = self._parser.parse(program)
         factor = CCFAFactory(tree)
-        cfa = factor.create(tree.root_node)
+        cfa = factor.create(tree.root)
         decorator = LocationDecorator(tree)
 
         localised_cfa = decorator.convert_cfa_to_localised(cfa)
@@ -327,7 +327,7 @@ class TestLocationDecorator(TestCase):
         """
         tree = self._parser.parse(program)
         factory = CCFAFactory(tree)
-        cfa = factory.create(tree.root_node)
+        cfa = factory.create(tree.root)
         decorator = LocationDecorator(tree)
 
         localised_cfa = decorator.decorate(cfa)
@@ -342,7 +342,7 @@ class TestLocationDecorator(TestCase):
         """
         tree = self._parser.parse(program)
         factory = CCFAFactory(tree)
-        cfa = factory.create(tree.root_node)
+        cfa = factory.create(tree.root)
         decorator = LocationDecorator(tree)
 
         localised_cfa = decorator.decorate(cfa)

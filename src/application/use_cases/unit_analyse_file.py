@@ -80,7 +80,7 @@ class UnitAnalyseFileUseCase(
         query: Query = request.language.query(
             request.syntax.function_declaration_query
         )
-        capture: Capture = query.captures(tree.root_node)
+        capture: Capture = query.captures(tree.root)
         definitions: List[Node] = capture.nodes(
             request.syntax.get_function_definitions
         )

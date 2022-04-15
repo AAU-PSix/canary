@@ -121,7 +121,7 @@ class Node:
     def is_type(self, nodeType: NodeType) -> bool:
         return self.type == nodeType.value
 
-    def is_either_type(self, node_types: list[NodeType]) -> bool:
+    def is_either_type(self, node_types: List[NodeType]) -> bool:
         for type in node_types:
             if self.type == type.value:
                 return True

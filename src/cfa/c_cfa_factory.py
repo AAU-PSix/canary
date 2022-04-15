@@ -41,6 +41,7 @@ class CCFAFactory(CFAFactory):
             CNodeType.RETURN_STATEMENT.value: self._visit_return_statement,
             CNodeType.LABELED_STATEMENT.value: self._visit_labeled_statement,
             CNodeType.GOTO_STATEMENT.value: self._visit_goto_statement,
+            CNodeType.FUNCTION_DEFINITION.value: self._visit_function_definition,
         }
         self._current = None
         self._tree = tree
@@ -146,6 +147,10 @@ class CCFAFactory(CFAFactory):
 
     def _visit_translation_unit(self, node: Node) -> CFANode:
         return self._accept_children(node)
+
+    def _visit_function_definition(self, node: Node) -> CFANode:
+        body = node.child_by_field(CField.BODY)
+        return self._accept(body)
 
     def _visit_compound_statement(self, node: Node) -> CFANode:
         # If the compound statement is empty, then we create a node for it.

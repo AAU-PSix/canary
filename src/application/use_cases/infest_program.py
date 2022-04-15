@@ -73,8 +73,6 @@ class InfestProgramUseCase(
             graph = cfa.draw(request.tree, "cfa_fut_org")
             graph.save(directory=request.save_graph_directory)
 
-
-
         # Step 2: Infest
         canary_factory = CCanaryFactory()
         infestator = CTreeInfestator(request.parser, canary_factory)

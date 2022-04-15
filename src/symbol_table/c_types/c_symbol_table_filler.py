@@ -4,7 +4,7 @@ from ts import (
     CNodeType,
     CField,
     CSyntax,
-    Tree as TsTree
+    Tree as Tree
 )
 from .c_symbol_table import CSymbolTable
 from .c_symbol_table_builder import CSymbolTableBuilder
@@ -18,7 +18,7 @@ class CSymbolTableFiller(SymbolTableFiller):
         self._c_declarator_factory = CDeclaratorFactory()
         self._syntax = syntax
         self._type_factory = CTypeFactory()
-        self._visits: Dict[str, Callable[[TsTree, Node, CSymbolTableBuilder], None]] = {
+        self._visits: Dict[str, Callable[[Tree, Node, CSymbolTableBuilder], None]] = {
             CNodeType.TRANSLATION_UNIT.value: self._visit_translation_unit,
             CNodeType.DECLARATION.value: self._visit_declaration,
             CNodeType.COMPOUND_STATEMENT.value: self._visit_compound_statement,
@@ -39,7 +39,7 @@ class CSymbolTableFiller(SymbolTableFiller):
 
     def _accept(
         self,
-        tree: TsTree,
+        tree: Tree,
         node: Node,
         builder: LexicalSymbolTable
     ) -> None:
@@ -48,7 +48,7 @@ class CSymbolTableFiller(SymbolTableFiller):
 
     def _accept_siblings(
         self,
-        tree: TsTree,
+        tree: Tree,
         node: Node,
         builder: LexicalSymbolTable
     ) -> None:
@@ -59,7 +59,7 @@ class CSymbolTableFiller(SymbolTableFiller):
     
     def _accept_children(
         self,
-        tree: TsTree,
+        tree: Tree,
         node: Node,
         builder: LexicalSymbolTable
     ) -> None:
@@ -68,10 +68,10 @@ class CSymbolTableFiller(SymbolTableFiller):
 
     def fill(
         self,
-        tree: TsTree,
+        tree: Tree,
         root: Node = None,
     ) -> Tree[CSymbolTable]:
-        if root is None: root = tree.root_node
+        if root is None: root = tree.root
 
         builder = CSymbolTableBuilder(
             root.start_byte, root.end_byte
@@ -83,7 +83,7 @@ class CSymbolTableFiller(SymbolTableFiller):
 
     def _visit_preproc_ifdef(
         self,
-        tree: TsTree,
+        tree: Tree,
         preproc_ifdef: Node,
         builder: CSymbolTableBuilder
     ) -> None:
@@ -93,7 +93,7 @@ class CSymbolTableFiller(SymbolTableFiller):
 
     def _visit_preproc_def(
         self,
-        tree: TsTree,
+        tree: Tree,
         preproc_def: Node,
         builder: CSymbolTableBuilder
     ) -> None:
@@ -103,7 +103,7 @@ class CSymbolTableFiller(SymbolTableFiller):
 
     def _visit_translation_unit(
         self,
-        tree: TsTree,
+        tree: Tree,
         translation_unit: Node,
         builder: CSymbolTableBuilder
     ) -> None:
@@ -111,7 +111,7 @@ class CSymbolTableFiller(SymbolTableFiller):
 
     def _visit_if_statement(
         self,
-        tree: TsTree,
+        tree: Tree,
         if_statement: Node,
         builder: CSymbolTableBuilder
     ) -> None:
@@ -139,7 +139,7 @@ class CSymbolTableFiller(SymbolTableFiller):
 
     def _visit_while_statement(
         self,
-        tree: TsTree,
+        tree: Tree,
         while_statement: Node,
         builder: CSymbolTableBuilder
     ) -> None:
@@ -151,7 +151,7 @@ class CSymbolTableFiller(SymbolTableFiller):
 
     def _visit_do_statement(
         self,
-        tree: TsTree,
+        tree: Tree,
         do_statement: Node,
         builder: CSymbolTableBuilder
     ) -> None:
@@ -163,7 +163,7 @@ class CSymbolTableFiller(SymbolTableFiller):
 
     def _visit_switch_statement(
         self,
-        tree: TsTree,
+        tree: Tree,
         switch_statement: Node,
         builder: CSymbolTableBuilder
     ) -> None:
@@ -182,7 +182,7 @@ class CSymbolTableFiller(SymbolTableFiller):
 
     def _visit_for_statement(
         self,
-        tree: TsTree,
+        tree: Tree,
         for_statement: Node,
         builder: CSymbolTableBuilder
     ) -> None:
@@ -199,7 +199,7 @@ class CSymbolTableFiller(SymbolTableFiller):
 
     def _visit_compound_statement(
         self,
-        tree: TsTree,
+        tree: Tree,
         compound_statement: Node,
         builder: CSymbolTableBuilder
     ) -> None:
@@ -211,7 +211,7 @@ class CSymbolTableFiller(SymbolTableFiller):
 
     def _visit_function_definition(
         self,
-        tree: TsTree,
+        tree: Tree,
         function_definition: Node,
         builder: CSymbolTableBuilder
     ) -> None:
@@ -243,7 +243,7 @@ class CSymbolTableFiller(SymbolTableFiller):
 
     def _visit_struct_specifier(
         self,
-        tree: TsTree,
+        tree: Tree,
         struct_specifier: Node,
         builder: CSymbolTableBuilder
     ) -> None:
@@ -255,7 +255,7 @@ class CSymbolTableFiller(SymbolTableFiller):
 
     def _visit_union_specifier(
         self,
-        tree: TsTree,
+        tree: Tree,
         union_specifier: Node,
         builder: CSymbolTableBuilder
     ) -> None:
@@ -267,7 +267,7 @@ class CSymbolTableFiller(SymbolTableFiller):
 
     def _visit_enum_specifier(
         self,
-        tree: TsTree,
+        tree: Tree,
         enum_specifier: Node,
         builder: CSymbolTableBuilder
     ) -> None:
@@ -279,7 +279,7 @@ class CSymbolTableFiller(SymbolTableFiller):
 
     def _visit_type_definition(
         self,
-        tree: TsTree,
+        tree: Tree,
         type_definition: Node,
         builder: CSymbolTableBuilder
     ) -> None:
@@ -304,7 +304,7 @@ class CSymbolTableFiller(SymbolTableFiller):
 
     def _visit_declaration(
         self,
-        tree: TsTree,
+        tree: Tree,
         declaration: Node,
         builder: CSymbolTableBuilder
     ) -> None:

@@ -1,7 +1,9 @@
 import unittest
 
-from decorators import LocalisedCFA
-from src.decorators.location_decorator import LocalisedNode
+from decorators import (
+    LocalisedCFA,
+    LocalisedNode
+)
 
 from . import (
     TraceTreeBuilder,

@@ -11,7 +11,7 @@ class Tree:
         self._tree = tree
 
     @property
-    def root_node(self) -> Node:
+    def root(self) -> Node:
         return Node(self._tree.root_node)
 
     @property

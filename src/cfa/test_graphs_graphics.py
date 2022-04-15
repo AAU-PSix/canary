@@ -887,7 +887,7 @@ class TestGraphsGraphics(TestCase):
             tree: Tree = self._parser.parse(program)
             visitor: CFAFactory = CCFAFactory(tree)
 
-            root: Node = tree.root_node
+            root: Node = tree.root
             if root.named_children[0].type == "function_definition":
                 root = root.named_children[0].child_by_field_name("body")
 
@@ -909,7 +909,7 @@ class TestGraphsGraphics(TestCase):
                 #   reason we have to re-parse with a COMPLETELY NEW PARSER!!!
                 infested_tree = Parser.c().parse(infested_tree.text)
 
-                root: Node = infested_tree.root_node
+                root: Node = infested_tree.root
                 if root.named_children[0].type == "function_definition":
                     root = root.named_children[0].child_by_field_name("body")
 

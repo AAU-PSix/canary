@@ -1,7 +1,9 @@
 from typing import List, Iterable
 
-from decorators import LocalisedCFA
-from src.decorators.location_decorator import LocalisedNode
+from decorators import (
+    LocalisedCFA,
+    LocalisedNode
+)
 from .location import Location
 
 class Trace():

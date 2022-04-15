@@ -12,7 +12,7 @@ class TestNode(unittest.TestCase):
         program: str = "for(;;) { a=1; }"
         tree: Tree = self._parser.parse(program)
         # "a=1;"
-        expression_stmt: Node = tree.root_node \
+        expression_stmt: Node = tree.root \
             .first_named_child.first_named_child.first_named_child
 
         expected: bool = True
@@ -23,7 +23,7 @@ class TestNode(unittest.TestCase):
     def test(self) -> None:
         program: str = "for(;;) { a=1; }"
         tree: Tree = self._parser.parse(program)
-        for_stmt: Node = tree.root_node.first_named_child
+        for_stmt: Node = tree.root.first_named_child
         # "a=1;"
         expression_stmt: Node = for_stmt \
             .first_named_child.first_named_child

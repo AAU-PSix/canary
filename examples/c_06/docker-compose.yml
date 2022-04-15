@@ -7,8 +7,12 @@ services:
     volumes:
       - ./:/input/:rw
     command:
-      - generate
+      - cfg
       - --base=/input
       - --file=src/original.h
-      - --test=tests
-      - --persist
+      - --unit=add
+      # - generate
+      # - --base=/input
+      # - --file=src/original.h
+      # - --test=tests
+      # - --persist

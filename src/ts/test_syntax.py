@@ -17,7 +17,7 @@ class TestCSyntax2(TestCase):
 
     def test_is_field_true(self) -> None:
         tree: Tree = self._parser.parse("a=1;")
-        node_plain_assignment: Node = tree.root_node \
+        node_plain_assignment: Node = tree.root \
             .named_children[0] \
             .named_children[0] \
             .children[1]
@@ -31,7 +31,7 @@ class TestCSyntax2(TestCase):
 
     def test_is_field_false(self) -> None:
         tree: Tree = self._parser.parse("a=1;")
-        node_plain_assignment: Node = tree.root_node \
+        node_plain_assignment: Node = tree.root \
             .named_children[0] \
             .named_children[0] \
             .children[1]
@@ -45,7 +45,7 @@ class TestCSyntax2(TestCase):
 
     def test_in_fields_true(self) -> None:
         tree: Tree = self._parser.parse("a=1;")
-        node_plain_assignment: Node = tree.root_node \
+        node_plain_assignment: Node = tree.root \
             .named_children[0] \
             .named_children[0] \
             .children[1]
@@ -59,7 +59,7 @@ class TestCSyntax2(TestCase):
 
     def test_in_fields_false(self) -> None:
         tree: Tree = self._parser.parse("a=1;")
-        node_plain_assignment: Node = tree.root_node \
+        node_plain_assignment: Node = tree.root \
             .named_children[0] \
             .named_children[0] \
             .children[1]
@@ -73,7 +73,7 @@ class TestCSyntax2(TestCase):
 
     def test_node_field_plain_assignment(self) -> None:
         tree: Tree = self._parser.parse("a=1;")
-        node_plain_assignment: Node = tree.root_node \
+        node_plain_assignment: Node = tree.root \
             .named_children[0] \
             .named_children[0] \
             .children[1]
@@ -87,7 +87,7 @@ class TestCSyntax2(TestCase):
 
     def test_get_immediate_descendent_of_types_field(self) -> None:
         tree: Tree = self._parser.parse("void Foo() { return; }")
-        return_stmt: Node = tree.root_node.named_children[0] \
+        return_stmt: Node = tree.root.named_children[0] \
             .child_by_field(CField.BODY) \
             .named_children[0]
 
@@ -99,7 +99,7 @@ class TestCSyntax2(TestCase):
 
     def test_get_immediate_descendent_of_types_field_none(self) -> None:
         tree: Tree = self._parser.parse("void Foo() { a=b; return; }")
-        return_stmt: Node = tree.root_node.named_children[0] \
+        return_stmt: Node = tree.root.named_children[0] \
             .child_by_field(CField.BODY) \
             .named_children[1]
 
@@ -117,7 +117,7 @@ class TestCSyntax2(TestCase):
             return sum;
         }
         """)
-        first_stmt: Node = tree.root_node.named_children[0] \
+        first_stmt: Node = tree.root.named_children[0] \
             .child_by_field(CField.BODY) \
             .named_children[0]
         syntax = CSyntax()
@@ -135,7 +135,7 @@ class TestCSyntax2(TestCase):
         }
         """
         )
-        second_stmt: Node = tree.root_node.named_children[0] \
+        second_stmt: Node = tree.root.named_children[0] \
             .child_by_field(CField.BODY) \
             .named_children[1]
         syntax = CSyntax()
@@ -151,7 +151,7 @@ class TestCSyntax2(TestCase):
             for (;;) { if(a) { a=2; } }
             """
         )
-        for_statement = tree.root_node.first_named_child
+        for_statement = tree.root.first_named_child
         compound_statement = for_statement.first_named_child
         if_statement = compound_statement.first_named_child
         condition = if_statement.child_by_field(CField.CONDITION)

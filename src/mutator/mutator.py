@@ -25,7 +25,7 @@ class Mutator:
 
         binary_expression_capture: Capture = self._language.query(
             self._syntax.binary_expression_query
-        ).captures(tree.root_node)
+        ).captures(tree.root)
         binary_expression_nodes: List[Node] = binary_expression_capture.nodes(
             self._syntax.get_binary_expression_operator
         )

@@ -86,13 +86,13 @@ class TestNode(unittest.TestCase):
 
     def test_type(self) -> None:
         tree: Tree = self._parser.parse("console.log(\"Hello, World!\")")
-        root: Node = tree.root_node
+        root: Node = tree.root
         self.assertIsInstance(root.type, str)
         self.assertEqual(root.type, "program")
 
     def test_start_point(self) -> None:
         tree: Tree = self._parser.parse("console.log(\"Hello, World!\")")
-        root: Node = tree.root_node
+        root: Node = tree.root
         point: FilePoint = root.start_point
         self.assertIsInstance(point, FilePoint)
         self.assertEqual(point.line, 0)
@@ -100,14 +100,14 @@ class TestNode(unittest.TestCase):
 
     def test_start_byte(self) -> None:
         tree: Tree = self._parser.parse("console.log(\"Hello, World!\")")
-        root: Node = tree.root_node
+        root: Node = tree.root
         start_byte: int = root.start_byte
         self.assertIsInstance(start_byte, int)
         self.assertEqual(start_byte, 0)
 
     def test_end_point(self) -> None:
         tree: Tree = self._parser.parse("console.log(\"Hello, World!\")")
-        root: Node = tree.root_node
+        root: Node = tree.root
         point = root.start_point
         self.assertIsInstance(point, FilePoint)
         self.assertEqual(point.line, 0)
@@ -116,7 +116,7 @@ class TestNode(unittest.TestCase):
     def test_end_byte(self) -> None:
         source: int = "console.log(\"Hello, World!\")"
         tree: Tree = self._parser.parse(source)
-        root: Node = tree.root_node
+        root: Node = tree.root
         end_byte: int = root.end_byte
         self.assertIsInstance(end_byte, int)
         self.assertEqual(end_byte, len(source))
@@ -130,7 +130,7 @@ class TestTree(unittest.TestCase):
 
     def test_root_node(self) -> None:
         tree: Tree = self._parser.parse("console.log(\"Hello, World!\")")
-        root: Node = tree.root_node
+        root: Node = tree.root
         self.assertIsInstance(root, Node)
 
 
@@ -214,7 +214,7 @@ class TestSyntaxForC(unittest.TestCase):
     def test_no_function_return_empty_list(self):
         root: Node = self._parser.parse(
             "int a = 2"
-        ).root_node
+        ).root
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
             self._language.syntax.get_function_definitions
@@ -226,7 +226,7 @@ class TestSyntaxForC(unittest.TestCase):
     def test_single_int_typed_function_gives_single_result(self):
         root: Node = self._parser.parse(
             "int myfunction() {}"
-        ).root_node
+        ).root
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
             self._language.syntax.get_function_definitions
@@ -241,7 +241,7 @@ class TestSyntaxForC(unittest.TestCase):
              int myfunction2() {} \
              int myfunction3() {} \
              int myfunction4() {}"
-        ).root_node
+        ).root
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
             self._language.syntax.get_function_definitions
@@ -253,7 +253,7 @@ class TestSyntaxForC(unittest.TestCase):
     def test_can_find_int_function_with_single_byte_parameter(self):
         root: Node = self._parser.parse(
             "int myfunction(byte a) { return 0; }"
-        ).root_node
+        ).root
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
             self._language.syntax.get_function_definitions
@@ -263,7 +263,7 @@ class TestSyntaxForC(unittest.TestCase):
         self.assertTrue(None not in result)
 
     def test_can_find_if_statement(self):
-        root: Node = self._parser.parse("void iff(){if (a == 2){} return;}").root_node
+        root: Node = self._parser.parse("void iff(){if (a == 2){} return;}").root
         capture: Capture = self._query_if_declaration.captures(root)
         results: List[Node] = capture.nodes(self._language.syntax.get_if_declaration)
 
@@ -272,7 +272,7 @@ class TestSyntaxForC(unittest.TestCase):
         self.assertTrue(None not in results)
 
     def test_can_find_two_if_statement(self):
-        root: Node = self._parser.parse("void iff(){if (a == 2){} if (a == 2){} return;}").root_node
+        root: Node = self._parser.parse("void iff(){if (a == 2){} if (a == 2){} return;}").root
         capture: Capture = self._query_if_declaration.captures(root)
         results: List[Node] = capture.nodes(self._language.syntax.get_if_declaration)
 
@@ -281,7 +281,7 @@ class TestSyntaxForC(unittest.TestCase):
         self.assertTrue(None not in results)
 
     def test_can_find_if_with_else(self):
-        root: Node = self._parser.parse("void iff(){if (a == 2 ) {} else {} return;}").root_node
+        root: Node = self._parser.parse("void iff(){if (a == 2 ) {} else {} return;}").root
         capture: Capture = self._query_if_declaration.captures(root)
         results: List[Node] = capture.nodes(self._language.syntax.get_if_declaration)
 
@@ -290,7 +290,7 @@ class TestSyntaxForC(unittest.TestCase):
         self.assertTrue(None not in results)
 
     def test_can_find_if_without_brackets(self):
-        root: Node = self._parser.parse("void iff(){if (a == 2 ) return; return;}").root_node
+        root: Node = self._parser.parse("void iff(){if (a == 2 ) return; return;}").root
         capture: Capture = self._query_if_declaration.captures(root)
         results: List[Node] = capture.nodes(self._language.syntax.get_if_declaration)
 
@@ -299,7 +299,7 @@ class TestSyntaxForC(unittest.TestCase):
         self.assertTrue(None not in results)
 
     def test_can_find_if_with_else_without_brackets(self):
-        root: Node = self._parser.parse("void iff(){if (a == 2 ) return; else return;}").root_node
+        root: Node = self._parser.parse("void iff(){if (a == 2 ) return; else return;}").root
         capture: Capture = self._query_if_declaration.captures(root)
         results: List[Node] = capture.nodes(self._language.syntax.get_if_declaration)
 
@@ -308,7 +308,7 @@ class TestSyntaxForC(unittest.TestCase):
         self.assertTrue(None not in results)
 
     def test_can_find_no_if_statement(self):
-        root: Node = self._parser.parse("void iff(){return;}").root_node
+        root: Node = self._parser.parse("void iff(){return;}").root
         capture: Capture = self._query_if_declaration.captures(root)
         results: List[Node] = capture.nodes(self._language.syntax.get_if_declaration)
 
@@ -318,7 +318,7 @@ class TestSyntaxForC(unittest.TestCase):
     def test_can_find_int_function_with_multiple_byte_parameter(self):
         root: Node = self._parser.parse(
             "int myfunction(byte a, byte b, byte c) { return 1; }"
-        ).root_node
+        ).root
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
             self._language.syntax.get_function_definitions
@@ -330,7 +330,7 @@ class TestSyntaxForC(unittest.TestCase):
     def test_can_find_int_function_with_single_char_parameter(self):
         root: Node = self._parser.parse(
             "int myfunction(char a) { return 0;}"
-        ).root_node
+        ).root
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
             self._language.syntax.get_function_definitions
@@ -342,7 +342,7 @@ class TestSyntaxForC(unittest.TestCase):
     def test_can_find_int_function_with_multiple_char_parameter(self):
         root: Node = self._parser.parse(
             "int myfunction(char a, char b, char c) { return 1; }"
-        ).root_node
+        ).root
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
             self._language.syntax.get_function_definitions
@@ -354,7 +354,7 @@ class TestSyntaxForC(unittest.TestCase):
     def test_can_find_void_function_no_parameter(self):
         root: Node = self._parser.parse(
             "void myfunction() { return; }"
-        ).root_node
+        ).root
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
             self._language.syntax.get_function_definitions
@@ -366,7 +366,7 @@ class TestSyntaxForC(unittest.TestCase):
     def test_can_find_void_function_with_parameters(self):
         root: Node = self._parser.parse(
             "void myfunction(int a, char b, byte c) { return; }"
-        ).root_node
+        ).root
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
             self._language.syntax.get_function_definitions
@@ -378,7 +378,7 @@ class TestSyntaxForC(unittest.TestCase):
     def test_can_find_void_function_with_no_parameters(self):
         root: Node = self._parser.parse(
             "void myfunction() { return; }"
-        ).root_node
+        ).root
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
             self._language.syntax.get_function_definitions
@@ -392,7 +392,7 @@ class TestSyntaxForC(unittest.TestCase):
             "void a() { return; } \
              int b(int c, double d) { return 2; } \
              float e(char f) { return g; }"
-        ).root_node
+        ).root
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
             self._language.syntax.get_function_definitions
@@ -404,7 +404,7 @@ class TestSyntaxForC(unittest.TestCase):
     def test_can_find_point_return_type(self):
         root: Node = self._parser.parse(
             "int* main() {}"
-        ).root_node
+        ).root
         capture: Capture = self._query_function_declaration.captures(root)
         result: List[Node] = capture.nodes(
             self._language.syntax.get_function_definitions
@@ -420,7 +420,7 @@ class TestSyntaxForC(unittest.TestCase):
             char author[50]; \
             char subject[100]; \
             int book_id; \
-        }").root_node
+        }").root
         capture: Capture = self._query_struct_declaration.captures(root)
         result: List[Node] = capture.nodes(
             self._language.syntax.get_struct_declaration
@@ -436,7 +436,7 @@ class TestSyntaxForC(unittest.TestCase):
             char author[50]; \
             char subject[100]; \
             int book_id; \
-        } myStruct").root_node
+        } myStruct").root
         capture: Capture = self._query_struct_declaration.captures(root)
         result: List[Node] = capture.nodes(
             self._language.syntax.get_struct_declaration

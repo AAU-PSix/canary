@@ -26,7 +26,7 @@ class TestMutatorObom(unittest.TestCase):
         return super().setUp()
 
     def parse_first_binary_expression_operator(self, binary_query: Query, expression: str) -> Node:
-            root: Node = self._parser.parse(expression).root_node
+            root: Node = self._parser.parse(expression).root
             self.assertEqual(root.type, "translation_unit")
             captures: Capture = binary_query.captures(root)
             self.assertEqual(len(captures), 1)

@@ -27,7 +27,7 @@ from ts import (
 
 from symbol_table import CSymbolTableFiller, CSyntax
 
-def generate(
+def generate_tests(
     file: str,
     build_cmd: Union[str, List[str]],
     test_cmd: Union[str, List[str]],

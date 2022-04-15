@@ -12,7 +12,7 @@ class FunctionCall(Expression):
         return self._name
 
     @property
-    def actual_parameters(self) -> "list[Expression]":
+    def actual_parameters(self) -> "List[Expression]":
         return self._actual_parameters
 
     def accept(self, visitor: Any):

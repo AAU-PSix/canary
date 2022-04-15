@@ -10,7 +10,7 @@ def setupCommandLine() -> ArgumentParser:
         type=str,
         help="The action to do",
         default="generate",
-        choices=["generate", "mutate", "canaries"]
+        choices=["tests", "cfg", "mutate", "instrument"]
     )
     parser.add_argument(
         "-p", "--persist",
@@ -38,6 +38,12 @@ def setupCommandLine() -> ArgumentParser:
         "-u", "--unit",
         type=str,
         help="The unit to test"
+    )
+    parser.add_argument(
+        "-o", "--out",
+        type=str,
+        default="./",
+        help="The output directory"
     )
     return parser
 
