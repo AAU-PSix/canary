@@ -57,7 +57,17 @@ class InfestProgramRequest(UseCaseRequest):
     def save_graph_directory(self) -> str:
         return self._save_graph_directory
 
-class InfestProgramResponse(UseCaseResponse): pass
+class InfestProgramResponse(UseCaseResponse):
+    def __init__(
+        self,
+        instrumented_tree: Tree,
+    ) -> None:
+        self._instrumented_tree = instrumented_tree
+        super().__init__()
+
+    @property
+    def instrumented_tree(self) -> Tree:
+        return self._instrumented_tree
 
 class InfestProgramUseCase(
     UseCase[InfestProgramRequest, InfestProgramResponse]
@@ -70,17 +80,19 @@ class InfestProgramUseCase(
         )
         cfa = cfa_factory.create(unit_function_body)
         if request.save_graph:
-            graph = cfa.draw(request.tree, "cfa_fut_org")
+            graph = cfa.draw(request.tree, "cfg")
             graph.save(directory=request.save_graph_directory)
 
-        # Step 2: Infest
+        # Step 2: Instrument
         canary_factory = CCanaryFactory()
         infestator = CTreeInfestator(request.parser, canary_factory)
-        infested_tree = infestator.infect(request.tree, cfa)
+        instrumented_tree = infestator.infect(request.tree, cfa)
 
-        # Step 3: Write the infested file
-        file: FileHandler = open(request.filepath, "w+")
-        file.write(infested_tree.text)
+        # Step 3: Write the instrumented file
+        file = open(request.filepath, "w+")
+        file.write(instrumented_tree.text)
         file.close()
 
-        return InfestProgramResponse()
+        return InfestProgramResponse(
+            request.parser.parse(instrumented_tree.text)
+        )

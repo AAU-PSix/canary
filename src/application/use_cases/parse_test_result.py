@@ -1,40 +1,43 @@
-
+from os import linesep
 from typing import List
-from test_results_parsing import CuTestParser, FailedCuTest
+from test_results_parsing import (
+    TestResults,
+    CuTestResultsParser
+)
 from .use_case import *
-
 
 class ParseTestResultRequest(UseCaseRequest):
     def __init__(
         self,
-        test_result_file_path: str
+        file_path: str
     ) -> None:
-        self._test_result_file_path = test_result_file_path
+        self._file_path = file_path
         super().__init__()
 
     @property
-    def test_result_file_path(self) -> str:
-        return self._test_result_file_path
+    def file_path(self) -> str:
+        return self._file_path
 
 
 class ParseTestResultResponse(UseCaseResponse): 
     def __init__(
         self, 
-        test_result
+        test_result: TestResults
     ) -> None:
-        self._test_results: List[FailedCuTest] = test_result
+        self._test_results = test_result
         super().__init__()
     
     @property
-    def test_results(self) -> List[FailedCuTest]:
+    def test_results(self) -> TestResults:
         return self._test_results
 
 class ParseTestResultUseCase(
     UseCase[ParseTestResultRequest, ParseTestResultResponse]
 ):  
     def do(self, request: ParseTestResultRequest) -> ParseTestResultResponse:
-        test_result_parser = CuTestParser()
-        test_result_file = test_result_parser.read_parse_file(request._test_result_file_path)
-        test_results = test_result_parser.parse(test_result_file)
-
+        parser = CuTestResultsParser()
+        file = open(request.file_path, "r")
+        contents: str = file.read()
+        lines = contents.split(linesep)
+        test_results = parser.parse(lines)
         return ParseTestResultResponse(test_results)

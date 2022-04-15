@@ -7,10 +7,10 @@
 
 void addTest(CuTest *ct) {
 	int a = 0;
-	int b = 1;
+	int b = 0;
 	
 	int actual = add(a, b);
-	int expected = 1;
+	int expected = 0;
 
 	CuAssertIntEquals(ct, expected, actual);
 }

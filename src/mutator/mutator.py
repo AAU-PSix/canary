@@ -83,7 +83,7 @@ class Mutator:
         Returns:
             str: the replacement of the operator node
         """
-        
+
         # Domain: Arithmetic assignment
         if self._syntax.in_types(node.type, self._syntax.arithmetic_compound_assignment):
             return self.random_operator_range(

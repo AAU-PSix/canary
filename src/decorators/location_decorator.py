@@ -23,7 +23,6 @@ class LocationDecorator():
         self.decoration_strategy = decoration_strategy if decoration_strategy is not None else StandardDecorationStrategy(self.tweet_handler)
         self.edge_converter = conversion_strategy if conversion_strategy is not None else ConversionStrategy()
 
-
     def map_node_to_location(self, cfa: CFA[CFANode]) -> Dict[CFANode, str]:
         location_tweets = self.tweet_handler.get_all_location_tweet_nodes(cfa)
         result: Dict[CFANode, str] = dict()
@@ -31,7 +30,6 @@ class LocationDecorator():
             location = self.tweet_handler.extract_location_text_from_tweet(tweet.node)
             result[location] = tweet
         return result
-
 
     def decorate(self, cfa: CFA[CFANode]) -> CFA[LocalisedNode]:
         localised_cfa: CFA[LocalisedNode] = self.convert_cfa_to_localised(cfa)

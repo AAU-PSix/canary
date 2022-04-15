@@ -3,7 +3,8 @@ run:
 	python3 ./src/
 
 .PHONY: test
-test: lint
+test:
+	rm -rf ./graphs/
 	python3 -m unittest discover -v src
 
 .PHONY: install

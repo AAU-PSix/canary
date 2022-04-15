@@ -350,30 +350,46 @@ class CCFAFactory(CFAFactory):
         if has_cond and has_update:
             j: CFANode = CFANode(None)
             j = self._branch(self._current, j, "T")
+
+            self._continue_break_stack.append((u, f))
             self._accept(body)
+            self._continue_break_stack.pop()
             self._next(u)
-            self._next(c)
+
+            self._branch(self._current, c)
+            return self._branch(c, f, "F")
         elif has_cond and not has_update:
             j: CFANode = CFANode(None)
             j = self._branch(self._current, j, "T")
-            self._accept(body)
-            self._next(c)
+
+            self._continue_break_stack.append((j, f))
+            l: CFANode = self._accept(body)
+            self._continue_break_stack.pop()
+
+            q: CFANode = self._branch(l, j)
+            if l.node is None: self._cfa.remove(l)
+
+            return self._branch(c, f, "F")
         elif not has_cond and not has_update:
-            j: CFANode = CFANode(None)
-            j = self._next(j)
-            c = self._accept(body)
+            j: CFANode = self._next(CFANode(None))
 
-            q: CFANode = self._branch(c, j)
-            if c.node is None:
-                self._cfa.remove(c)
-                c = q
+            self._continue_break_stack.append((j, f))
+            l: CFANode = self._accept(body)
+            self._continue_break_stack.pop()
 
-        self._continue_break_stack.pop()
+            q: CFANode = self._branch(l, j)
+            if l.node is None: self._cfa.remove(l)
 
-        # If we dont have a conditional, then we should not
-        #   denote the transition with "F" marking the "false"
-        #   branch, ebcause there are no predicate to be "false"
-        return self._branch(c, f, "F" if has_cond else "")
+            return self._branch(q, f)
+        elif not has_cond and has_update:
+            j: CFANode = self._next(CFANode(None))
+
+            self._continue_break_stack.append((j, f))
+            self._accept(body)
+            self._continue_break_stack.pop()
+            self._next(u)
+            
+            return self._branch(self._current, j)
 
     def _visit_labeled_statement(self, node: Node) -> CFANode:
         label: Node = node.child_by_field(CField.LABEL)

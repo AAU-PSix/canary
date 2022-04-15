@@ -1,4 +1,4 @@
-from time import sleep
+from random import choice
 from application import (
     InitializeSystemRequest,
     InitializeSystemUseCase,
@@ -9,10 +9,18 @@ from application import (
     InfestProgramRequest,
     InfestProgramUseCase,
     RevertRequest,
-    RevertUseCase
+    RevertUseCase,
+    ParseTestResultRequest,
+    ParseTestResultUseCase,
+    UnitAnalyseTreeRequest,
+    UnitAnalyseTreeUseCase
 )
+from cfa import CCFAFactory
+from decorators import LocationDecorator, TweetHandler
 from ts import (
     Parser,
+    LanguageLibrary,
+    CNodeType,
 )
 
 def mutation_analysis(
@@ -35,33 +43,89 @@ def mutation_analysis(
     InitializeSystemUseCase().do(initialize_system_request)
 
     # Step 1: Unit analysis
-    unit_analysis_request = UnitAnalyseFileRequest(
+    unit_analysis_of_file_request = UnitAnalyseFileRequest(
         f'{base}/{file}', Parser.c(), unit
     )
-    unit_analysis_response = UnitAnalyseFileUseCase().do(
-        unit_analysis_request
+    unit_analysis_of_file_response = UnitAnalyseFileUseCase().do(
+        unit_analysis_of_file_request
     )
 
     # Step 2: Instrument the mutable version
     instrumentation_request = InfestProgramRequest(
         Parser.c(),
-        unit_analysis_response.tree,
-        unit_analysis_response.unit_function,
-        unit_analysis_request.filepath
+        unit_analysis_of_file_response.tree,
+        unit_analysis_of_file_response.unit_function,
+        unit_analysis_of_file_request.filepath
     )
-    InfestProgramUseCase().do(instrumentation_request)
+    instrumentation_response = InfestProgramUseCase().do(
+        instrumentation_request
+    )
 
-    # Step 3: Run tests on original program
+    # Step 3: Get the localised CFG
+    unit_analysis_of_tree_request = UnitAnalyseTreeRequest(
+        instrumentation_response.instrumented_tree,
+        LanguageLibrary.c(),
+        unit_analysis_of_file_request.unit
+    )
+    unit_analysis_of_tree_response = UnitAnalyseTreeUseCase().do(
+        unit_analysis_of_tree_request
+    )
+    instrumented_cfa = CCFAFactory(instrumentation_response.instrumented_tree).create(
+        unit_analysis_of_tree_response.unit_function
+    )
+    localised_cfg = LocationDecorator(instrumentation_response.instrumented_tree).decorate(
+        instrumented_cfa
+    )
+
+    # Step 4: Run tests on original program
     original_test_request = RunTestRequest(
         build_command, test_command, f'{base}/{out}/original_test_results.txt'
     )
     RunTestUseCase().do(original_test_request)
 
-    # Step 4: Revert the file contents to before unit analysis
+    # Step 5: Revert the file contents to before unit analysis
     revert_request = RevertRequest(
-        unit_analysis_request.filepath,
-        unit_analysis_response.tree.text
+        unit_analysis_of_file_request.filepath,
+        unit_analysis_of_file_response.tree.text
     )
     RevertUseCase().do(revert_request)
 
-    # Step 5: Parse test results
+    # Step 6: Parse test results
+    parse_test_results_request = ParseTestResultRequest(
+        original_test_request.test_stdout
+    )
+    parse_test_results_response = ParseTestResultUseCase().do(
+        parse_test_results_request
+    )
+
+    # Step 7: Get individual unit sequences
+    start_location_id = localised_cfg.root.location
+    unit_traces = parse_test_results_response.test_results.trace.split_on_location(
+        start_location_id
+    )
+
+    # Step 8: Find candidate nodes
+    trace = unit_traces[0]
+    candidates = [ *trace.follow(None, localised_cfg) ]
+    tweet_handler = TweetHandler(instrumentation_response.instrumented_tree)
+    candidates = list(filter(lambda x: not tweet_handler.is_location_tweet(x.node), candidates))
+    candidates = list(filter(lambda x: x.node.is_either_type([
+        CNodeType.EXPRESSION_STATEMENT, CNodeType.RETURN_STATEMENT,
+        CNodeType.PARENTHESIZED_EXPRESSION, CNodeType.LABELED_STATEMENT
+    ]), candidates))
+
+    trace_str = ""
+    for location in unit_traces[0].sequence:
+        trace_str += f'{location.id} '
+    print(trace_str)
+    dot = localised_cfg.draw(instrumentation_response.instrumented_tree, "localised_cfg")
+    dot.save(directory=base)
+
+    for candidate in candidates:
+        print(candidate.node.type)
+        print(instrumentation_response.instrumented_tree.contents_of(candidate.node))
+
+    # Step 9: Run mutation analysis
+    # for _ in range(mutations):
+    #     target = choice(candidates)
+    #     print(target.node.type)

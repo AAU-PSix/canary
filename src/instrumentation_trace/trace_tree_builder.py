@@ -7,6 +7,8 @@ from .trace import Trace
 class TraceTreeBuilder():
     def __init__(self) -> None:
         self._unit_stack: List[Unit] = list()
+        self._sequence: List[Location] = list()
+        self._current_test = None
 
     @property
     def current_unit(self) -> Unit:

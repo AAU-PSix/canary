@@ -140,6 +140,7 @@ class TestGraphsGraphics(TestCase):
             ("for_42", "for(int i = 0;;) { a=2; a=2; a=2; } a=3;"),
             ("for_43", "for(int i = 0;;) { a=2; } a=3;"),
             ("for_44", "for(int i = 0;;) { a=2; }"),
+            ("for_45", "for (;0;) a=a;"),
             ("switch_1", """
             switch (a)
             {
@@ -880,7 +881,31 @@ class TestGraphsGraphics(TestCase):
                   d = 3;
               }
              """
-            )
+            ),
+            ("program_11", """
+              for(;;) break;
+              for (;0;) a=a;
+             """),
+            ("program_12", """
+int add(int a, int b) {
+    do { a=a; } while(0);
+
+    while(1) { a=a; break; }
+    for(;;) { }
+
+    for (;0;) a=a;
+
+    if (a==a) { a=a; }
+    else if(b==b) { b=b; }
+    else { b=b; }
+
+    int sum;
+    goto SUM;
+SUM:
+    sum = a + b;
+    return sum;
+}
+             """)
         ]
 
         def draw_normal_cfa(name: str, program: str):

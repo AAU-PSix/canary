@@ -256,8 +256,63 @@ class TestTraceParser(unittest.TestCase):
         self.assertEqual(location_10.unit.name, "Tommy1")
         self.assertEqual(location_10.id, "10")
 
+    def test_parse_single_deferred_trace_no_unit_no_test(self) -> None:
+        parser = TraceParser(
+            TraceTreeBuilder()
+        )
+        lines_1 = [
+            "Location=1",
+            "Location=2"
+        ]
+        lines_2 = [
+            "Location=3"
+        ]
+
+        parser.parse(lines_1)
+        parser.parse(lines_2)
+        trace = parser.finish()
+        sequence = [ *trace.sequence ]
+
+        location_1 = sequence[0]
+        self.assertEqual(location_1.id, "1")
+        self.assertIsNone(location_1.test)
+        self.assertIsNone(location_1.unit)
+
+        location_2 = trace.sequence[1]
+        self.assertEqual(location_2.id, "2")
+        self.assertIsNone(location_2.test)
+        self.assertIsNone(location_2.unit)
+
+        location_3 = trace.sequence[2]
+        self.assertEqual(location_3.id, "3")
+        self.assertIsNone(location_3.test)
+        self.assertIsNone(location_3.unit)
+
+    def test_parse_invalid_input_stop_at_it(self) -> None:
+        parser = TraceParser(
+            TraceTreeBuilder()
+        )
+        lines = iter([
+            "Location=1",
+            "THIS IS AN ERROR",
+            "Location=2"
+        ])
+
+        parser.parse(lines)
+        trace = parser.finish()
+        sequence = [ *trace.sequence ]
+
+        self.assertEqual(len(sequence), 1)
+
+        location_1 = sequence[0]
+        self.assertEqual(location_1.id, "1")
+        self.assertIsNone(location_1.test)
+        self.assertIsNone(location_1.unit)
+
     def test_parse_trace_log(self) -> None:
-        parser = TraceParser()
+        parser = TraceParser(
+            TraceTreeBuilder()
+        )
         lines = [
             "BeginTest=Andreas",
             "BeginUnit=Tommy1",
@@ -282,7 +337,7 @@ class TestTraceParser(unittest.TestCase):
             "EndUnit",
             "EndTest",
         ]
-        parser.parse_lines(lines)
+        parser.parse(lines)
         trace = parser.finish()
         sequence = [ *trace.sequence ]
 

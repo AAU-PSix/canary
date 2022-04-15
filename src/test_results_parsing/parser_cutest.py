@@ -24,7 +24,6 @@ class CuTestParser:
 
         return line_list
 
-
     def parse(self, lines : List[str]) -> List[FailedCuTest]:
 
         CuTestList : List[FailedCuTest] = []
@@ -91,12 +90,3 @@ class CuTestParser:
             return error
         else:
             return None
-
-# parser = CuTestParser()
-# # Run this from src/cutest_parser
-# cwd = os.getcwd()
-# parsed_lines = parser.read_parse_file(cwd + "/test_strings/original.h.mut.copy.results")
-# CuTestList = parser.parse(parsed_lines)
-
-# for test in CuTestList:
-#     pprint(vars(test))

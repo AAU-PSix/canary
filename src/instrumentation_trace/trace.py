@@ -1,3 +1,4 @@
+from inspect import trace
 from typing import List, Iterable
 
 from decorators import (
@@ -17,6 +18,9 @@ class Trace():
     def sequence(self) -> Iterable[Location]:
         return self._sequence
 
+    def __len__(self) -> int:
+        return len(self.sequence)
+
     def in_unit(self, unit: str) -> Iterable[Location]:
         result: List[Location] = list()
         for location in self.sequence:
@@ -25,7 +29,10 @@ class Trace():
         return result
 
     def follow(self, unit_name: str, cfa: LocalisedCFA) -> Iterable[LocalisedNode]:
-        locations = [ location.id for location in self.in_unit(unit_name) ]
+        if unit_name is not None:
+            locations = [ location.id for location in self.in_unit(unit_name) ]
+        else:
+            locations = [ location.id for location in self.sequence ]
 
         current = cfa.root
         for location in locations:
@@ -55,3 +62,15 @@ class Trace():
                 if outgoing.location is location:
                     current = outgoing
                     found_end = False
+
+    def split_on_location(self, location: str) -> List["Trace"]:
+        traces: List["Trace"] = list()
+        sequence: List[Location] = None
+        for curr in self.sequence:
+            if curr.id == location:
+                if sequence is not None:
+                    traces.append(Trace(sequence))
+                sequence = list()
+            sequence.append(curr)
+        traces.append(sequence)
+        return traces

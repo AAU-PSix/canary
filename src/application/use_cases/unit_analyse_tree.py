@@ -1,5 +1,4 @@
 from typing import List
-from utilities import FileHandler
 from ts import (
     Parser,
     Tree,
@@ -11,47 +10,38 @@ from ts import (
 )
 from .use_case import *
 
-class UnitAnalyseFileRequest(UseCaseRequest):
+class UnitAnalyseTreeRequest(UseCaseRequest):
     def __init__(
         self,
-        filepath: str,
-        parser: Parser,
+        tree: Tree,
+        language: Language,
         unit: str,
     ) -> None:
-        self._filepath = filepath
-        self._parser = parser
+        self._tree = tree
+        self._language = language
         self._unit = unit
         super().__init__()
 
     @property
-    def filepath(self) -> str:
-        return self._filepath
-
-    @property
-    def parser(self) -> Parser:
-        return self._parser
-
-    @property
-    def syntax(self) -> CSyntax:
-        return self.language.syntax
+    def tree(self) -> Tree:
+        return self._tree
 
     @property
     def unit(self) -> str:
         return self._unit
 
     @property
-    def language(self) -> Language:
-        return self._parser.language
-
-class UnitAnalyseFileResponse(UseCaseResponse):
-    def __init__(self, tree: Tree, unit_function: Node) -> None:
-        self._tree = tree
-        self._unit_function = unit_function
-        super().__init__()
+    def syntax(self) -> CSyntax:
+        return self._language.syntax
 
     @property
-    def tree(self) -> Tree:
-        return self._tree
+    def language(self) -> Language:
+        return self._language
+
+class UnitAnalyseTreeResponse(UseCaseResponse):
+    def __init__(self, unit_function: Node) -> None:
+        self._unit_function = unit_function
+        super().__init__()
 
     @property
     def unit_function(self) -> Node:
@@ -61,26 +51,18 @@ class UnitAnalyseFileResponse(UseCaseResponse):
     def found(self) -> bool:
         return self._unit_function is not None
 
-class UnitAnalyseFileUseCase(
-    UseCase[UnitAnalyseFileRequest, UnitAnalyseFileResponse]
+class UnitAnalyseTreeUseCase(
+    UseCase[UnitAnalyseTreeRequest, UnitAnalyseTreeResponse]
 ):
     def __init__(self) -> None:
         super().__init__()
 
-    def do(self, request: UnitAnalyseFileRequest) -> UnitAnalyseFileResponse:
-        # Step 1: Read the file and store its content
-        file = open(request.filepath)
-        contents: str = file.read()
-        file.close()
-
-        # Step 2: Parse the contents
-        tree: Tree = request.parser.parse(contents)
-
+    def do(self, request: UnitAnalyseTreeRequest) -> UnitAnalyseTreeResponse:
         # Step 3: Retrieve all function definitions
         query: Query = request.language.query(
             request.syntax.function_declaration_query
         )
-        capture: Capture = query.captures(tree.root)
+        capture: Capture = query.captures(request.tree.root)
         definitions: List[Node] = capture.nodes(
             request.syntax.get_function_definitions
         )
@@ -91,12 +73,11 @@ class UnitAnalyseFileUseCase(
             identifier: Node = request.syntax.get_function_identifier(
                 definition
             )
-            name: str = tree.contents_of(identifier)
+            name: str = request.tree.contents_of(identifier)
             if name == request.unit:
                 unit_function = definition
                 break
 
-        return UnitAnalyseFileResponse(
-            tree,
+        return UnitAnalyseTreeResponse(
             unit_function
         )
