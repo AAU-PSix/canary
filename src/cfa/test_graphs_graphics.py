@@ -884,27 +884,27 @@ class TestGraphsGraphics(TestCase):
             ),
             ("program_11", """
               for(;;) break;
-              for (;0;) a=a;
+              for (;i>0;) a=a;
              """),
             ("program_12", """
-int add(int a, int b) {
-    do { a=a; } while(0);
+            int add(int a, int b) {
+                do { a=a; } while(0);
 
-    while(1) { a=a; break; }
-    for(;;) { }
+                while(1) { a=a; break; }
+                for(;;) break;
 
-    for (;0;) a=a;
+                for (;0;) a=a;
 
-    if (a==a) { a=a; }
-    else if(b==b) { b=b; }
-    else { b=b; }
+                if (a==a) { a=a; }
+                else if(b==b) { b=b; }
+                else { b=b; }
 
-    int sum;
-    goto SUM;
-SUM:
-    sum = a + b;
-    return sum;
-}
+                int sum;
+                goto SUM;
+            SUM:
+                sum = a + b;
+                return sum;
+            }
              """)
         ]
 

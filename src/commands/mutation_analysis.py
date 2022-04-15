@@ -15,6 +15,7 @@ from application import (
     UnitAnalyseTreeRequest,
     UnitAnalyseTreeUseCase
 )
+from mutator import Mutator
 from cfa import CCFAFactory
 from decorators import LocationDecorator, TweetHandler
 from ts import (
@@ -99,9 +100,8 @@ def mutation_analysis(
     )
 
     # Step 7: Get individual unit sequences
-    start_location_id = localised_cfg.root.location
-    unit_traces = parse_test_results_response.test_results.trace.split_on_location(
-        start_location_id
+    unit_traces = parse_test_results_response.test_results.trace.split_on_finals(
+        localised_cfg
     )
 
     # Step 8: Find candidate nodes
@@ -117,15 +117,11 @@ def mutation_analysis(
     trace_str = ""
     for location in unit_traces[0].sequence:
         trace_str += f'{location.id} '
-    print(trace_str)
     dot = localised_cfg.draw(instrumentation_response.instrumented_tree, "localised_cfg")
     dot.save(directory=base)
 
-    for candidate in candidates:
-        print(candidate.node.type)
-        print(instrumentation_response.instrumented_tree.contents_of(candidate.node))
-
     # Step 9: Run mutation analysis
-    # for _ in range(mutations):
-    #     target = choice(candidates)
-    #     print(target.node.type)
+    mutator = Mutator(Parser.c())
+    mutator.mutate()
+    for _ in range(mutations):
+        target = choice(candidates)

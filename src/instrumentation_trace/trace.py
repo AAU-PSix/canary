@@ -74,3 +74,17 @@ class Trace():
             sequence.append(curr)
         traces.append(sequence)
         return traces
+    
+    def split_on_finals(self, cfg: LocalisedCFA) -> List["Trace"]:
+        finals = [ node.location for node in cfg.finals ]
+        
+        traces: List["Trace"] = list()
+        sequence: List[Location] = list()
+        for curr in self.sequence:
+            sequence.append(curr)
+            if curr.id in finals:
+                if sequence is not None:
+                    traces.append(Trace(sequence))
+                sequence = list()
+        traces.append(sequence)
+        return traces

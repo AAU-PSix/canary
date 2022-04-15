@@ -337,8 +337,6 @@ class CCFAFactory(CFAFactory):
 
         body: Node = self._syntax.get_for_loop_body(node)
 
-        self._continue_break_stack.append((u, f))
-
         if has_init: self._next(i)
         if has_cond: self._next(c)
 

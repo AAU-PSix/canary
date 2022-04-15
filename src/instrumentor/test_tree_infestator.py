@@ -299,7 +299,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root)
 
-        expected =  "CANARY_TWEET_LOCATION(0);do {CANARY_TWEET_LOCATION(2); CANARY_TWEET_LOCATION(1);} while(a);CANARY_TWEET_LOCATION(3);"
+        expected =  "CANARY_TWEET_LOCATION(0);do {CANARY_TWEET_LOCATION(1); CANARY_TWEET_LOCATION(0);} while(a);CANARY_TWEET_LOCATION(2);"
         actual = self._infestator.infect(tree, cfa).text
         nests = self._infestator.nests(cfa)
 
@@ -385,7 +385,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root)
 
-        expected =  "CANARY_TWEET_LOCATION(0);for(;;){CANARY_TWEET_LOCATION(2);;CANARY_TWEET_LOCATION(0);}CANARY_TWEET_LOCATION(1); a=3;"
+        expected =  "CANARY_TWEET_LOCATION(0);for(;;){CANARY_TWEET_LOCATION(1);;CANARY_TWEET_LOCATION(0);}CANARY_TWEET_LOCATION(2); a=3;"
         actual = self._infestator.infect(tree, cfa).text
         nests = self._infestator.nests(cfa)
 
@@ -401,6 +401,7 @@ class TestTreeInfestator(unittest.TestCase):
         actual = self._infestator.infect(tree, cfa).text
         nests = self._infestator.nests(cfa)
 
+        self.maxDiff = 1000
         self.assertEqual(len(nests), 4)
         self.assertEqual(expected, actual)
 
@@ -479,6 +480,16 @@ class TestTreeInfestator(unittest.TestCase):
 
         self.assertEqual(len(nests), 1)
         self.assertEqual(nests[0].type, "case_statement")
+
+    def test_infect_for_with_only_break(self) -> None:
+        program: str = "for(;;) break;"
+        tree: Tree = self._parser.parse(program)
+        cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root)
+        expected =  ""
+        actual = self._infestator.infect(tree, cfa).text
+
+        self.maxDiff = 1000
+        print("\n" + actual)
 
     def test_infect_switch(self) -> None:
         program: str = """

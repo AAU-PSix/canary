@@ -76,13 +76,25 @@ class CanaryFactory(ABC):
         tweet: str = self.create_begin_test_tweet(test, prefix, postfix)
         return self.insert(node, tweet)
 
-    def surround_scope_tweet(self, node: Node, prefix: str = "", postfix: str = "") -> Iterable[TreeInfection]:
+    def surround_scope_tweet(
+        self,
+        node: Node,
+        prefix: str = "",
+        pre_infix: str = "",
+        post_infix: str = "",
+        postfix: str = "",
+    ) -> Iterable[TreeInfection]:
         return [
-            self.insert(node, prefix),
-            self.append(node, postfix)
+            self.insert(node, prefix + chr(123) + pre_infix),
+            self.append(node, post_infix + chr(125) + postfix),
         ]
 
-    def surround_insert_location_tweet(self, node: Node, prefix: str = "", postfix: str = "") -> Iterable[TreeInfection]:
+    def surround_insert_location_tweet(
+        self,
+        node: Node,
+        prefix: str = "",
+        postfix: str = ""
+    ) -> Iterable[TreeInfection]:
         return self.surround_scope_tweet(node, f'{prefix}{self.create_location_tweet()}', postfix)
 
     def surround_insert_state_tweet(self, node: Node, prefix: str = "", postfix: str = "") -> Iterable[TreeInfection]:

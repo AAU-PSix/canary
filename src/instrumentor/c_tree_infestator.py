@@ -151,35 +151,43 @@ class CTreeInfestator(TreeInfestator):
         # We dont have to check if "consequence" is None, because every
         #   "if_statement" has a consequence of its "condition"
         infections.extend(self._canary_factory.create_location_tweets(
-            consequence, postfix=consequence_postfix
+            consequence,
+            pre_infix=self._canary_factory.create_location_tweet(),
+            postfix=consequence_postfix
         ))
 
         # If it is an "else if", then it is handled as a seperate "if"
         if alternative is not None and not self._syntax.has_else_if(if_stmt):
             infections.extend(self._canary_factory.create_location_tweets(
-                alternative, postfix=alternative_postfix
+                alternative,
+                pre_infix=self._canary_factory.create_location_tweet(),
+                postfix=alternative_postfix
             ))
 
         return infections
 
     def infection_spore_while_statement(self, while_stmt: Node) -> List[TreeInfection]:
         body: Node = while_stmt.child_by_field(CField.BODY)
+        previous_location = self._canary_factory.previous_location
         infections: List[TreeInfection] = self._canary_factory.create_location_tweets(
             body,
+            pre_infix=self._canary_factory.create_location_tweet(),
             post_infix=self._canary_factory.create_location_tweet(
-                location=self._canary_factory.previous_location
-            )
-        )
-        infections.append(
-            self._canary_factory.append_location_tweet(while_stmt)
+                location=previous_location
+            ),
+            postfix=self._canary_factory.create_location_tweet()
         )
         return infections
 
     def infection_spore_do_statement(self, do_stmt: Node) -> List[TreeInfection]:
+        previous_location = self._canary_factory.previous_location
         body: Node = do_stmt.child_by_field(CField.BODY)
         infections: List[TreeInfection] = self._canary_factory.create_location_tweets(
             body,
-            post_infix=self._canary_factory.create_location_tweet()
+            pre_infix=self._canary_factory.create_location_tweet(),
+            post_infix=self._canary_factory.create_location_tweet(
+                location=previous_location
+            ),
         )
         infections.append(
             self._canary_factory.append_location_tweet(do_stmt)
@@ -191,23 +199,15 @@ class CTreeInfestator(TreeInfestator):
         # If it is a expression statement then the body is just a ";"
         #   I.e. for(int i = 0; i < 10; ++i);
         #   I.e. for(int i = 0; i < 10; ++i) {TWEET();;TWEET()}
-        if body.is_type(CNodeType.EXPRESSION_STATEMENT):
-            return self._canary_factory.create_location_tweets(
-                body,
-                post_infix=self._canary_factory.create_location_tweet(
-                    location=self._canary_factory.previous_location
-                ),
-                postfix=self._canary_factory.create_location_tweet()
-            )
-        else:
-            infections: List[TreeInfection] = self._canary_factory.create_location_tweets(
-                body,
-                post_infix=self._canary_factory.create_location_tweet(
-                    location=self._canary_factory.previous_location
-                ),
-            )
-            infections.append(self._canary_factory.append_location_tweet(for_stmt))
-            return infections
+        previous_location = self._canary_factory.previous_location
+        return self._canary_factory.create_location_tweets(
+            body,
+            pre_infix=self._canary_factory.create_location_tweet(),
+            post_infix=self._canary_factory.create_location_tweet(
+                location=previous_location
+            ),
+            postfix=self._canary_factory.create_location_tweet(),
+        )
 
     def infection_spore_switch_statement(self, switch_stmt: Node) -> List[TreeInfection]:
         infections: List[TreeInfection] = [ ]

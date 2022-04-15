@@ -348,3 +348,33 @@ class TestLocationDecorator(TestCase):
 
         self.assertEqual(localised_cfa.nodes[0].location, "a")
         self.assertEqual(localised_cfa.nodes[-1].location, "b")
+
+    def test_decorate_program_11(self):
+        program = """
+        CANARY_TWEET_LOCATION(0);
+            do {CANARY_TWEET_LOCATION(1); a=a; CANARY_TWEET_LOCATION(0);} while(0);CANARY_TWEET_LOCATION(2);
+
+            while(1) {CANARY_TWEET_LOCATION(3); a=a; break; CANARY_TWEET_LOCATION(2);}CANARY_TWEET_LOCATION(4);
+            for(;;) {CANARY_TWEET_LOCATION(7);{CANARY_TWEET_LOCATION(5);break;CANARY_TWEET_LOCATION(6);}CANARY_TWEET_LOCATION(8);CANARY_TWEET_LOCATION(4);}CANARY_TWEET_LOCATION(6);
+
+            for (;0;) {CANARY_TWEET_LOCATION(9);a=a;CANARY_TWEET_LOCATION(8);}CANARY_TWEET_LOCATION(10);
+
+            if (a==a) {CANARY_TWEET_LOCATION(11); a=a; }
+            else if(b==b) {CANARY_TWEET_LOCATION(13); b=b; }
+            else {CANARY_TWEET_LOCATION(14); b=b; }CANARY_TWEET_LOCATION(12);
+
+            int sum;
+            CANARY_TWEET_LOCATION(15);goto SUM;
+        SUM:CANARY_TWEET_LOCATION(16);
+            sum = a + b;
+            return sum;
+        """
+        tree = self._parser.parse(program)
+        factory = CCFAFactory(tree)
+        cfa = factory.create(tree.root)
+        decorator = LocationDecorator(tree)
+
+        localised_cfa = decorator.decorate(cfa)
+        
+        for node in localised_cfa.nodes:
+            self.assertIsNotNone(node.location, f'{node.node.start_byte}, {node.node.end_byte} :: {tree.contents_of(node.node)}')

@@ -42,16 +42,23 @@ class CCanaryFactory(CanaryFactory):
     def create_location_tweets(
         self,
         node: Node,
+        prefix: str = "",
         pre_infix: str = "",
-        postfix: str = "",
         post_infix: str = "",
+        postfix: str = "",
     ) -> Iterable[TreeInfection]:
         if node.is_type(CNodeType.COMPOUND_STATEMENT):
             # Appends a location tweet after the "{" (index 0 child of the "consequence")
             return [
-                self.insert(node, pre_infix),
-                self.append_location_tweet(node.children[0]),
+                self.insert(node, prefix),
+                self.append(node.children[0], pre_infix),
                 self.insert(node.children[-1], post_infix),
                 self.append(node, postfix),
             ]
-        return self.surround_insert_location_tweet(node, "{" + pre_infix, post_infix + "}" + postfix)
+        return self.surround_scope_tweet(
+            node,
+            prefix,
+            pre_infix,
+            post_infix,
+            postfix
+        )
