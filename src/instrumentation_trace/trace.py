@@ -15,6 +15,9 @@ class Trace():
     def __len__(self) -> int:
         return len(self.sequence)
 
+    def __contains__(self, key: str) -> bool:
+        return key in [ location.id for location in self.sequence ]
+
     def in_unit(self, unit: str) -> Iterable[Location]:
         result: List[Location] = list()
         for location in self.sequence:

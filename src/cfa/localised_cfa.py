@@ -56,7 +56,7 @@ class LocalisedCFA(CFA[LocalisedNode]):
                 elif outgoing.location == location:
                     current = outgoing
                     found_end = False
-    
+
     def split_on_finals(self, trace: Trace) -> List["Trace"]:
         finals = [ node.location for node in self.finals ]
         
@@ -79,3 +79,53 @@ class LocalisedCFA(CFA[LocalisedNode]):
         dot: Digraph = None
     ) -> Digraph:
         if dot is None: dot = Digraph(name)
+
+        colors = [
+            "aliceblue", "antiquewhite", "aqua", "aquamarine", "azure", "beige", "bisque", "black", "blanchedalmond",
+            "blue", "blueviolet", "brown", "burlywood", "cadetblue", "chartreuse", "chocolate", "coral",
+            "cornflowerblue", "cornsilk", "crimson", "cyan", "darkblue", "darkcyan", "darkgoldenrod", "darkgray",
+            "darkgreen", "darkgrey", "darkkhaki", "darkmagenta", "darkolivegreen", "darkorange", "darkorchid", "darkred",
+            "darksalmon", "darkseagreen", "darkslateblue", "darkslategray", "darkslategrey", "darkturquoise", "darkviolet", "deeppink",
+            "deepskyblue", "dimgray", "dimgrey", "dodgerblue", "firebrick", "floralwhite", "forestgreen", "fuchsia", "gainsboro",
+            "ghostwhite", "gold", "goldenrod", "gray", "grey", "green", "greenyellow", "honeydew",
+            "hotpink", "indianred", "indigo", "ivory", "khaki", "lavender", "lavenderblush", "lawngreen", "lemonchiffon",
+            "lightblue", "lightcoral", "lightcyan", "lightgoldenrodyellow", "lightgray", "lightgreen", "lightgrey", "lightpink", "lightsalmon",
+            "lightseagreen", "lightskyblue", "lightslategray", "lightslategrey", "lightsteelblue", "lightyellow", "lime", "limegreen", "linen",
+            "magenta", "maroon", "mediumaquamarine", "mediumblue", "mediumorchid", "mediumpurple", "mediumseagreen", "mediumslateblue", "mediumspringgreen", "mediumturquoise",
+            "mediumvioletred", "midnightblue", "mintcream", "mistyrose", "moccasin", "navajowhite", "navy", "oldlace", "olive",
+            "olivedrab", "orange", "orangered", "orchid", "palegoldenrod", "palegreen", "paleturquoise", "palevioletred", "papayawhip",
+            "peachpuff", "peru", "pink", "plum", "powderblue", "purple", "red", "rosybrown", "royalblue", "saddlebrown", "salmon",
+            "sandybrown", "seagreen", "seashell", "sienna", "silver", "skyblue", "slateblue", "slategray", "slategrey",
+            "snow", "springgreen", "steelblue", "tan", "teal", "thistle", "tomato", "turquoise", "violet", "wheat", "white", "whitesmoke", "yellow", "yellowgreen",
+        ]
+        traces = [
+            self.follow(None, trace) for trace in self.split_on_finals(trace)
+        ]
+
+        def edge_color(source: LocalisedNode, destination: LocalisedNode) -> str:
+            found_colors: List[str] = list()
+            for idx, trace in enumerate(traces):
+                if source in trace and \
+                    destination in trace:
+                        found_colors.append(colors[idx])
+            return ":".join(found_colors)
+
+        dot.node("initial", shape="point")
+        dot.edge("initial", self._cfa_node_name(tree, self.root))
+
+        finals: List[LocalisedNode] = self.finals
+        if len(finals) > 0:
+            dot.node("final", shape="point")
+            for final in self.finals:
+                dot.edge(self._cfa_node_name(tree, final), "final")
+
+        for source in self._nodes:
+            dot.node(self._cfa_node_name(tree, source))
+            for outgoing in self.outgoing_edges(source):
+                destination = outgoing.destination
+                dot.edge(
+                    self._cfa_node_name(tree, source),
+                    self._cfa_node_name(tree, destination),
+                    outgoing.label,
+                    color=edge_color(source, destination)
+                )

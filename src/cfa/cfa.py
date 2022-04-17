@@ -1,6 +1,8 @@
 from typing import Dict, Generic, List, Iterable, Callable
 from queue import Queue
 from graphviz import Digraph
+
+from src.cfa.cfa_node import CFANode
 from .cfa_edge import CFAEdge
 from .t_cfa_node import TCFANode
 from ts import Tree
@@ -131,35 +133,33 @@ class CFA(Generic[TCFANode]):
         del self._ingoing_edges[before]
         del self._outgoing_edges[before]
 
+    def _cfa_node_name(self, tree: Tree, cfa_node: CFANode) -> str:
+        if cfa_node is None: return f'CFA node is None'
+        if cfa_node.node is None: return f'TS node is None'
+        cfa_node_str = str(cfa_node)
+
+        sanitized_contents: str = tree.contents_of(cfa_node.node).replace(":", "")
+        return f'{cfa_node_str} {sanitized_contents} \n child of {cfa_node.node.parent.type}'
+
     def draw(self, tree: Tree, name: str, dot: Digraph = None) -> Digraph:
         if dot is None: dot = Digraph(name)
 
-        def node_name(cfa_node: TCFANode) -> str:
-            secret = cfa_node.secret if hasattr(cfa_node, "secret") else ""
-            if cfa_node is None: return f'CFA node is None {secret}'
-            if cfa_node.node is None: return f'TS node is None {secret}'
-            cfa_node_str = str(cfa_node)
-
-            sanitized_contents: str = tree.contents_of(cfa_node.node).replace(":", "")
-            return f'{cfa_node_str} {sanitized_contents} \n child of {cfa_node.node.parent.type}'
-
         dot.node("initial", shape="point")
-        dot.edge("initial", node_name(self.root))
+        dot.edge("initial", self._cfa_node_name(tree, self.root))
 
         finals: List[TCFANode] = self.finals
         if len(finals) > 0:
             dot.node("final", shape="point")
             for final in self.finals:
-                dot.edge(node_name(final), "final")
+                dot.edge(self._cfa_node_name(tree, final), "final")
 
         for node in self._nodes:
-            dot.node(node_name(node))
+            dot.node(self._cfa_node_name(tree, node))
             for outgoing in self.outgoing_edges(node):
                 dot.edge(
-                    node_name(outgoing.source),
-                    node_name(outgoing.destination),
+                    self._cfa_node_name(tree, outgoing.source),
+                    self._cfa_node_name(tree, outgoing.destination),
                     outgoing.label,
-                    color="green:red"
                 )
 
         # dot.comment = tree.text
@@ -180,21 +180,34 @@ class CFA(Generic[TCFANode]):
                     queue.put(outgoing.destination)
                     visited.append(outgoing.destination)
 
+    def all_paths(self) -> List[List[TCFANode]]:
+        visited: List[TCFANode] = list()
+        paths: List[List[TCFANode]] = list()
+        path: List[TCFANode] = list()
 
-    def depth_first_traverse(self,
-         node:TCFANode, visited: List[TCFANode] = [],
-         downwards_search_callback: Callable[[TCFANode], None] = None
-         ) -> Iterable[TCFANode]:
+        frontier: List[TCFANode] = self.outgoing(self.root)
+        visited.append(self.root)
 
-        visited.append(node)
-        if self.outgoing_edges(node) is not None:
-            for outgoing in self.outgoing_edges(node):
-                if outgoing.destination not in visited:
-                    if downwards_search_callback is None:
-                        downwards_search_callback(outgoing.destination)
-                    self.depth_first_traverse(outgoing.destination, visited=visited)
-    
-        yield node
+        while len(frontier) > 0:
+            # Step 1: Pop from the "stack"
+            source: TCFANode = frontier.pop(-1)
 
+            # Step 2: As long as the current "source" is not
+            #   a destination from the current end of the path
+            #   then backtrack until we reach it, this
+            #   is then the new start of the path.
+            while source not in self.outgoing(path[-1]):
+                path.pop(-1)
+            path.append(source)
 
+            # Step 3: Add path if we are at a final
+            if source in self.finals:
+                paths.append(path)
 
+            # Step 4: Add all un-visited neightbours to frontier
+            for destination in self.outgoing(source):
+                if destination not in visited:
+                    frontier.append(destination)
+                    visited.append(destination)
+
+        return paths
