@@ -2,7 +2,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 from cfa import CFAEdge
-from .localised_cfa import LocalisedCFA, LocalisedNode
+from cfa import LocalisedCFA, LocalisedNode
 from .tweet_handler import TweetHandler
 
 class DecorationStrategy(ABC):

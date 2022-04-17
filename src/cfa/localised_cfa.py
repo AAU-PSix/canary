@@ -1,4 +1,5 @@
-from cfa import CFANode, CFA
+from .cfa import CFA
+from .cfa_node import CFANode
 from ts import Node
 
 class LocalisedNode(CFANode):

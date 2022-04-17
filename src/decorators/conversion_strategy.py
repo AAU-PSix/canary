@@ -1,6 +1,6 @@
 from typing import List
 from cfa import CFANode, CFAEdge
-from .localised_cfa import LocalisedCFA
+from cfa import LocalisedCFA
 
 class ConversionStrategy:
     def convert_edges(

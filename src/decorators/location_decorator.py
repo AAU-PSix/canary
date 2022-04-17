@@ -3,7 +3,7 @@ from typing import List, Dict
 from ts.c_syntax import CSyntax
 from ts import Tree
 from cfa import CFANode, CFA, CFAEdge
-from .localised_cfa import LocalisedCFA, LocalisedNode
+from cfa import LocalisedCFA, LocalisedNode
 from .tweet_handler import TweetHandler
 from .decoration_strategy import StandardDecorationStrategy, DecorationStrategy
 from .conversion_strategy import ConversionStrategy
