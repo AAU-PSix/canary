@@ -22,7 +22,7 @@ class TestTrace(unittest.TestCase):
         cfa = LocalisedCFA(cfa_0)
 
         trace = builder.build()
-        path = [ *trace.follow("add", cfa) ]
+        path = [ *cfa.follow("add", trace) ]
 
         self.assertEqual(len(path), 1)
         self.assertEqual(path[0], cfa_0)
@@ -44,7 +44,7 @@ class TestTrace(unittest.TestCase):
         cfa.branch(cfa_0, cfa_1)
 
         trace = builder.build()
-        path = [ *trace.follow("add", cfa) ]
+        path = [ *cfa.follow("add", trace) ]
 
         self.assertEqual(len(path), 2)
         self.assertEqual(path[0], cfa_0)
@@ -71,7 +71,7 @@ class TestTrace(unittest.TestCase):
         cfa.branch(cfa_1, cfa_2)
 
         trace = builder.build()
-        path = [ *trace.follow("add", cfa) ]
+        path = [ *cfa.follow("add", trace) ]
 
         self.assertEqual(len(path), 3)
         self.assertEqual(path[0], cfa_0)
@@ -103,7 +103,7 @@ class TestTrace(unittest.TestCase):
         cfa.branch(cfa_2, cfa_3)
 
         trace = builder.build()
-        path = [ *trace.follow("add", cfa) ]
+        path = [ *cfa.follow("add", trace) ]
 
         self.assertEqual(len(path), 3)
         self.assertEqual(path[0], cfa_0)
@@ -136,7 +136,7 @@ class TestTrace(unittest.TestCase):
         cfa.branch(cfa_2, cfa_3)
 
         trace = builder.build()
-        path = [ *trace.follow("add", cfa) ]
+        path = [ *cfa.follow("add", trace) ]
 
         self.assertEqual(len(path), 4)
         self.assertEqual(path[0], cfa_0)
@@ -168,7 +168,7 @@ class TestTrace(unittest.TestCase):
         cfa.branch(cfa_1, cfa_3)
 
         trace = builder.build()
-        path = [ *trace.follow("add", cfa) ]
+        path = [ *cfa.follow("add", trace) ]
 
         self.assertEqual(len(path), 3)
         self.assertEqual(path[0], cfa_0)
@@ -199,7 +199,7 @@ class TestTrace(unittest.TestCase):
         cfa.branch(cfa_1, cfa_3)
 
         trace = builder.build()
-        path = [ *trace.follow("add", cfa) ]
+        path = [ *cfa.follow("add", trace) ]
 
         self.assertEqual(len(path), 3)
         self.assertEqual(path[0], cfa_0)
@@ -247,7 +247,7 @@ class TestTrace(unittest.TestCase):
         cfa.branch(cfa_6, cfa_7)
 
         trace = builder.build()
-        path = [ *trace.follow("add", cfa) ]
+        path = [ *cfa.follow("add", trace) ]
 
         self.assertEqual(len(path), 5)
         self.assertEqual(path[0], cfa_0)
@@ -280,7 +280,7 @@ class TestTrace(unittest.TestCase):
         cfa.branch(cfa_1, cfa_3)
 
         trace = builder.build()
-        path = [ *trace.follow("add", cfa) ]
+        path = [ *cfa.follow("add", trace) ]
 
         self.assertEqual(len(path), 3)
         self.assertEqual(path[0], cfa_0)

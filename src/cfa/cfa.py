@@ -1,4 +1,3 @@
-from random import random
 from typing import Dict, Generic, List, Iterable, Callable
 from queue import Queue
 from graphviz import Digraph
@@ -159,7 +158,8 @@ class CFA(Generic[TCFANode]):
                 dot.edge(
                     node_name(outgoing.source),
                     node_name(outgoing.destination),
-                    outgoing.label
+                    outgoing.label,
+                    color="green:red"
                 )
 
         # dot.comment = tree.text
