@@ -1,16 +1,18 @@
 from typing import List, Tuple
 from sys import float_info
 import unittest
+
+from src.mutator.obom_strategy import ObomStrategy
 from . import (
     Mutator,
     Parser,
-    Node,
-    Capture,
 )
 from ts import (
     LanguageLibrary,
     Query,
     NodeType,
+    Node,
+    Capture,
 )
 
 class TestMutatorObom(unittest.TestCase):
@@ -118,7 +120,7 @@ class TestMutatorObom(unittest.TestCase):
             operator: Node = self.parse_first_binary_expression_operator(binary_query, f'a{domain_operator.value}b')
 
             for range_section in range_checks:
-                actual: NodeType = self._mutator.obom(operator, range_section[1], range_section[2])
+                actual: NodeType = ObomStrategy(self._parser).obom(operator, range_section[1], range_section[2])
                 self.assertEqual(operator.type, domain_operator.value)
                 self.assertEqual(actual.value, range_section[0].value)
 
