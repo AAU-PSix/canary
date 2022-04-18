@@ -73,7 +73,7 @@ class LocalisedCFA(CFA[LocalisedNode]):
 
     def draw_along_paths(
         self,
-        trace: Trace,
+        _: Trace,
         tree: Tree,
         name: str,
         dot: Digraph = None
