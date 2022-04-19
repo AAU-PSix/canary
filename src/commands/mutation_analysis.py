@@ -14,7 +14,9 @@ from application import (
     UnitAnalyseTreeRequest,
     UnitAnalyseTreeUseCase,
     MutateAlongAllTracesRequest,
-    MutateAlongAllTracesUseCase
+    MutateAlongAllTracesUseCase,
+    MutateRandomlyRequest,
+    MutateRandomlyUseCase,
 )
 from cfa import CCFAFactory
 from decorators import LocationDecorator
@@ -22,7 +24,6 @@ from mutator import ObomStrategy
 from ts import (
     Parser,
     LanguageLibrary,
-    CNodeType,
 )
 
 def mutation_analysis(
@@ -35,6 +36,7 @@ def mutation_analysis(
     build_command: str,
     test_command: str,
     base: str = "",
+    random_mutations: bool = True,
 ) -> None:
     print(persist)
     print(mutations)
@@ -105,11 +107,23 @@ def mutation_analysis(
         parse_test_results_response.test_results.trace
     )
 
-    # Step 8: Mutate along all unique traces
-    mutate_along_trace_request = MutateAlongAllTracesRequest(
-        instrumentation_response.instrumented_tree,
-        unit_traces,
-        localised_cfg,
-        ObomStrategy(Parser.c())
-    )
-    MutateAlongAllTracesUseCase().do(mutate_along_trace_request)
+    # Step 8: Mutate
+    if random_mutations:
+        randomly_mutate_request = MutateRandomlyRequest(
+            instrumentation_response.instrumented_tree,
+            ObomStrategy(Parser.c()),
+            unit_analysis_of_file_response.unit_function
+        )
+        MutateRandomlyUseCase().do(
+            randomly_mutate_request
+        )
+    else:
+        mutate_along_trace_request = MutateAlongAllTracesRequest(
+            instrumentation_response.instrumented_tree,
+            unit_traces,
+            localised_cfg,
+            ObomStrategy(Parser.c())
+        )
+        MutateAlongAllTracesUseCase().do(
+            mutate_along_trace_request
+        )
