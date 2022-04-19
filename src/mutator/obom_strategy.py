@@ -10,7 +10,7 @@ class ObomStrategy(MutationStrategy):
         self._syntax = CSyntax()
 
     def capture(self, node: Node) -> List[Node]:
-        binary_expression_capture: Capture = self._language.query(
+        binary_expression_capture = self._language.query(
             self._syntax.binary_expression_query
         ).captures(node)
         binary_expression_nodes: List[Node] = binary_expression_capture.nodes(

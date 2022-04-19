@@ -68,7 +68,6 @@ class LocalisedCFA(CFA[LocalisedNode]):
                 if sequence is not None:
                     traces.append(Trace(sequence))
                 sequence = list()
-        traces.append(sequence)
         return traces
 
     def draw_along_paths(

@@ -2,7 +2,7 @@ from typing import Dict, Generic, List, Iterable, Callable
 from queue import Queue
 from graphviz import Digraph
 
-from src.cfa.cfa_node import CFANode
+from .cfa_node import CFANode
 from .cfa_edge import CFAEdge
 from .t_cfa_node import TCFANode
 from ts import Tree

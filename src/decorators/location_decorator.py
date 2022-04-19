@@ -31,8 +31,8 @@ class LocationDecorator():
             result[location] = tweet
         return result
 
-    def decorate(self, cfa: CFA[CFANode]) -> CFA[LocalisedNode]:
-        localised_cfa: CFA[LocalisedNode] = self.convert_cfa_to_localised(cfa)
+    def decorate(self, cfa: CFA[CFANode]) -> LocalisedCFA:
+        localised_cfa: LocalisedCFA = self.convert_cfa_to_localised(cfa)
 
         # Step 1: Seed locations at tweet
         self.decoration_strategy.decorate_initial_locations(localised_cfa)

@@ -1,6 +1,5 @@
 from typing import List, Tuple
 import unittest
-from src.ts.c_syntax import CNodeType
 from ts import (
     LanguageLibrary,
     Tree,
@@ -8,6 +7,7 @@ from ts import (
     Parser,
     CSyntax,
     CField,
+    CNodeType,
 )
 from cfa import (
     CFA,

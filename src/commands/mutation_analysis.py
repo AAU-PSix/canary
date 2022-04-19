@@ -1,4 +1,3 @@
-from random import choice
 from application import (
     InitializeSystemRequest,
     InitializeSystemUseCase,
@@ -15,7 +14,7 @@ from application import (
     UnitAnalyseTreeRequest,
     UnitAnalyseTreeUseCase
 )
-from mutator import Mutator
+from mutator import Mutator, ObomStrategy
 from cfa import CCFAFactory
 from decorators import LocationDecorator, TweetHandler
 from ts import (
@@ -100,37 +99,34 @@ def mutation_analysis(
     )
 
     # Step 7: Get individual unit sequences
-    unit_traces = parse_test_results_response.test_results.trace.split_on_finals(
-        localised_cfg
+    unit_traces = localised_cfg.split_on_finals(
+        parse_test_results_response.test_results.trace
     )
 
-    # Step 8: Find candidate nodes
-    trace = unit_traces[0]
-    candidates = [ *trace.follow(None, localised_cfg) ]
-    tweet_handler = TweetHandler(instrumentation_response.instrumented_tree)
-    candidates = list(filter(lambda x: not tweet_handler.is_location_tweet(x.node), candidates))
-    candidates = list(filter(lambda x: x.node.is_either_type([
-        CNodeType.EXPRESSION_STATEMENT, CNodeType.RETURN_STATEMENT,
-        CNodeType.PARENTHESIZED_EXPRESSION, CNodeType.LABELED_STATEMENT
-    ]), candidates))
+    # Step 8: Mutate along all unique traces
+    for trace in unit_traces:
+        print(trace)
+        trace_str = ""
+        for location in trace.sequence:
+            trace_str += f'{location.id} '
+        print(trace_str)
+        dot = localised_cfg.draw(instrumentation_response.instrumented_tree, f"localised_cfg_{trace_str}")
+        dot.save(directory=base)
 
-    trace_str = ""
-    for location in unit_traces[0].sequence:
-        trace_str += f'{location.id} '
-    print(trace_str)
-    dot = localised_cfg.draw(instrumentation_response.instrumented_tree, "localised_cfg")
-    dot.save(directory=base)
-    
-    # Step 9: Run mutation analysis
-    mutator = Mutator(Parser.c())
-    for _ in range(1):
-        # Should be the "a + b" for c_06
-        candidate = candidates[-2]
-        print(
-            instrumentation_response.instrumented_tree.contents_of(candidate.node)
+        tweet_handler = TweetHandler(instrumentation_response.instrumented_tree)
+        trace_nodes = list(
+            filter(
+                lambda x: not tweet_handler.is_location_tweet(x.node),
+                [ *localised_cfg.follow(None, trace) ]
+            )
         )
-        mutated_tree = mutator.mutate(
-            instrumentation_response.instrumented_tree,
-            candidate.node
-        )
-        print(mutated_tree.text)
+
+        for trace_node in trace_nodes:
+            mutation_strategy = ObomStrategy(Parser.c())
+            candidates = mutation_strategy.capture(trace_node.node)
+
+            for candidate in candidates:
+                mutated_tree = mutation_strategy.mutate(
+                    instrumentation_response.instrumented_tree,
+                    candidate
+                )

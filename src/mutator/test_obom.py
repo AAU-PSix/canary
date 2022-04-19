@@ -2,7 +2,7 @@ from typing import List, Tuple
 from sys import float_info
 import unittest
 
-from src.mutator.obom_strategy import ObomStrategy
+from .obom_strategy import ObomStrategy
 from . import (
     Mutator,
     Parser,
