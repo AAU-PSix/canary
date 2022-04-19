@@ -1,4 +1,3 @@
-from numpy import choose
 from .obom_strategy import MutationStrategy
 from ts import (
     Parser,
