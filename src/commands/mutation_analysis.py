@@ -12,11 +12,13 @@ from application import (
     ParseTestResultRequest,
     ParseTestResultUseCase,
     UnitAnalyseTreeRequest,
-    UnitAnalyseTreeUseCase
+    UnitAnalyseTreeUseCase,
+    MutateAlongAllTracesRequest,
+    MutateAlongAllTracesUseCase
 )
-from mutator import Mutator, ObomStrategy
 from cfa import CCFAFactory
-from decorators import LocationDecorator, TweetHandler
+from decorators import LocationDecorator
+from mutator import ObomStrategy
 from ts import (
     Parser,
     LanguageLibrary,
@@ -104,29 +106,10 @@ def mutation_analysis(
     )
 
     # Step 8: Mutate along all unique traces
-    for trace in unit_traces:
-        print(trace)
-        trace_str = ""
-        for location in trace.sequence:
-            trace_str += f'{location.id} '
-        print(trace_str)
-        dot = localised_cfg.draw(instrumentation_response.instrumented_tree, f"localised_cfg_{trace_str}")
-        dot.save(directory=base)
-
-        tweet_handler = TweetHandler(instrumentation_response.instrumented_tree)
-        trace_nodes = list(
-            filter(
-                lambda x: not tweet_handler.is_location_tweet(x.node),
-                [ *localised_cfg.follow(None, trace) ]
-            )
-        )
-
-        for trace_node in trace_nodes:
-            mutation_strategy = ObomStrategy(Parser.c())
-            candidates = mutation_strategy.capture(trace_node.node)
-
-            for candidate in candidates:
-                mutated_tree = mutation_strategy.mutate(
-                    instrumentation_response.instrumented_tree,
-                    candidate
-                )
+    mutate_along_trace_request = MutateAlongAllTracesRequest(
+        instrumentation_response.instrumented_tree,
+        unit_traces,
+        localised_cfg,
+        ObomStrategy(Parser.c())
+    )
+    MutateAlongAllTracesUseCase().do(mutate_along_trace_request)

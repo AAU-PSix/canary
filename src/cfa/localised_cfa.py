@@ -58,7 +58,7 @@ class LocalisedCFA(CFA[LocalisedNode]):
                     found_end = False
 
     def split_on_finals(self, trace: Trace) -> List["Trace"]:
-        finals = [ node.location for node in self.finals ]
+        finals = [ node[0].location for node in self.finals ]
         
         traces: List["Trace"] = list()
         sequence: List[Location] = list()
