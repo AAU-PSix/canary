@@ -64,7 +64,7 @@ class CCFAFactory(CFAFactory):
 
         if self._current is not None and self._current.node is None:
             ingoing_edges = self._cfa.ingoing_edges(self._current)
-            for edge in ingoing_edges: self._cfa.add_final(edge.source)
+            for edge in ingoing_edges: self._cfa.add_final(edge.source, edge.label)
             self._cfa.remove(self._current)
 
         return self._cfa

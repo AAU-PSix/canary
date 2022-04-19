@@ -1,4 +1,4 @@
-from typing import Dict, Generic, List, Iterable, Callable
+from typing import Dict, Generic, List, Iterable, Tuple
 from queue import Queue
 from graphviz import Digraph
 
@@ -12,7 +12,7 @@ class CFA(Generic[TCFANode]):
     _nodes: List[TCFANode]
     _outgoing_edges: Dict[TCFANode, List[CFAEdge[TCFANode]]]
     _ingoing_edges: Dict[TCFANode, List[CFAEdge[TCFANode]]]
-    _additional_finals: List[TCFANode]
+    _additional_finals: List[Tuple[TCFANode, str]]
 
     def __init__(self, root: TCFANode) -> None:
         self._root = root
@@ -39,19 +39,19 @@ class CFA(Generic[TCFANode]):
         return self._root
 
     @property
-    def finals(self) -> List[TCFANode]:
-        finals: List[TCFANode] = list()
-        for node in self._nodes:
-            if len(self.outgoing_edges(node)) is 0:
-                finals.append(node)
-        for node in self._additional_finals:
-            if node not in finals:
-                finals.append(node)
+    def finals(self) -> List[Tuple[TCFANode, str]]:
+        finals: List[Tuple[TCFANode, str]] = list()
+        for node_label in self._nodes:
+            if len(self.outgoing_edges(node_label)) is 0:
+                finals.append((node_label, None))
+        for node_label in self._additional_finals:
+            if node_label not in finals:
+                finals.append(node_label)
         return finals
 
-    def add_final(self, final: TCFANode) -> bool:
+    def add_final(self, final: TCFANode, label: str = None) -> bool:
         if final not in self._nodes: return False
-        self._additional_finals.append(final)
+        self._additional_finals.append((final, label))
         return True
 
     def outgoing(self, source: TCFANode) -> List[TCFANode]:
@@ -119,7 +119,7 @@ class CFA(Generic[TCFANode]):
         del self._outgoing_edges[source]
 
         for final in self._additional_finals:
-            if final is source: self._additional_finals.remove(final)
+            if final[0] is source: self._additional_finals.remove(final)
 
     def replace(self, before: TCFANode, after: TCFANode) -> None:
         for ingoing in self._ingoing_edges[before]:
@@ -147,11 +147,9 @@ class CFA(Generic[TCFANode]):
         dot.node("initial", shape="point")
         dot.edge("initial", self._cfa_node_name(tree, self.root))
 
-        finals: List[TCFANode] = self.finals
-        if len(finals) > 0:
-            dot.node("final", shape="point")
-            for final in self.finals:
-                dot.edge(self._cfa_node_name(tree, final), "final")
+        dot.node("final", shape="point")
+        for final_label in self.finals:
+            dot.edge(self._cfa_node_name(tree, final_label[0]), "final", final_label[1])
 
         for node in self._nodes:
             dot.node(self._cfa_node_name(tree, node))
