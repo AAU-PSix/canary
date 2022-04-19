@@ -2,8 +2,8 @@ from typing import List, Tuple
 from sys import float_info
 import unittest
 
-from src.mutator.ocor_strategy import OcorStrategy
-from src.ts.c_syntax import CSyntax
+from mutator.ocor_strategy import OcorStrategy
+from ts.c_syntax import CSyntax
 from . import (
     Mutator,
     Parser,
