@@ -1,3 +1,5 @@
+
+from random import choice
 from .obom_strategy import MutationStrategy
 from ts import (
     Parser,
@@ -23,5 +25,5 @@ class Mutator:
             raise Exception('Could not find tree')
         
         candidates = strategy.capture(node)
-        mutated_tree = strategy.mutate(tree, choose(candidates), encoding)
+        mutated_tree = strategy.mutate(tree, choice(candidates), encoding)
         return mutated_tree
