@@ -15,3 +15,4 @@ from .unit_analyse_tree import *
 from .mutate_along_trace import *
 from .mutate_along_all_traces import *
 from .mutate_randomly import *
+from .mutate_all_candidates import *

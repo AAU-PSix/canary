@@ -5,7 +5,7 @@ from cfa import LocalisedCFA
 from ts import Tree, Node
 from .use_case import *
 
-class MutateRandomlyRequest(UseCaseRequest):
+class MutateAllCandidatesRequest(UseCaseRequest):
     def __init__(
         self,
         tree: Tree,
@@ -29,18 +29,18 @@ class MutateRandomlyRequest(UseCaseRequest):
     def strategy(self) -> MutationStrategy:
         return self._strategy
 
-class MutateRandomlyResponse(UseCaseResponse): pass
+class MutateAllCandidatesResponse(UseCaseResponse): pass
 
-class MutateRandomlyUseCase(
-    UseCase[MutateRandomlyRequest, MutateRandomlyResponse]
+class MutateAllCandidatesUseCase(
+    UseCase[MutateAllCandidatesRequest, MutateAllCandidatesResponse]
 ):
-    def do(self, request: MutateRandomlyRequest) -> MutateRandomlyResponse:
+    def do(self, request: MutateAllCandidatesRequest) -> MutateAllCandidatesResponse:
         candidates = request.strategy.capture(
             request.node
         )
-        candidate = choice(candidates)
-        request.strategy.mutate(
-            request.tree,
-            candidate,
-        )
-        return MutateRandomlyResponse()
+        for candidate in candidates:
+            request.strategy.mutate(
+                request.tree,
+                candidate,
+            )
+        return MutateAllCandidatesResponse()
