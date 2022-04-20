@@ -16,6 +16,7 @@ services:
       - --build_command=make -C /input/ build
       - --test_command=/input/build/c_06_test
       - --persist
+      - --testing_backend=cutest
       - --log
       # - cfg
       # - --base=/input

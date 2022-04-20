@@ -1,0 +1,34 @@
+Location=0
+Location=1
+Location=0
+Location=2
+Location=3
+Location=4
+Location=5
+Location=6
+Location=8
+Location=9
+Location=10
+Location=13
+Location=14
+Location=0
+Location=1
+Location=0
+Location=2
+Location=3
+Location=4
+Location=5
+Location=6
+Location=8
+Location=9
+Location=10
+Location=13
+Location=14
+.F
+
+There was 1 failure:
+1) addTest_1_1: /input/tests/AllTests.c:25: expected <12> but was <0>
+
+!!!FAILURES!!!
+Runs: 2 Passes: 1 Fails: 1
+
