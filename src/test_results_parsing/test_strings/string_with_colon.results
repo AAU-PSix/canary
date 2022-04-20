@@ -1,9 +1,0 @@
-location=l
-location=l
-.FFFFF
-
-There were 5 failures:
-5) Test_CuAssertPtrEquals: /input/tests/AllTests.c:55: expected <Test Hest: Blæst> but was <Pøls: 1 2 3>
-!!!FAILURES!!!
-Runs: 6 Passes: 1 Fails: 5
-

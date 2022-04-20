@@ -161,7 +161,7 @@ class CFA(Generic[TCFANode]):
                 )
 
         # dot.comment = tree.text
-        dot.attr(label=tree.text.replace(":", "|"))
+        dot.attr(label=tree.contents_of(self.root.node.parent).replace(":", "|"))
         return dot
 
     def breadth_first_traverse(self) -> Iterable[TCFANode]:

@@ -4,49 +4,11 @@ from instrumentation_trace import (
     TraceParser,
     TraceTreeBuilder
 )
-from instrumentation_trace import Trace
+from .test_summary import TestSummary
+from .test_results import TestResults
+from .resutls_parser import ResultsParser
 
-class TestSummary():
-    def __init__(
-        self,
-        test_count: int,
-        failure_count: int,
-        success_count: int
-    ) -> None:
-        self._test_count = test_count
-        self._failure_count = failure_count
-        self._success_count = success_count
-
-    @property
-    def test_count(self) -> int:
-        return self._test_count
-
-    @property
-    def failure_count(self) -> int:
-        return self._failure_count
-
-    @property
-    def success_count(self) -> int:
-        return self._success_count
-
-class TestResults():
-    def __init__(
-        self,
-        summary: TestSummary,
-        trace: Trace = None
-    ) -> None:
-        self._summary = summary
-        self._trace = trace
-
-    @property
-    def summary(self) -> TestSummary:
-        return self._summary
-
-    @property
-    def trace(self) -> Trace:
-        return self._trace
-
-class CuTestResultsParser():
+class CuTestResultsParser(ResultsParser):
     def __init__(self) -> None:
         self._trace_parser = TraceParser(
             TraceTreeBuilder()

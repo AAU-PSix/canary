@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from ast import parse
 
 from .utilities import FileHandler, CanaryIOHandler
 
@@ -68,6 +69,13 @@ def setupCommandLine() -> ArgumentParser:
         type=str,
         default=None,
         help="The command used to test the project"
+    )
+    parser.add_argument(
+        "-tb", "--testing_backend",
+        type=str,
+        help="The action to do",
+        default="generate",
+        choices=["ffs_gnu_assert", "cutest"]
     )
     return parser
 

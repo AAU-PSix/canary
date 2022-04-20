@@ -1,23 +1,28 @@
 from os import linesep
-from typing import List
 from test_results_parsing import (
     TestResults,
-    CuTestResultsParser
+    CuTestResultsParser,
+    ResultsParser
 )
 from .use_case import *
 
 class ParseTestResultRequest(UseCaseRequest):
     def __init__(
         self,
-        file_path: str
+        file_path: str,
+        parser: ResultsParser,
     ) -> None:
         self._file_path = file_path
+        self._parser = parser
         super().__init__()
 
     @property
     def file_path(self) -> str:
         return self._file_path
 
+    @property
+    def parser(self) -> ResultsParser:
+        return self._parser
 
 class ParseTestResultResponse(UseCaseResponse): 
     def __init__(
@@ -35,9 +40,8 @@ class ParseTestResultUseCase(
     UseCase[ParseTestResultRequest, ParseTestResultResponse]
 ):  
     def do(self, request: ParseTestResultRequest) -> ParseTestResultResponse:
-        parser = CuTestResultsParser()
         file = open(request.file_path, "r")
         contents: str = file.read()
         lines = contents.split(linesep)
-        test_results = parser.parse(lines)
+        test_results = request.parser.parse(lines)
         return ParseTestResultResponse(test_results)

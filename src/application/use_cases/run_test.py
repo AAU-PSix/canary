@@ -38,14 +38,19 @@ class RunTestUseCase(
         else: test_output = request.test_stdout
 
         runner = RunSubsystemUseCase()
-        build_request = RunSubsystemRequest(
-            request.build_command
-        )
-        test_request = RunSubsystemRequest(
-            request.test_command, stdout=test_output
-        )
+        if request.build_command is not None:
+            build_request = RunSubsystemRequest(
+                request.build_command,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            runner.do(build_request)
 
-        runner.do(build_request)
+        test_request = RunSubsystemRequest(
+            request.test_command,
+            stdout=test_output,
+            stderr=test_output,
+        )
         runner.do(test_request)
 
         test_output.close()

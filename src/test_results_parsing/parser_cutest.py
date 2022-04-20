@@ -1,4 +1,3 @@
-from operator import contains
 from typing import List
 
 class FailedCuTest():

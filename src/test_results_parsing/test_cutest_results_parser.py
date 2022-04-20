@@ -2,7 +2,6 @@ from inspect import trace
 from unittest import TestCase
 from . import CuTestResultsParser
 
-
 class TestCuTestResultsParser(TestCase):
     def test_parse_summary_success(self):
         lines = [
