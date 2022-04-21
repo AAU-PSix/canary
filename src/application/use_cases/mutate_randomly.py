@@ -105,10 +105,10 @@ class MutateRandomlyUseCase(
             print(f"    The candidate has {len(mutations)} possible mutations")
             
             for m_idx, mutation in enumerate(mutations):
-                mutated_tree = mutation.apply()
 
                 # Step 4: Write mutated program
                 file = open(request.filepath, "w+")
+                mutated_tree = mutation.apply()
                 file.write(mutated_tree.text)
                 file.close()
                 print("  Step 4: Write mutated program")
@@ -136,7 +136,6 @@ class MutateRandomlyUseCase(
                 else:
                     print("    Mutant survived")
                     survived_mutatans_count += 1
-
                 print("  Step 6: Parse test results")
 
                 # Step 7: Revert to the instrumented program after mutation

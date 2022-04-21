@@ -153,7 +153,14 @@ def mutation_analysis(
             instrumentation_response.instrumented_tree,
             unit_traces,
             localised_cfg,
-            ObomStrategy(instrumentation_request.parser)
+            ObomStrategy(instrumentation_request.parser),
+            instrumentation_request.parser,
+            results_parser,
+            build_command,
+            test_command,
+            base,
+            out,
+            unit_analysis_of_file_request.filepath,
         )
         MutateAlongAllTracesUseCase().do(
             mutate_along_trace_request

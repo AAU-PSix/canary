@@ -37,7 +37,9 @@ def main():
             args.log,
             args.build_command,
             args.test_command,
-            args.base
+            args.base,
+            args.testing_backend,
+            args.strategy
         )
 
 if __name__ == "__main__":

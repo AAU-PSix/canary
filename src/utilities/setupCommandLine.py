@@ -77,6 +77,13 @@ def setupCommandLine() -> ArgumentParser:
         default="generate",
         choices=["ffs_gnu_assert", "cutest"]
     )
+    parser.add_argument(
+        "-s", "--strategy",
+        type=str,
+        help="The mutation placement strategy",
+        default="randomly",
+        choices=["randomly", "pathbased"]
+    )
     return parser
 
 
