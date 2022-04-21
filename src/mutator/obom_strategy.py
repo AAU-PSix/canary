@@ -1,7 +1,7 @@
-import random
 from typing import List
-from ts import Tree, Node, NodeType, CSyntax, Parser, Capture
+from ts import Tree, Node, NodeType, CSyntax, Parser
 from .mutation_strategy import MutationStrategy
+from .mutation import Mutation, ReplacementMutation
 
 class ObomStrategy(MutationStrategy):
     def __init__(self, parser: Parser) -> None:
@@ -33,20 +33,84 @@ class ObomStrategy(MutationStrategy):
             tree, node, self.obom(node).value, encoding
         )
 
-    def choose(self, collection: list, rnd: float = None) -> any:
-        if rnd is None: rnd = random.random()
-        else: rnd = max(min(rnd, 1), 0)
-        index: int = int(rnd * len(collection))
-        return collection[index]
-
-    def random_operator_range(
+    def mutations(
         self,
-        range: List[List[NodeType]],
-        rnd_range: float = None,
-        rnd_operator: float = None
-    ) -> NodeType:
-        range: List[NodeType] = self.choose(range, rnd_range)
-        return self.choose(range, rnd_operator)
+        parser: Parser,
+        tree: Tree,
+        node: Node
+    ) -> List[Mutation]:
+        replacement_types: List[NodeType] = list()
+
+        # Domain: Arithmetic assignment
+        if self._syntax.in_types(node.type, self._syntax.arithmetic_compound_assignment):
+            replacement_types.extend(self._syntax.bitwise_compound_assignment)
+            replacement_types.extend(self._syntax.plain_assignment)
+            replacement_types.extend(self._syntax.shift_compound_assignment)
+
+        # Domain: Aritmetic operator
+        if self._syntax.in_types(node.type, self._syntax.arithmetic_operators):
+            replacement_types.extend(self._syntax.bitwise_operators)
+            replacement_types.extend(self._syntax.logical_operators)
+            replacement_types.extend(self._syntax.relational_opearators)
+            replacement_types.extend(self._syntax.shift_operators)
+
+        # Domain: Bitwise operator
+        if self._syntax.in_types(node.type, self._syntax.bitwise_operators):
+            replacement_types.extend(self._syntax.arithmetic_operators)
+            replacement_types.extend(self._syntax.logical_operators)
+            replacement_types.extend(self._syntax.relational_opearators)
+            replacement_types.extend(self._syntax.shift_operators)
+
+        # Domain: Bitwise assignment
+        if self._syntax.in_types(node.type, self._syntax.bitwise_compound_assignment):
+            replacement_types.extend(self._syntax.arithmetic_compound_assignment)
+            replacement_types.extend(self._syntax.plain_assignment)
+            replacement_types.extend(self._syntax.shift_compound_assignment)
+
+        # Domain: Plain assignment
+        if self._syntax.in_types(node.type, self._syntax.plain_assignment):
+            replacement_types.extend(self._syntax.arithmetic_compound_assignment)
+            replacement_types.extend(self._syntax.bitwise_compound_assignment)
+            replacement_types.extend(self._syntax.shift_compound_assignment)
+
+        # Domain: Logical operator
+        if self._syntax.in_types(node.type, self._syntax.logical_operators):
+            replacement_types.extend(self._syntax.arithmetic_operators)
+            replacement_types.extend(self._syntax.bitwise_operators)
+            replacement_types.extend(self._syntax.relational_opearators)
+            replacement_types.extend(self._syntax.shift_operators)
+            replacement_types.extend(self._syntax.logical_operators)
+
+        # Domain: Relational operator
+        if self._syntax.in_types(node.type, self._syntax.relational_opearators):
+            replacement_types.extend(self._syntax.arithmetic_operators)
+            replacement_types.extend(self._syntax.bitwise_operators)
+            replacement_types.extend(self._syntax.logical_operators)
+            replacement_types.extend(self._syntax.shift_operators)
+
+        # Domain: Shift assignment
+        if self._syntax.in_types(node.type, self._syntax.shift_compound_assignment):
+            replacement_types.extend(self._syntax.arithmetic_compound_assignment)
+            replacement_types.extend(self._syntax.bitwise_compound_assignment)
+            replacement_types.extend(self._syntax.plain_assignment)
+
+        # Domain: Shift operator
+        if self._syntax.in_types(node.type, self._syntax.shift_operators):
+            replacement_types.extend(self._syntax.arithmetic_operators)
+            replacement_types.extend(self._syntax.bitwise_operators)
+            replacement_types.extend(self._syntax.relational_opearators)
+
+        mutations: List[Mutation] = list()
+        for type in replacement_types:
+            mutations.append(
+                ReplacementMutation(
+                    parser,
+                    tree,
+                    node,
+                    type.value
+                )
+            )
+        return mutations
 
     def obom(
             self,
@@ -62,7 +126,7 @@ class ObomStrategy(MutationStrategy):
                 rnd_operator (float, optional): A [0,1) value denoting the desired operator in the range category. Defaults to None, then random.
 
             Returns:
-                str: the replacement of the operator node
+                NodeType: the replacement of the operator node
             """
 
             # Domain: Arithmetic assignment

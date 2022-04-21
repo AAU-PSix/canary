@@ -1,7 +1,7 @@
-import random
 from typing import List
 from ts import Tree, Node, NodeType, CSyntax, Parser, Capture
 from .mutation_strategy import MutationStrategy
+from .mutation import Mutation
 
 class OcorStrategy(MutationStrategy):
     def __init__(self, parser: Parser) -> None:
@@ -23,7 +23,6 @@ class OcorStrategy(MutationStrategy):
                 binary_expression_nodes
             )
         )
-
         return binary_expression_nodes
 
     def mutate(
@@ -41,20 +40,13 @@ class OcorStrategy(MutationStrategy):
             tree, node, self.ocor(node).value, encoding
         )
 
-    def choose(self, collection: list, rnd: float = None) -> any:
-        if rnd is None: rnd = random.random()
-        else: rnd = max(min(rnd, 1), 0)
-        index: int = int(rnd * len(collection))
-        return collection[index]
-
-    def random_operator_range(
+    def mutations(
         self,
-        range: List[List[NodeType]],
-        rnd_range: float = None,
-        rnd_operator: float = None
-    ) -> NodeType:
-        range: List[NodeType] = self.choose(range, rnd_range)
-        return self.choose(range, rnd_operator)
+        _: Parser,
+        __: Tree,
+        ___: Node
+    ) -> List[Mutation]:
+        pass
 
     def ocor(
             self,
@@ -62,7 +54,7 @@ class OcorStrategy(MutationStrategy):
             rnd_range: float = None,
             rnd_operator: float = None
         ) -> NodeType:
-            """Obom is a mutant operator category
+            """Ocor is a mutant operator category
 
             Args:
                 node (Node): the operator node
@@ -70,7 +62,7 @@ class OcorStrategy(MutationStrategy):
                 rnd_operator (float, optional): A [0,1) value denoting the desired operator in the range category. Defaults to None, then random.
 
             Returns:
-                str: the replacement of the operator node
+                NodeType: the replacement of the operator node
             """
 
             # Domain: Arithmetic assignment

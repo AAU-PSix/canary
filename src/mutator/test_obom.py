@@ -28,13 +28,13 @@ class TestMutatorObom(unittest.TestCase):
         return super().setUp()
 
     def parse_first_binary_expression_operator(self, binary_query: Query, expression: str) -> Node:
-            root: Node = self._parser.parse(expression).root
-            self.assertEqual(root.type, "translation_unit")
-            captures: Capture = binary_query.captures(root)
-            self.assertEqual(len(captures), 1)
-            operator_node: Node = captures.first()[0]
-            operator: Node = self._language.syntax.get_binary_expression_operator(operator_node)
-            return operator
+        root: Node = self._parser.parse(expression).root
+        self.assertEqual(root.type, "translation_unit")
+        captures: Capture = binary_query.captures(root)
+        self.assertEqual(len(captures), 1)
+        operator_node: Node = captures.first()[0]
+        operator: Node = self._language.syntax.get_binary_expression_operator(operator_node)
+        return operator
 
     def create_range_checks(self, ranges: List[List[str]]) -> "List[tuple(str, float, float)]":
         """Generates the bounds to check for expected ranges
@@ -259,3 +259,18 @@ class TestMutatorObom(unittest.TestCase):
             ]
         )
         self.assert_domain_and_ranges(self._binary_expression_query, domain, range_checks)
+
+    def test_mutations(self) -> None:
+        program = "a+b;"
+        tree = self._parser.parse(program)
+        operator_node = tree.root.first_named_child.first_named_child.children[1]
+        obom = ObomStrategy(self._parser)
+        
+        mutations = obom.mutations(
+            self._parser,
+            tree,
+            operator_node
+        )
+        
+        self.assertEqual(operator_node.type, "+")
+        self.assertEqual(len(mutations), 13)
