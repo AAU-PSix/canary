@@ -125,6 +125,7 @@ def mutation_analysis(
     if strategy == "randomly":
         # Step 7: Mutate 'randomly'
         randomly_mutate_request = MutateRandomlyRequest(
+            instrumentation_request.parser,
             instrumentation_response.instrumented_tree,
             ObomStrategy(instrumentation_request.parser),
             results_parser,

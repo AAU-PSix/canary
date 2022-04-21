@@ -1,7 +1,7 @@
 import random
 from abc import ABC, abstractmethod
 from typing import List
-from ts import Tree, Node, NodeType
+from ts import Tree, Node, NodeType, Parser
 from .mutation import Mutation
 
 class MutationStrategy(ABC):
@@ -22,7 +22,12 @@ class MutationStrategy(ABC):
         pass
 
     @abstractmethod
-    def mutations(self, tree: Tree, node: Node) -> List[Mutation]:
+    def mutations(
+        self,
+        parser: Parser,
+        tree: Tree,
+        node: Node
+    ) -> List[Mutation]:
         pass
 
     def choose(self, collection: list, rnd: float = None) -> any:

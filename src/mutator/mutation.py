@@ -28,7 +28,7 @@ class ReplacementMutation(Mutation):
         super().__init__(parser, tree, node)
 
     def apply(self) -> Tree:
-        self._parser.replace(
+        return self._parser.replace(
             self._tree,
             self._node,
             self._replacement
