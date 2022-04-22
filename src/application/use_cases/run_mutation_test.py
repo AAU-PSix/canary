@@ -1,3 +1,4 @@
+from os import remove
 from mutator import Mutation
 from test_results_parsing import TestResults
 from .use_case import UseCaseRequest, UseCaseResponse, UseCase
@@ -64,6 +65,9 @@ class RunMutationTestUseCase(
         parse_test_results_response = ParseTestResultUseCase().do(
             request.parse_test_results_request
         )
+
+        # Step 5: Remove the test results file
+        remove(request.parse_test_results_request.file_path)
 
         return RunMutationTestResponse(
             parse_test_results_response.test_results

@@ -7,4 +7,10 @@ class LocalisedNode(CFANode):
         super().__init__(node)
 
     def __str__(self) -> str:
-        return f'loc. {self.location}\n[{self.node.start_byte}, {self.node.end_byte}] {self.node.type}'
+        text = f'loc. {self.location}\n[{self.node.start_byte}, {self.node.end_byte}] {self.node.type}'
+        if hasattr(self, "amount_killed") and hasattr(self, "amount_survived"):
+            total_mutations = self.amount_survived + self.amount_killed
+            if total_mutations > 0:
+                mutation_score = self.amount_killed / total_mutations
+                text += f"\n{self.amount_killed}/{self.amount_survived}={mutation_score}\n"
+        return text

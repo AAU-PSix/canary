@@ -89,20 +89,22 @@ class MutateAlongAllTracesUseCase(
     UseCase[MutateAlongAllTracesRequest, MutateAlongAllTracesResponse]
 ):
     def do(self, request: MutateAlongAllTracesRequest) -> MutateAlongAllTracesResponse:
+        # Step 1: Find all unique visited locations from all the traces
         visited_locations: List[str] = list()
         for trace in request.traces:
             for location in trace.sequence:
                 if location.id not in visited_locations:
                     visited_locations.append(location.id)
 
+        # Step 2: Find all the localised nodes we visited
         visited_nodes: List[LocalisedNode] = list()
         for location in visited_locations:
             for node in request.localised_cfg.nodes:
                 if node.location == location:
                     visited_nodes.append(node)
 
+        # Step 3: Randomly mutate on all nodes we visited
         response = MutateAlongAllTracesResponse()
-
         for visited_node in visited_nodes:
             mutate_randomly_request = MutateRandomlyRequest(
                 visited_node.node,
@@ -121,6 +123,13 @@ class MutateAlongAllTracesUseCase(
             )
             response.amount_killed += mutate_randomly_response.amount_killed
             response.amount_survived += mutate_randomly_response.amount_survived
+            visited_node.amount_killed = mutate_randomly_response.amount_killed
+            visited_node.amount_survived = mutate_randomly_response.amount_survived
 
-        print(f'{response.amount_killed} killed and {response.amount_survived}')
+        # Step 4: Save the localised CFG
+        request.localised_cfg.draw(
+            request.tree, "localised_cfg_with_mutation_score"
+        ).save(directory=f"{request.base}/{request.out}")
+
+        print(f'{response.amount_killed} killed and {response.amount_survived} survived')
         return response

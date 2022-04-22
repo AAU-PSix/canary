@@ -73,6 +73,7 @@ class UnitAnalyseTreeUseCase(
             identifier: Node = request.syntax.get_function_identifier(
                 definition
             )
+            if identifier is None: continue
             name: str = request.tree.contents_of(identifier)
             if name == request.unit:
                 unit_function = definition
