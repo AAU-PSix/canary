@@ -107,7 +107,7 @@ def mutation_analysis(
     
     # Step 7: Create mutation strategy
     applied_mutation_strategy = MutationStrategyFactory().create(
-        mutation_strategy
+        mutation_strategy, instrumentation_request.parser
     )
 
     if placement_strategy == "randomly":
