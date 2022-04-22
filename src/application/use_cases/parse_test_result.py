@@ -1,4 +1,4 @@
-from os import linesep
+from os import linesep, remove
 from test_results_parsing import (
     TestResults,
     CuTestResultsParser,
@@ -44,4 +44,7 @@ class ParseTestResultUseCase(
         contents: str = file.read()
         lines = contents.split(linesep)
         test_results = request.parser.parse(lines)
+
+        remove(request.file_path)
+
         return ParseTestResultResponse(test_results)

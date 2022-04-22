@@ -73,7 +73,6 @@ def mutation_analysis(
             instrumentation_response = InfestProgramUseCase().do(
                 instrumentation_request
             )
-            print("Step 2")
 
             # Step 3: Instrumented tree unit analysis
             instrumented_unit_analysis_of_file_request = UnitAnalyseFileRequest(
@@ -82,7 +81,6 @@ def mutation_analysis(
             instrumented_unit_analysis_of_file_response = UnitAnalyseFileUseCase().do(
                 instrumented_unit_analysis_of_file_request
             )
-            print("Step 3")
 
             # Step 4: Get the localised CFG
             unit_analysis_of_tree_request = UnitAnalyseTreeRequest(
@@ -99,7 +97,6 @@ def mutation_analysis(
             localised_cfg = LocationDecorator(instrumentation_response.instrumented_tree).decorate(
                 instrumented_cfg
             )
-            print("Step 4")
 
             # Step 5: Run tests on original program
             original_test_request = RunTestRequest(

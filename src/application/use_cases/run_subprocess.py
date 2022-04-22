@@ -67,5 +67,6 @@ class RunSubsystemUseCase(
             request.command.split(),
             stdout=request.stdout,
             stderr=request.stderr,
+            timeout=10
         )
         return RunSubsystemResponse()

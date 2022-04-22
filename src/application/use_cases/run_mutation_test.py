@@ -66,9 +66,6 @@ class RunMutationTestUseCase(
             request.parse_test_results_request
         )
 
-        # Step 5: Remove the test results file
-        remove(request.parse_test_results_request.file_path)
-
         return RunMutationTestResponse(
             parse_test_results_response.test_results
         )
