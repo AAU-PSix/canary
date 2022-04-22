@@ -19,6 +19,9 @@ from application import (
 from cfa import CCFAFactory
 from decorators import LocationDecorator
 from mutator import ObomStrategy
+from src.mutator.mutation_strategy_factory import MutationStrategyFactory
+from src.test_results_parsing import resutls_parser
+from src.test_results_parsing.results_parser_factory import ResultsParserFactory
 from test_results_parsing import (
     FfsGnuAssertResultsParser,
     CuTestResultsParser
@@ -97,10 +100,9 @@ def mutation_analysis(
     RunTestUseCase().do(original_test_request)
 
     # Step 6: Parse test results
-    if testing_backend == "ffs_gnu_assert":
-        test_results_parser = FfsGnuAssertResultsParser()
-    elif testing_backend == "cutest":
-        test_results_parser = CuTestResultsParser()
+    test_results_parser = ResultsParserFactory().create(
+        testing_backend
+    )
     parse_test_results_request = ParseTestResultRequest(
         original_test_request.out,
         test_results_parser
@@ -110,10 +112,9 @@ def mutation_analysis(
     )
     
     # Step 7: Create mutation strategy
-    if mutation_strategy == "obom":
-        applied_mutation_strategy = ObomStrategy(
-            instrumentation_request.parser
-        )
+    applied_mutation_strategy = MutationStrategyFactory().create(
+        mutation_strategy
+    )
 
     if placement_strategy == "randomly":
         # Step 7: Mutate 'randomly'

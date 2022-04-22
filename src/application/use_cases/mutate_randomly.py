@@ -94,20 +94,18 @@ class MutateRandomlyUseCase(
             )
             for m_idx, mutation in enumerate(mutations):
                 test_results_path = f'{request.base}/{request.out}/mutant_{c_idx}_{m_idx}_test_results.txt'
-                run_test_request = RunTestRequest(
-                    request.build_command,
-                    request.test_command,
-                    test_results_path
-                )
-                parse_test_results_request = ParseTestResultRequest(
-                    test_results_path,
-                    request.test_results_parser
-                )
                 run_mutation_test_request = RunMutationTestRequest(
                     mutation,
                     request.full_file_path,
-                    run_test_request,
-                    parse_test_results_request
+                    RunTestRequest(
+                        request.build_command,
+                        request.test_command,
+                        test_results_path
+                    ),
+                    ParseTestResultRequest(
+                        test_results_path,
+                        request.test_results_parser
+                    )
                 )
                 run_mutation_test_response = RunMutationTestUseCase().do(
                     run_mutation_test_request
