@@ -11,16 +11,7 @@ from commands import (
 def main():
     commandLineParser: ArgumentParser = setupCommandLine()
     args = commandLineParser.parse_args()
-    if args.action == "tests":
-        generate_tests(
-            args.file,
-            ["make", "-C", "/input/", "build"],
-            "/input/build/c_06_test",
-            base=args.base,
-            persist=args.persist,
-            test=args.test
-        )
-    elif args.action == "cfg":
+    if args.action == "cfg":
         create_cfg(
             args.file,
             args.unit,
@@ -31,15 +22,13 @@ def main():
         mutation_analysis(
             args.file,
             args.unit,
-            args.out,
-            args.persist,
-            args.mutations,
-            args.log,
             args.build_command,
             args.test_command,
+            args.out,
             args.base,
             args.testing_backend,
-            args.strategy
+            args.placement_strategy,
+            args.mutation_strategy,
         )
 
 if __name__ == "__main__":

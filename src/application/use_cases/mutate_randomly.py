@@ -1,62 +1,36 @@
 from mutator import MutationStrategy
-from cfa import LocalisedCFA
-from ts import Tree, Node, Parser
-from .use_case import *
-from .run_test import (
-    RunTestRequest,
-    RunTestUseCase
-)
-from .parse_test_result import (
-    ParseTestResultRequest,
-    ParseTestResultUseCase
-)
 from test_results_parsing import ResultsParser
+from ts import Tree, Parser, Node
+from .run_mutation_test import RunMutationTestRequest, RunMutationTestUseCase
+from .run_test import RunTestRequest
+from .parse_test_result import ParseTestResultRequest
+from .use_case import UseCaseRequest, UseCaseResponse, UseCase
 
 class MutateRandomlyRequest(UseCaseRequest):
     def __init__(
         self,
-        parser: Parser,
+        node: Node,
         tree: Tree,
+        parser: Parser,
         strategy: MutationStrategy,
-        results_parser: ResultsParser,
         build_command: str,
         test_command: str,
-        base: str,
-        out: str,
-        filepath: str,
-        node: Node = None,
+        test_results_parser: ResultsParser,
+        full_file_path: str,
+        out: str = "",
+        base: str = ""
     ) -> None:
-        self._parser = parser
-        self._tree = tree
-        self._node = node or tree.root
-        self._strategy = strategy
-        self._results_parser = results_parser
         self._build_command = build_command
         self._test_command = test_command
-        self._base = base
-        self._filepath = filepath
+        self._test_results_parser = test_results_parser
+        self._parser = parser
+        self._node = node
+        self._tree = tree
+        self._strategy = strategy
+        self._full_file_path = full_file_path
         self._out = out
+        self._base = base
         super().__init__()
-
-    @property
-    def parser(self) -> Parser:
-        return self._parser
-
-    @property
-    def tree(self) -> Tree:
-        return self._tree
-
-    @property
-    def node(self) -> LocalisedCFA:
-        return self._node
-
-    @property
-    def strategy(self) -> MutationStrategy:
-        return self._strategy
-
-    @property
-    def results_parser(self) -> ResultsParser:
-        return self._results_parser
 
     @property
     def build_command(self) -> str:
@@ -67,83 +41,82 @@ class MutateRandomlyRequest(UseCaseRequest):
         return self._test_command
 
     @property
-    def filepath(self) -> str:
-        return self._filepath
+    def test_results_parser(self) -> str:
+        return self._test_results_parser
 
     @property
-    def base(self) -> str:
-        return self._base
+    def parser(self) -> Parser:
+        return self._parser
+
+    @property
+    def node(self) -> Node:
+        return self._node
+
+    @property
+    def tree(self) -> Tree:
+        return self._tree
+
+    @property
+    def strategy(self) -> MutationStrategy:
+        return self._strategy
+
+    @property
+    def full_file_path(self) -> str:
+        return self._full_file_path
 
     @property
     def out(self) -> str:
         return self._out
 
+    @property
+    def base(self) -> str:
+        return self._base
 
-class MutateRandomlyResponse(UseCaseResponse): pass
+class MutateRandomlyResponse(UseCaseResponse):
+    def __init__(self) -> None:
+        self.amount_killed = 0
+        self.amount_survived = 0
+        super().__init__()
 
 class MutateRandomlyUseCase(
     UseCase[MutateRandomlyRequest, MutateRandomlyResponse]
 ):
     def do(self, request: MutateRandomlyRequest) -> MutateRandomlyResponse:
-        killed_mutants_count = 0
-        survived_mutatans_count = 0
-
-        # Step 1: Find all candidates
+        response = MutateRandomlyResponse()
+        
         candidates = request.strategy.capture(
             request.node
         )
-        print("  Step 1: Find all candidates")
-
-        # Step 2: Go through each candidate
         for c_idx, candidate in enumerate(candidates):
-            print(f"    Found '{len(candidates)}' candidates and picked '{request.tree.contents_of(candidate)}' inside '{request.tree.contents_of(candidate.parent)}'")
 
-            # Step 3: Get all mutations for the candidate
             mutations = request.strategy.mutations(
                 request.parser, request.tree, candidate
             )
-            print(f"    The candidate has {len(mutations)} possible mutations")
-            
             for m_idx, mutation in enumerate(mutations):
-
-                # Step 4: Write mutated program
-                file = open(request.filepath, "w+")
-                mutated_tree = mutation.apply()
-                file.write(mutated_tree.text)
-                file.close()
-                print("  Step 4: Write mutated program")
-
-                # Step 5: Run tests
-                test_request = RunTestRequest(
+                test_results_path = f'{request.base}/{request.out}/mutant_{c_idx}_{m_idx}_test_results.txt'
+                run_test_request = RunTestRequest(
                     request.build_command,
                     request.test_command,
-                    f'{request.base}/{request.out}/mutant_{c_idx}_{m_idx}_test_results.txt'
+                    test_results_path
                 )
-                RunTestUseCase().do(test_request)
-                print("  Step 5: Run tests")
-
-                # Step 6: Parse test results
                 parse_test_results_request = ParseTestResultRequest(
-                    test_request.test_stdout,
-                    request.results_parser
+                    test_results_path,
+                    request.test_results_parser
                 )
-                parse_test_results_response = ParseTestResultUseCase().do(
+                run_mutation_test_request = RunMutationTestRequest(
+                    mutation,
+                    request.full_file_path,
+                    run_test_request,
                     parse_test_results_request
                 )
-                if parse_test_results_response.test_results.summary.failure_count > 0:
-                    print("    Mutant was killed")
-                    killed_mutants_count += 1
-                else:
-                    print("    Mutant survived")
-                    survived_mutatans_count += 1
-                print("  Step 6: Parse test results")
+                run_mutation_test_response = RunMutationTestUseCase().do(
+                    run_mutation_test_request
+                )
 
-                # Step 7: Revert to the instrumented program after mutation
-                file = open(request.filepath, "w+")
-                file.write(request.tree.text)
-                file.close()
-                print("  Step 7: Revert to the instrumented program after mutation")
-
-        print(f"**Stats** {killed_mutants_count} killed and {survived_mutatans_count} survived")
-
-        return MutateRandomlyResponse()
+                summary = run_mutation_test_response.test_results.summary
+                if summary.failure_count > 0:
+                    response.amount_killed += 1
+                else: response.amount_survived += 1
+        
+        print(f'{response.amount_killed} killed and {response.amount_survived}')
+        return response

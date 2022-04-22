@@ -7,11 +7,11 @@ class RunTestRequest(UseCaseRequest):
         self,
         build_command: str,
         test_command: str,
-        test_stdout: Union[str, IO[Any]] = None,
+        out: Union[str, IO[Any]] = None,
     ) -> None:
         self._build_command = build_command
         self._test_command = test_command
-        self._test_stdout = test_stdout
+        self._out = out
         super().__init__()
 
     @property
@@ -23,8 +23,8 @@ class RunTestRequest(UseCaseRequest):
         return self._test_command
 
     @property
-    def test_stdout(self) -> Union[str, IO[Any]]:
-        return self._test_stdout
+    def out(self) -> Union[str, IO[Any]]:
+        return self._out
 
 class RunTestResponse(UseCaseResponse): pass
 
@@ -33,9 +33,9 @@ class RunTestUseCase(
 ):
     def do(self, request: RunTestRequest) -> RunTestResponse:
         # If the stdout is a string, then create the output file
-        if isinstance(request.test_stdout, str):
-            test_output = open(request.test_stdout, 'w')
-        else: test_output = request.test_stdout
+        if isinstance(request.out, str):
+            test_output = open(request.out, 'w')
+        else: test_output = request.out
 
         runner = RunSubsystemUseCase()
         if request.build_command is not None:

@@ -107,8 +107,6 @@ class MutateAlongTraceUseCase(
                 [ *request.cfg.follow(None, request.trace) ]
             )
         )
-        print("Step 1: Trace the execution to find the nodes")
-        print(f"  Found  {len(trace_nodes)} nodes on the trace")
 
         visited_trace_nodes: List[Tuple[str, Node]] = list()
 
@@ -120,7 +118,6 @@ class MutateAlongTraceUseCase(
 
             candidates = request.strategy.capture(trace_node.node)
             for c_idx, candidate in enumerate(candidates):
-                print(f"  Found '{len(candidates)}' candidates and picked '{request.tree.contents_of(candidate)}' inside '{request.tree.contents_of(candidate.parent)}'")
 
                 # Step 2: Get all possible mutations for the candidate
                 mutations = request.strategy.mutations(
@@ -128,14 +125,12 @@ class MutateAlongTraceUseCase(
                     request.tree,
                     candidate
                 )
-                print(f"  The candidate {c_idx} has {len(mutations)} possible mutations")
                 for m_idx, mutation in enumerate(mutations):
                     # Step 3: Write the mutated program
                     file = open(request.filepath, "w+")
                     mutated_tree = mutation.apply()
                     file.write(mutated_tree.text)
                     file.close()
-                    print("  Step 3: Write the mutated program")
 
                     # Step 4: Run tests
                     test_request = RunTestRequest(
@@ -144,30 +139,23 @@ class MutateAlongTraceUseCase(
                         f'{request.base}/{request.out}/mutant_{t_idx}_{c_idx}_{m_idx}_test_results.txt'
                     )
                     RunTestUseCase().do(test_request)
-                    print("  Step 4: Run tests")
 
                     # Step 5: Parse test results
                     parse_test_results_request = ParseTestResultRequest(
-                        test_request.test_stdout,
+                        test_request.out,
                         request.results_parser
                     )
                     parse_test_results_response = ParseTestResultUseCase().do(
                         parse_test_results_request
                     )
                     if parse_test_results_response.test_results.summary.failure_count > 0:
-                        print("    Mutant was killed")
                         killed_mutants_count += 1
                     else:
-                        print("    Mutant survived")
                         survived_mutatans_count += 1
-                    print("  Step 5: Parse test results")
 
                     # Step 6: Revert to the instrumented program after mutation
                     file = open(request.filepath, "w+")
                     file.write(request.tree.text)
                     file.close()
-                    print("  Step 6: Revert to the instrumented program after mutation")
-
-        print(f"**Stats** {killed_mutants_count} killed and {survived_mutatans_count} survived")
 
         return MutateAlongTraceResponse()

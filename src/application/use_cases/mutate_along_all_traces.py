@@ -95,7 +95,6 @@ class MutateAlongAllTracesUseCase(
 
             if trace_str in visited_traces: continue
             visited_traces.append(trace_str)
-            print(trace_str)
 
             mutate_along_trace_request = MutateAlongTraceRequest(
                 request.parser,

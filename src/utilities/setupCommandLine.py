@@ -14,49 +14,14 @@ def setupCommandLine() -> ArgumentParser:
         choices=["tests", "cfg", "mutate", "instrument"]
     )
     parser.add_argument(
-        "-p", "--persist",
-        help="If true mutated files and graphs will persist in 'out'",
-        default=False,
-        action="store_true"
-    )
-    parser.add_argument(
-        "-l", "--log",
-        help="If true the a log file is created at 'out'",
-        default=False,
-        action="store_true"
-    )
-    parser.add_argument(
-        "-m", "--mutations",
-        help="The amount of mutations",
-        type=int,
-        default=1000,
-    )
-    parser.add_argument(
-        "-b", "--base",
-        type=str,
-        help="The base directory",
-        default=""
-    )
-    parser.add_argument(
         "-f", "--file",
         type=str,
         help="The file to target"
     )
     parser.add_argument(
-        "-t", "--test",
-        type=str,
-        help="The directory to the tests"
-    )
-    parser.add_argument(
         "-u", "--unit",
         type=str,
         help="The unit to test"
-    )
-    parser.add_argument(
-        "-o", "--out",
-        type=str,
-        default="./",
-        help="The output directory"
     )
     parser.add_argument(
         "-bc", "--build_command",
@@ -71,6 +36,18 @@ def setupCommandLine() -> ArgumentParser:
         help="The command used to test the project"
     )
     parser.add_argument(
+        "-o", "--out",
+        type=str,
+        default="./",
+        help="The output directory"
+    )
+    parser.add_argument(
+        "-b", "--base",
+        type=str,
+        help="The base directory",
+        default=""
+    )
+    parser.add_argument(
         "-tb", "--testing_backend",
         type=str,
         help="The action to do",
@@ -78,14 +55,19 @@ def setupCommandLine() -> ArgumentParser:
         choices=["ffs_gnu_assert", "cutest"]
     )
     parser.add_argument(
-        "-s", "--strategy",
+        "-ps", "--placement_strategy",
         type=str,
         help="The mutation placement strategy",
         default="randomly",
         choices=["randomly", "pathbased"]
     )
+    parser.add_argument(
+        "-ms", "--mutation_strategy",
+        type=str,
+        help="The mutation placement strategy",
+        choices=["obom"]
+    )
     return parser
-
 
 def setupIOHandler(commandLineParser: ArgumentParser):
     args = commandLineParser.parse_args()
