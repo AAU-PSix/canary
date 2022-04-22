@@ -1,65 +1,47 @@
 from typing import List
 from instrumentation_trace import Trace
 from mutator import MutationStrategy
-from cfa import LocalisedCFA
+from cfa import LocalisedCFA, LocalisedNode
+from test_results_parsing import ResultsParser
 from ts import Tree, Parser
 from .use_case import *
-from .mutate_along_trace import (
-    MutateAlongTraceRequest,
-    MutateAlongTraceUseCase
-)
+from .mutate_randomly import MutateRandomlyRequest, MutateRandomlyUseCase
 
 class MutateAlongAllTracesRequest(UseCaseRequest):
     def __init__(
         self,
-        tree: Tree,
         traces: List[Trace],
-        cfg: LocalisedCFA,
-        strategy: MutationStrategy,
+        localised_cfg: LocalisedCFA,
+        tree: Tree,
         parser: Parser,
-        results_parser: str,
+        strategy: MutationStrategy,
         build_command: str,
         test_command: str,
-        base: str,
-        out: str,
-        filepath: str,
+        test_results_parser: ResultsParser,
+        full_file_path: str,
+        out: str = "",
+        base: str = ""
     ) -> None:
-        self._tree = tree
         self._traces = traces
-        self._cfg = cfg
-        self._strategy = strategy
-        self._parser = parser
-        self._results_parser = results_parser
+        self._localised_cfg = localised_cfg
         self._build_command = build_command
         self._test_command = test_command
-        self._base = base
+        self._test_results_parser = test_results_parser
+        self._parser = parser
+        self._tree = tree
+        self._strategy = strategy
+        self._full_file_path = full_file_path
         self._out = out
-        self._filepath = filepath
+        self._base = base
         super().__init__()
-
-    @property
-    def tree(self) -> Trace:
-        return self._tree
-
-    @property
-    def cfg(self) -> LocalisedCFA:
-        return self._cfg
 
     @property
     def traces(self) -> List[Trace]:
         return self._traces
 
     @property
-    def strategy(self) -> MutationStrategy:
-        return self._strategy
-
-    @property
-    def parser(self) -> Parser:
-        return self._parser
-
-    @property
-    def results_parser(self) -> str:
-        return self._results_parser
+    def localised_cfg(self) -> LocalisedCFA:
+        return self._localised_cfg
 
     @property
     def build_command(self) -> str:
@@ -70,44 +52,75 @@ class MutateAlongAllTracesRequest(UseCaseRequest):
         return self._test_command
 
     @property
-    def base(self) -> str:
-        return self._base
+    def test_results_parser(self) -> str:
+        return self._test_results_parser
+
+    @property
+    def parser(self) -> Parser:
+        return self._parser
+
+    @property
+    def tree(self) -> Tree:
+        return self._tree
+
+    @property
+    def strategy(self) -> MutationStrategy:
+        return self._strategy
+
+    @property
+    def full_file_path(self) -> str:
+        return self._full_file_path
 
     @property
     def out(self) -> str:
         return self._out
 
     @property
-    def filepath(self) -> str:
-        return self._filepath
+    def base(self) -> str:
+        return self._base
 
-class MutateAlongAllTracesResponse(UseCaseResponse): pass
+class MutateAlongAllTracesResponse(UseCaseResponse):
+    def __init__(self) -> None:
+        self.amount_killed = 0
+        self.amount_survived = 0
+        super().__init__()
 
 class MutateAlongAllTracesUseCase(
     UseCase[MutateAlongAllTracesRequest, MutateAlongAllTracesResponse]
 ):
     def do(self, request: MutateAlongAllTracesRequest) -> MutateAlongAllTracesResponse:
-        visited_traces: List[str] = list()
-        for trace in request._traces:
-            trace_str = ""
+        visited_locations: List[str] = list()
+        for trace in request.traces:
             for location in trace.sequence:
-                trace_str += f'{location.id} '
+                if location.id not in visited_locations:
+                    visited_locations.append(location.id)
 
-            if trace_str in visited_traces: continue
-            visited_traces.append(trace_str)
+        visited_nodes: List[LocalisedNode] = list()
+        for location in visited_locations:
+            for node in request.localised_cfg.nodes:
+                if node.location == location:
+                    visited_nodes.append(node)
 
-            mutate_along_trace_request = MutateAlongTraceRequest(
-                request.parser,
+        response = MutateAlongAllTracesResponse()
+
+        for visited_node in visited_nodes:
+            mutate_randomly_request = MutateRandomlyRequest(
+                visited_node.node,
                 request.tree,
+                request.parser,
                 request.strategy,
-                request.results_parser,
                 request.build_command,
                 request.test_command,
-                request.base,
+                request.test_results_parser,
+                request.full_file_path,
                 request.out,
-                request.filepath,
-                trace,
-                request.cfg,
+                request.base,
             )
-            MutateAlongTraceUseCase().do(mutate_along_trace_request)
-        return MutateAlongAllTracesResponse()
+            mutate_randomly_response = MutateRandomlyUseCase().do(
+                mutate_randomly_request
+            )
+            response.amount_killed += mutate_randomly_response.amount_killed
+            response.amount_survived += mutate_randomly_response.amount_survived
+
+        print(f'{response.amount_killed} killed and {response.amount_survived}')
+        return response

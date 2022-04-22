@@ -1,6 +1,7 @@
 from typing import List, Tuple
 from instrumentation_trace import Trace
 from mutator import MutationStrategy
+from test_results_parsing import ResultsParser
 from decorators import TweetHandler
 from cfa import LocalisedCFA
 from ts import Tree, Parser, Node
@@ -14,7 +15,6 @@ from .parse_test_result import (
     ParseTestResultRequest,
     ParseTestResultUseCase
 )
-from test_results_parsing import ResultsParser
 
 class MutateAlongTraceRequest(UseCaseRequest):
     def __init__(

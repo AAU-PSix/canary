@@ -135,17 +135,17 @@ def mutation_analysis(
 
         # Step 8: Mutate 'pathbased'
         mutate_along_trace_request = MutateAlongAllTracesRequest(
-            instrumentation_response.instrumented_tree,
             unit_traces,
             localised_cfg,
-            applied_mutation_strategy,
+            instrumentation_response.instrumented_tree,
             instrumentation_request.parser,
-            test_results_parser,
+            applied_mutation_strategy,
             build_command,
             test_command,
-            base,
-            out,
+            test_results_parser,
             unit_analysis_of_file_request.filepath,
+            out,
+            base,
         )
         MutateAlongAllTracesUseCase().do(
             mutate_along_trace_request
