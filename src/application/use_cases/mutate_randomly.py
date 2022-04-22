@@ -116,5 +116,5 @@ class MutateRandomlyUseCase(
                     response.amount_killed += 1
                 else: response.amount_survived += 1
         
-        print(f'{response.amount_killed} killed and {response.amount_survived}')
+        print(f'{response.amount_killed} killed and {response.amount_survived} survived')
         return response
