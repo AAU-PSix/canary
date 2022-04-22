@@ -21,6 +21,7 @@ def setupCommandLine() -> ArgumentParser:
     parser.add_argument(
         "-u", "--unit",
         type=str,
+        default=None,
         help="The unit to test"
     )
     parser.add_argument(

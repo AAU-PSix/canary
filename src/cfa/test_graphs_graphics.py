@@ -908,7 +908,7 @@ class TestGraphsGraphics(TestCase):
                 sum = a + b;
                 return sum;
             }
-             """)
+             """),
         ]
 
         def draw_normal_cfa(name: str, program: str):

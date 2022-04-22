@@ -7,7 +7,7 @@ from application import (
     CreateCFGUseCase
 )
 from ts import (
-    Parser,
+    LanguageLibrary,
 )
 
 def create_cfg(
@@ -22,7 +22,7 @@ def create_cfg(
 
     # Step 1: Unit analysis
     unit_analysis_request = UnitAnalyseFileRequest(
-        f'{base}/{file}', Parser.c(), unit
+        f'{base}/{file}', LanguageLibrary.c(), unit
     )
     unit_analysis_response = UnitAnalyseFileUseCase().do(
         unit_analysis_request
@@ -31,7 +31,7 @@ def create_cfg(
     # Step 2: Create CFG
     create_cfg_request = CreateCFGRequest(
         unit_analysis_response.tree,
-        unit_analysis_response.unit_function
+        unit_analysis_response.unit_functions
     )
     create_cfg_response = CreateCFGUseCase().do(
         create_cfg_request

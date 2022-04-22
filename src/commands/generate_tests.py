@@ -20,9 +20,9 @@ from application import (
     GenerateMutantsRequest,
     GenerateMutantsUseCase
 )
-
 from ts import (
     Parser,
+    LanguageLibrary,
 )
 
 from symbol_table import CSymbolTableFiller, CSyntax
@@ -47,7 +47,7 @@ def generate_tests(
 
     # Step 1: Unit analysis to find FUT (Funtion Under Test)
     unit_analysis_request = UnitAnalyseFileRequest(
-        filepath, Parser.c(), "add"
+        filepath, LanguageLibrary.c(), "add"
     )
     unit_analysis_response = UnitAnalyseFileUseCase().do(
         unit_analysis_request
@@ -74,7 +74,7 @@ def generate_tests(
     infest_program_request = InfestProgramRequest(
         Parser.c(),
         unit_analysis_response.tree,
-        unit_analysis_response.unit_function,
+        unit_analysis_response.unit_functions,
         filepath
     )
     InfestProgramUseCase().do(infest_program_request)

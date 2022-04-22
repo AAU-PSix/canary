@@ -126,10 +126,5 @@ class MutateAlongAllTracesUseCase(
             visited_node.amount_killed = mutate_randomly_response.amount_killed
             visited_node.amount_survived = mutate_randomly_response.amount_survived
 
-        # Step 4: Save the localised CFG
-        request.localised_cfg.draw(
-            request.tree, "localised_cfg_with_mutation_score"
-        ).save(directory=f"{request.base}/{request.out}")
-
         print(f'{response.amount_killed} killed and {response.amount_survived} survived')
         return response

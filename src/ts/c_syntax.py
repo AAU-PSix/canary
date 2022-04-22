@@ -222,9 +222,14 @@ class CSyntax(Syntax):
         return node.named_children[-1]
 
     def get_function_identifier(self, definition: Node) -> Node:
-        return definition \
-            .child_by_field_name("declarator") \
-            .child_by_field_name("declarator")
+        current = definition \
+            .child_by_field(CField.DECLARATOR) \
+            .child_by_field(CField.DECLARATOR)
+        while True:
+            next = current.child_by_field(CField.DECLARATOR)
+            if next is None: break
+            current = next
+        return current
 
     def get_immediate_structure_descendent(self, node: Node) -> Node:
         if node is None: return None

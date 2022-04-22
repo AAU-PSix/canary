@@ -1,12 +1,9 @@
-from typing import List
-from utilities import FileHandler
+from typing import List, Tuple
+from .parse_file import ParseFileRequest, ParseFileUseCase
+from .unit_analyse_tree import UnitAnalyseTreeRequest, UnitAnalyseTreeUseCase
 from ts import (
-    Parser,
     Tree,
-    Query,
     Language,
-    CSyntax,
-    Capture,
     Node
 )
 from .use_case import *
@@ -15,11 +12,11 @@ class UnitAnalyseFileRequest(UseCaseRequest):
     def __init__(
         self,
         filepath: str,
-        parser: Parser,
-        unit: str,
+        language: Language,
+        unit: str = None,
     ) -> None:
         self._filepath = filepath
-        self._parser = parser
+        self._language = language
         self._unit = unit
         super().__init__()
 
@@ -28,25 +25,17 @@ class UnitAnalyseFileRequest(UseCaseRequest):
         return self._filepath
 
     @property
-    def parser(self) -> Parser:
-        return self._parser
-
-    @property
-    def syntax(self) -> CSyntax:
-        return self.language.syntax
+    def language(self) -> Language:
+        return self._language
 
     @property
     def unit(self) -> str:
         return self._unit
 
-    @property
-    def language(self) -> Language:
-        return self._parser.language
-
 class UnitAnalyseFileResponse(UseCaseResponse):
-    def __init__(self, tree: Tree, unit_function: Node) -> None:
+    def __init__(self, tree: Tree, unit_functions: List[Tuple[Node, str]]) -> None:
         self._tree = tree
-        self._unit_function = unit_function
+        self._unit_functions = unit_functions
         super().__init__()
 
     @property
@@ -54,12 +43,12 @@ class UnitAnalyseFileResponse(UseCaseResponse):
         return self._tree
 
     @property
-    def unit_function(self) -> Node:
-        return self._unit_function
+    def unit_functions(self) -> List[Tuple[Node, str]]:
+        return self._unit_functions
 
     @property
     def found(self) -> bool:
-        return self._unit_function is not None
+        return len(self._unit_functions) > 0
 
 class UnitAnalyseFileUseCase(
     UseCase[UnitAnalyseFileRequest, UnitAnalyseFileResponse]
@@ -68,36 +57,23 @@ class UnitAnalyseFileUseCase(
         super().__init__()
 
     def do(self, request: UnitAnalyseFileRequest) -> UnitAnalyseFileResponse:
-        # Step 1: Read the file and store its content
-        file = open(request.filepath)
-        contents: str = file.read()
-        file.close()
-
-        # Step 2: Parse the contents
-        tree: Tree = request.parser.parse(contents)
-
-        # Step 3: Retrieve all function definitions
-        query: Query = request.language.query(
-            request.syntax.function_declaration_query
+        # Step 1: Parse the file into the correct tree
+        parse_file_request = ParseFileRequest(
+            request.filepath, request.language
         )
-        capture: Capture = query.captures(tree.root)
-        definitions: List[Node] = capture.nodes(
-            request.syntax.get_function_definitions
+        parse_file_response = ParseFileUseCase().do(
+            parse_file_request
         )
 
-        # Step 4: Find the Function Under Test (FUT) - unit_function
-        unit_function: Node = None
-        for definition in definitions:
-            identifier: Node = request.syntax.get_function_identifier(
-                definition
-            )
-            if identifier is None: continue
-            name: str = tree.contents_of(identifier)
-            if name == request.unit:
-                unit_function = definition
-                break
+        # Step 2: Analyse the parsed tree
+        unit_analyse_tree_request = UnitAnalyseTreeRequest(
+            parse_file_response.tree, request.language, request.unit
+        )
+        unit_analyse_tree_response = UnitAnalyseTreeUseCase().do(
+            unit_analyse_tree_request
+        )
 
         return UnitAnalyseFileResponse(
-            tree,
-            unit_function
+            parse_file_response.tree,
+            unit_analyse_tree_response.unit_functions
         )
