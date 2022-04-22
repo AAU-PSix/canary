@@ -29,6 +29,8 @@ def main():
             args.testing_backend,
             args.placement_strategy,
             args.mutation_strategy,
+            args.unit_whitelist,
+            args.unit_blacklist,
         )
 
 if __name__ == "__main__":

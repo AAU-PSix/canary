@@ -18,7 +18,7 @@ class MutateRandomlyRequest(UseCaseRequest):
         test_results_parser: ResultsParser,
         full_file_path: str,
         out: str = "",
-        base: str = ""
+        base: str = "",
     ) -> None:
         self._build_command = build_command
         self._test_command = test_command

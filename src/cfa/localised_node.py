@@ -12,5 +12,5 @@ class LocalisedNode(CFANode):
             total_mutations = self.amount_survived + self.amount_killed
             if total_mutations > 0:
                 mutation_score = self.amount_killed / total_mutations
-                text += f"\n{self.amount_killed}/{self.amount_survived}={mutation_score}\n"
+                text += f"\n{self.amount_killed} killed/{total_mutations} total={mutation_score}\n"
         return text

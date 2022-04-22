@@ -68,6 +68,18 @@ def setupCommandLine() -> ArgumentParser:
         help="The mutation placement strategy",
         choices=["obom"]
     )
+    parser.add_argument(
+        "-uwl", "--unit_whitelist",
+        type=str,
+        help="A space sperated list of units to whitelist",
+        default=""
+    )
+    parser.add_argument(
+        "-ubl", "--unit_blacklist",
+        type=str,
+        help="A space sperated list of units to blacklist",
+        default=""
+    )
     return parser
 
 def setupIOHandler(commandLineParser: ArgumentParser):

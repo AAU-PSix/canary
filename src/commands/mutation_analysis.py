@@ -35,6 +35,8 @@ def mutation_analysis(
     testing_backend: str = "ffs_gnu_assert",
     placement_strategy: str = "randomly",
     mutation_strategy: str = "obom",
+    unit_whitelist: str = None,
+    unit_blacklist: str = None
 ) -> None:
     # Step 0: Initialize the system
     initialize_system_request = InitializeSystemRequest()
@@ -47,11 +49,18 @@ def mutation_analysis(
     unit_analysis_of_file_response = UnitAnalyseFileUseCase().do(
         unit_analysis_of_file_request
     )
+    
+    whitelist = (unit_whitelist or "").split()
+    blacklist = (unit_blacklist or "").split()
 
     for u_idx, unit_tuple in enumerate(unit_analysis_of_file_response.unit_functions):
         unit_node = unit_tuple[0]
         unit_name = unit_tuple[1]
         print(unit_name)
+        
+        if (len(whitelist) > 0 and unit_name not in whitelist) or \
+            (len(blacklist) > 0 and unit_name in blacklist):
+            continue
 
         try:
             # Step 2: Instrument the mutable version
