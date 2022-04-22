@@ -4,3 +4,4 @@ from .parser_cutest import *
 from .resutls_parser import *
 from .test_results import *
 from .test_summary import *
+from .results_parser_factory import *

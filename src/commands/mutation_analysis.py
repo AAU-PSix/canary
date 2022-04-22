@@ -18,14 +18,8 @@ from application import (
 )
 from cfa import CCFAFactory
 from decorators import LocationDecorator
-from mutator import ObomStrategy
-from src.mutator.mutation_strategy_factory import MutationStrategyFactory
-from src.test_results_parsing import resutls_parser
-from src.test_results_parsing.results_parser_factory import ResultsParserFactory
-from test_results_parsing import (
-    FfsGnuAssertResultsParser,
-    CuTestResultsParser
-)
+from mutator import MutationStrategyFactory
+from test_results_parsing import ResultsParserFactory
 from ts import (
     Parser,
     LanguageLibrary,
