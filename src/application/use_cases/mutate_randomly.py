@@ -1,7 +1,8 @@
+from typing import List
 from mutator import MutationStrategy
 from test_results_parsing import ResultsParser
 from ts import Tree, Parser, Node
-from .run_mutation_test import RunMutationTestRequest, RunMutationTestUseCase
+from .run_mutation_test import RunMutationTestRequest, RunMutationTestResponse, RunMutationTestUseCase
 from .run_test import RunTestRequest
 from .parse_test_result import ParseTestResultRequest
 from .use_case import UseCaseRequest, UseCaseResponse, UseCase
@@ -73,17 +74,36 @@ class MutateRandomlyRequest(UseCaseRequest):
         return self._base
 
 class MutateRandomlyResponse(UseCaseResponse):
-    def __init__(self) -> None:
-        self.amount_killed = 0
-        self.amount_survived = 0
+    def __init__(
+        self,
+        amount_killed: int,
+        amount_survived: int,
+        mutation_tests: List[RunMutationTestResponse],
+    ) -> None:
+        self._amount_killed = amount_killed
+        self._amount_survived = amount_survived
+        self._mutation_tests = mutation_tests
         super().__init__()
+
+    @property
+    def amount_killed(self) -> int:
+        return self._amount_killed
+
+    @property
+    def amount_survived(self) -> int:
+        return self._amount_survived
+
+    @property
+    def mutation_tests(self) -> List[RunMutationTestResponse]:
+        return self._mutation_tests
 
 class MutateRandomlyUseCase(
     UseCase[MutateRandomlyRequest, MutateRandomlyResponse]
 ):
     def do(self, request: MutateRandomlyRequest) -> MutateRandomlyResponse:
-        response = MutateRandomlyResponse()
-        
+        amount_killed = 0
+        amount_survived = 0
+        mutation_tests: List[RunMutationTestResponse] = list()
         candidates = request.strategy.capture(
             request.node
         )
@@ -110,11 +130,15 @@ class MutateRandomlyUseCase(
                 run_mutation_test_response = RunMutationTestUseCase().do(
                     run_mutation_test_request
                 )
+                mutation_tests.append(run_mutation_test_response)
 
                 summary = run_mutation_test_response.test_results.summary
                 if summary.failure_count > 0:
-                    response.amount_killed += 1
-                else: response.amount_survived += 1
+                    amount_killed += 1
+                else: amount_survived += 1
         
-        print(f'{response.amount_killed} killed and {response.amount_survived} survived')
-        return response
+        return MutateRandomlyResponse(
+            amount_killed,
+            amount_survived,
+            mutation_tests
+        )

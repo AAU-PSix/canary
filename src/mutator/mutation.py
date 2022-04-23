@@ -12,8 +12,16 @@ class Mutation(ABC):
         self._tree = tree
         self._node = node
 
+    @property
+    def node(self) -> Node:
+        return self._node
+
     @abstractmethod
     def apply(self) -> Tree:
+        pass
+
+    @abstractmethod
+    def __str__(self) -> str:
         pass
 
 class ReplacementMutation(Mutation):
@@ -33,3 +41,6 @@ class ReplacementMutation(Mutation):
             self._node,
             self._replacement
         )
+
+    def __str__(self) -> str:
+        return f"'{self._tree.contents_of(self._node)}' --> '{self._replacement}'"

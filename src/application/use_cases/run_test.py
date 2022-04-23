@@ -34,7 +34,7 @@ class RunTestUseCase(
     def do(self, request: RunTestRequest) -> RunTestResponse:
         # If the stdout is a string, then create the output file
         if isinstance(request.out, str):
-            test_output = open(request.out, 'w')
+            test_output = open(request.out, 'w+')
         else: test_output = request.out
 
         runner = RunSubsystemUseCase()

@@ -12,7 +12,6 @@ from .create_cfg import *
 from .create_symbol_table import *
 from .parse_file import *
 from .unit_analyse_tree import *
-from .mutate_along_trace import *
 from .mutate_along_all_traces import *
 from .mutate_randomly import *
 from .mutate_all_candidates import *

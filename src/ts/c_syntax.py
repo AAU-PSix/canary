@@ -287,6 +287,21 @@ class CSyntax(Syntax):
         return self.is_field_of_type(
             node, CNodeType.WHILE_STATEMENT, CField.CONDITION
         )
+        
+    def is_condition_of_for(self, node: Node) -> bool:
+        return self.is_field_of_type(
+            node, CNodeType.FOR_STATEMENT, CField.CONDITION
+        )
+
+    def is_initialisation_of_for(self, node: Node) -> bool:
+        return self.is_field_of_type(
+            node, CNodeType.FOR_STATEMENT, CField.INITIALIZER
+        )
+
+    def is_update_of_for(self, node: Node) -> bool:
+        return self.is_field_of_type(
+            node, CNodeType.FOR_STATEMENT, CField.UPDATE
+        )
 
     def is_condition_of_do_while(self, node: Node) -> bool:
         return self.is_field_of_type(

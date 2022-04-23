@@ -1,6 +1,6 @@
-from os import remove
 from mutator import Mutation
 from test_results_parsing import TestResults
+from ts import Node
 from .use_case import UseCaseRequest, UseCaseResponse, UseCase
 from .run_test import RunTestRequest, RunTestUseCase
 from .parse_test_result import ParseTestResultRequest, ParseTestResultUseCase
@@ -36,9 +36,24 @@ class RunMutationTestRequest(UseCaseRequest):
         return self._parse_test_results_request
 
 class RunMutationTestResponse(UseCaseResponse):
-    def __init__(self, test_results: TestResults) -> None:
+    def __init__(
+        self,
+        candidate: Node,
+        mutation: Mutation,
+        test_results: TestResults
+    ) -> None:
+        self._candidate = candidate
         self._test_results = test_results
+        self._mutation = mutation
         super().__init__()
+
+    @property
+    def candidate(self) -> Node:
+        return self._candidate
+
+    @property
+    def mutation(self) -> Mutation:
+        return self._mutation
 
     @property
     def test_results(self) -> TestResults:
@@ -67,5 +82,7 @@ class RunMutationTestUseCase(
         )
 
         return RunMutationTestResponse(
-            parse_test_results_response.test_results
+            request.mutation.node,
+            request.mutation,
+            parse_test_results_response.test_results,
         )

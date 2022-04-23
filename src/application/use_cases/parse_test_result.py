@@ -1,4 +1,5 @@
 from os import linesep, remove
+from time import sleep
 from test_results_parsing import (
     TestResults,
     CuTestResultsParser,
@@ -40,11 +41,12 @@ class ParseTestResultUseCase(
     UseCase[ParseTestResultRequest, ParseTestResultResponse]
 ):  
     def do(self, request: ParseTestResultRequest) -> ParseTestResultResponse:
-        file = open(request.file_path, "r")
+        file = open(request.file_path, "r", errors="replace")
         contents: str = file.read()
         lines = contents.split(linesep)
         test_results = request.parser.parse(lines)
 
+        sleep(0.001)
         remove(request.file_path)
 
         return ParseTestResultResponse(test_results)
