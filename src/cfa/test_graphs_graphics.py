@@ -810,6 +810,13 @@ class TestGraphsGraphics(TestCase):
                 a=2;
                 """
              ),
+             ("if_report_example",
+             """
+                if (a < 2) {
+                    b = 0;
+                } else {
+                    b = 1;
+                }"""),
             ("program_5", """
              void foo() {
                  int a = 0;
