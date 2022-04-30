@@ -51,14 +51,14 @@ class ObomStrategy(MutationStrategy):
         if self._syntax.in_types(node.type, self._syntax.arithmetic_operators):
             replacement_types.extend(self._syntax.bitwise_operators)
             replacement_types.extend(self._syntax.logical_operators)
-            replacement_types.extend(self._syntax.relational_opearators)
+            replacement_types.extend(self._syntax.relational_operators)
             replacement_types.extend(self._syntax.shift_operators)
 
         # Domain: Bitwise operator
         if self._syntax.in_types(node.type, self._syntax.bitwise_operators):
             replacement_types.extend(self._syntax.arithmetic_operators)
             replacement_types.extend(self._syntax.logical_operators)
-            replacement_types.extend(self._syntax.relational_opearators)
+            replacement_types.extend(self._syntax.relational_operators)
             replacement_types.extend(self._syntax.shift_operators)
 
         # Domain: Bitwise assignment
@@ -77,12 +77,12 @@ class ObomStrategy(MutationStrategy):
         if self._syntax.in_types(node.type, self._syntax.logical_operators):
             replacement_types.extend(self._syntax.arithmetic_operators)
             replacement_types.extend(self._syntax.bitwise_operators)
-            replacement_types.extend(self._syntax.relational_opearators)
+            replacement_types.extend(self._syntax.relational_operators)
             replacement_types.extend(self._syntax.shift_operators)
             replacement_types.extend(self._syntax.logical_operators)
 
         # Domain: Relational operator
-        if self._syntax.in_types(node.type, self._syntax.relational_opearators):
+        if self._syntax.in_types(node.type, self._syntax.relational_operators):
             replacement_types.extend(self._syntax.arithmetic_operators)
             replacement_types.extend(self._syntax.bitwise_operators)
             replacement_types.extend(self._syntax.logical_operators)
@@ -98,7 +98,7 @@ class ObomStrategy(MutationStrategy):
         if self._syntax.in_types(node.type, self._syntax.shift_operators):
             replacement_types.extend(self._syntax.arithmetic_operators)
             replacement_types.extend(self._syntax.bitwise_operators)
-            replacement_types.extend(self._syntax.relational_opearators)
+            replacement_types.extend(self._syntax.relational_operators)
 
         mutations: List[Mutation] = list()
         for type in replacement_types:
@@ -152,7 +152,7 @@ class ObomStrategy(MutationStrategy):
                         # OALN: a {+,-,*,/,%} b -> a {&&,||} b
                         self._syntax.logical_operators,
                         # OARN: a {+,-,*,/,%} b -> a {>,>=,<,<=,==,!=} b
-                        self._syntax.relational_opearators,
+                        self._syntax.relational_operators,
                         # OASN: a {+,-,*,/,%} b -> a {<<,>>} b
                         self._syntax.shift_operators,
                     ],
@@ -168,7 +168,7 @@ class ObomStrategy(MutationStrategy):
                         # OBLN: a {|,&,^} b -> a {&&,||} b
                         self._syntax.logical_operators,
                         # OBRN: a {|,&,^} b -> a {>,>=,<,<=,==,!=} b
-                        self._syntax.relational_opearators,
+                        self._syntax.relational_operators,
                         # OBSN: a {|,&,^} b -> a {<<,>>} b
                         self._syntax.shift_operators,
                     ],
@@ -212,7 +212,7 @@ class ObomStrategy(MutationStrategy):
                         # OLBN: a {&&,||} b -> a {|,&,^} b
                         self._syntax.bitwise_operators,
                         # OLRN: a {&&,||} b -> a {>,>=,<,<=,==,!=} b
-                        self._syntax.relational_opearators,
+                        self._syntax.relational_operators,
                         # OLSN: a {&&,||} b -> a {<<,>>} b
                         self._syntax.shift_operators,
                         # OSLN: a {<<,>>}= b -> a {&&,||} b
@@ -222,7 +222,7 @@ class ObomStrategy(MutationStrategy):
                 )
 
             # Domain: Relational operator
-            if self._syntax.in_types(node.type, self._syntax.relational_opearators):
+            if self._syntax.in_types(node.type, self._syntax.relational_operators):
                 return self.random_operator_range(
                     [
                         # ORAN: a {>,>=,<,<=,==,!=} b -> a {+,-,*,/,%} b
@@ -260,7 +260,7 @@ class ObomStrategy(MutationStrategy):
                         # OSBN: a {<<,>>} b -> a {|,&,^} b
                         self._syntax.bitwise_operators,
                         # OSRN: a {<<,>>} b -> a {>,>=,<,<=,==,!=} b
-                        self._syntax.relational_opearators,
+                        self._syntax.relational_operators,
                     ],
                     rnd_range, rnd_operator
                 )

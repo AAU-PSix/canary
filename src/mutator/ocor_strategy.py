@@ -116,11 +116,11 @@ class OcorStrategy(MutationStrategy):
                 )
 
             # Domain: Relational
-            if self._syntax.in_types(node.type, self._syntax.relational_opearators):
+            if self._syntax.in_types(node.type, self._syntax.relational_operators):
                 return self.random_operator_range(
                     [
                         # ORRN: a {>,>=,<,<=,==,!=} b -> a {>,>=,<,<=,==,!=} b
-                        self._syntax.relational_opearators,
+                        self._syntax.relational_operators,
                     ],
                     rnd_range, rnd_operator
                 )   

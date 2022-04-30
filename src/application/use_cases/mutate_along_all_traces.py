@@ -237,7 +237,7 @@ class MutateAlongAllTracesUseCase(
             for mutation_test in mutate_randomly_response.mutation_tests:
                 for location in mutation_test.test_results.trace.sequence:
                     if location.id not in amount_visited_locations:
-                        amount_visited_locations[location.id] = 0
+                        amount_visited_locations[location.id] = 1
                     else: amount_visited_locations[location.id] += 1
 
             random_mutations_runs.append((visited_node, mutate_randomly_response))
@@ -245,6 +245,11 @@ class MutateAlongAllTracesUseCase(
             amount_survived += mutate_randomly_response.amount_survived
             visited_node.amount_killed = mutate_randomly_response.amount_killed
             visited_node.amount_survived = mutate_randomly_response.amount_survived
+
+        trace_count = 0
+        for non_split_trace in request.traces:
+            traces = request.localised_cfg.split_on_finals(non_split_trace)
+            trace_count += len(traces)
 
         return MutateAlongAllTracesResponse(
             visited_locations,
@@ -259,5 +264,5 @@ class MutateAlongAllTracesUseCase(
             visited_candidates,
             visited_mutations,
             amount_visited_locations,
-            len(request.traces)
+            trace_count
         )

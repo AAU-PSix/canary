@@ -147,7 +147,7 @@ class TestMutatorObom(unittest.TestCase):
                 # OALN
                 self._language.syntax.logical_operators,
                 # OARN
-                self._language.syntax.relational_opearators,
+                self._language.syntax.relational_operators,
                 # OASN
                 self._language.syntax.shift_operators,
             ]
@@ -163,7 +163,7 @@ class TestMutatorObom(unittest.TestCase):
                 # OBLN
                 self._language.syntax.logical_operators,
                 # OBRN
-                self._language.syntax.relational_opearators,
+                self._language.syntax.relational_operators,
                 # OBSN
                 self._language.syntax.shift_operators,
             ]
@@ -207,7 +207,7 @@ class TestMutatorObom(unittest.TestCase):
                 # OLBN
                 self._language.syntax.bitwise_operators,
                 # OLRN
-                self._language.syntax.relational_opearators,
+                self._language.syntax.relational_operators,
                 # OLSN
                 self._language.syntax.shift_operators,
                 # OSLN
@@ -217,7 +217,7 @@ class TestMutatorObom(unittest.TestCase):
         self.assert_domain_and_ranges(self._binary_expression_query, domain, range_checks)
 
     def test_obom_oran_orbn_orln_orsn(self) -> None:
-        domain: List[str] = self._language.syntax.relational_opearators
+        domain: List[str] = self._language.syntax.relational_operators
         range_checks = self.create_range_checks(
             [
                 # ORAN
@@ -255,7 +255,7 @@ class TestMutatorObom(unittest.TestCase):
                 # OSBN
                 self._language.syntax.bitwise_operators,
                 # OSRN
-                self._language.syntax.relational_opearators,
+                self._language.syntax.relational_operators,
             ]
         )
         self.assert_domain_and_ranges(self._binary_expression_query, domain, range_checks)

@@ -92,7 +92,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root)
 
-        expected = "CANARY_TWEET_LOCATION(0);while(a) {CANARY_TWEET_LOCATION(1); CANARY_TWEET_LOCATION(0);}CANARY_TWEET_LOCATION(2);"
+        expected = "CANARY_TWEET_LOCATION(0);while(a) {CANARY_TWEET_LOCATION(1); }CANARY_TWEET_LOCATION(2);"
         actual = self._infestator.infect(tree, cfa).text
         nests = self._infestator.nests(cfa)
 
@@ -300,7 +300,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root)
 
-        expected =  "CANARY_TWEET_LOCATION(0);do {CANARY_TWEET_LOCATION(1); CANARY_TWEET_LOCATION(0);} while(a);CANARY_TWEET_LOCATION(2);"
+        expected =  "CANARY_TWEET_LOCATION(0);do {CANARY_TWEET_LOCATION(1); } while(a);CANARY_TWEET_LOCATION(2);"
         actual = self._infestator.infect(tree, cfa).text
         nests = self._infestator.nests(cfa)
 
@@ -349,7 +349,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root)
 
-        expected =  "CANARY_TWEET_LOCATION(0);for (;;) {CANARY_TWEET_LOCATION(1); CANARY_TWEET_LOCATION(0);}CANARY_TWEET_LOCATION(2);"
+        expected =  "CANARY_TWEET_LOCATION(0);for (;;) {CANARY_TWEET_LOCATION(1); }CANARY_TWEET_LOCATION(2);"
         
         actual = self._infestator.infect(tree, cfa).text
         nests = self._infestator.nests(cfa)
@@ -362,7 +362,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root)
 
-        expected =  "CANARY_TWEET_LOCATION(0);for(int i = 0;;) {CANARY_TWEET_LOCATION(1); CANARY_TWEET_LOCATION(0);}CANARY_TWEET_LOCATION(2); a=3;"
+        expected =  "CANARY_TWEET_LOCATION(0);for(int i = 0;;) {CANARY_TWEET_LOCATION(1); }CANARY_TWEET_LOCATION(2); a=3;"
         actual = self._infestator.infect(tree, cfa).text
         nests = self._infestator.nests(cfa)
 
@@ -374,7 +374,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root)
 
-        expected =  "CANARY_TWEET_LOCATION(0);for(int i = 0; i<5; ++i) {CANARY_TWEET_LOCATION(1); a=2; CANARY_TWEET_LOCATION(0);}CANARY_TWEET_LOCATION(2); a=3;"
+        expected =  "CANARY_TWEET_LOCATION(0);for(int i = 0; i<5; ++i) {CANARY_TWEET_LOCATION(1); a=2; }CANARY_TWEET_LOCATION(2); a=3;"
         actual = self._infestator.infect(tree, cfa).text
         nests = self._infestator.nests(cfa)
 
@@ -386,7 +386,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root)
 
-        expected =  "CANARY_TWEET_LOCATION(0);for(;;){CANARY_TWEET_LOCATION(1);;CANARY_TWEET_LOCATION(0);}CANARY_TWEET_LOCATION(2); a=3;"
+        expected =  "CANARY_TWEET_LOCATION(0);for(;;){CANARY_TWEET_LOCATION(1);;}CANARY_TWEET_LOCATION(2); a=3;"
         actual = self._infestator.infect(tree, cfa).text
         nests = self._infestator.nests(cfa)
 
@@ -398,7 +398,7 @@ class TestTreeInfestator(unittest.TestCase):
         tree: Tree = self._parser.parse(program)
         cfa: CFA[CFANode] = CCFAFactory(tree).create(tree.root)
 
-        expected =  "CANARY_TWEET_LOCATION(0);for(;;) {CANARY_TWEET_LOCATION(3); if(a) {CANARY_TWEET_LOCATION(2); a = 1; }CANARY_TWEET_LOCATION(1); CANARY_TWEET_LOCATION(2);}CANARY_TWEET_LOCATION(4);"
+        expected =  "CANARY_TWEET_LOCATION(0);for(;;) {CANARY_TWEET_LOCATION(3); if(a) {CANARY_TWEET_LOCATION(2); a = 1; }CANARY_TWEET_LOCATION(1); }CANARY_TWEET_LOCATION(4);"
         actual = self._infestator.infect(tree, cfa).text
         nests = self._infestator.nests(cfa)
 

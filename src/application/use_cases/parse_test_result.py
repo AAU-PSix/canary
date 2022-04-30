@@ -46,7 +46,6 @@ class ParseTestResultUseCase(
         lines = contents.split(linesep)
         test_results = request.parser.parse(lines)
 
-        sleep(0.001)
         remove(request.file_path)
 
         return ParseTestResultResponse(test_results)

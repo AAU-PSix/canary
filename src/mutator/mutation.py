@@ -17,7 +17,7 @@ class Mutation(ABC):
         return self._node
 
     @abstractmethod
-    def apply(self) -> Tree:
+    def apply(self, encoding: str = "utf8") -> Tree:
         pass
 
     @abstractmethod
@@ -35,11 +35,37 @@ class ReplacementMutation(Mutation):
         self._replacement = replacement
         super().__init__(parser, tree, node)
 
-    def apply(self) -> Tree:
+    def apply(self, encoding: str = "utf8") -> Tree:
         return self._parser.replace(
             self._tree,
             self._node,
-            self._replacement
+            self._replacement,
+            encoding
+        )
+
+    def __str__(self) -> str:
+        return f"'{self._tree.contents_of(self._node)}' --> '{self._replacement}'"
+
+class WrappedMutation(Mutation):
+    def __init__(
+        self,
+        parser: Parser,
+        tree: Tree,
+        node: Node,
+        prefix: str,
+        postfix: str,
+    ) -> None:
+        self._prefix = prefix
+        self._postfix = postfix
+        super().__init__(parser, tree, node)
+        self._replacement = f'{prefix}{self._tree.contents_of(self._node)}{postfix}'
+
+    def apply(self, encoding: str = "utf8") -> Tree:
+        return self._parser.replace(
+            self._tree,
+            self._node,
+            self._replacement,
+            encoding
         )
 
     def __str__(self) -> str:

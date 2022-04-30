@@ -174,26 +174,18 @@ class CTreeInfestator(TreeInfestator):
 
     def infection_spore_while_statement(self, while_stmt: Node) -> List[TreeInfection]:
         body: Node = while_stmt.child_by_field(CField.BODY)
-        previous_location = self._canary_factory.previous_location
         infections: List[TreeInfection] = self._canary_factory.create_location_tweets(
             body,
             pre_infix=self._canary_factory.create_location_tweet(),
-            post_infix=self._canary_factory.create_location_tweet(
-                location=previous_location
-            ),
             postfix=self._canary_factory.create_location_tweet()
         )
         return infections
 
     def infection_spore_do_statement(self, do_stmt: Node) -> List[TreeInfection]:
-        previous_location = self._canary_factory.previous_location
         body: Node = do_stmt.child_by_field(CField.BODY)
         infections: List[TreeInfection] = self._canary_factory.create_location_tweets(
             body,
             pre_infix=self._canary_factory.create_location_tweet(),
-            post_infix=self._canary_factory.create_location_tweet(
-                location=previous_location
-            ),
         )
         infections.append(
             self._canary_factory.append_location_tweet(do_stmt)
@@ -205,13 +197,9 @@ class CTreeInfestator(TreeInfestator):
         # If it is a expression statement then the body is just a ";"
         #   I.e. for(int i = 0; i < 10; ++i);
         #   I.e. for(int i = 0; i < 10; ++i) {TWEET();;TWEET()}
-        previous_location = self._canary_factory.previous_location
         return self._canary_factory.create_location_tweets(
             body,
             pre_infix=self._canary_factory.create_location_tweet(),
-            post_infix=self._canary_factory.create_location_tweet(
-                location=previous_location
-            ),
             postfix=self._canary_factory.create_location_tweet(),
         )
 

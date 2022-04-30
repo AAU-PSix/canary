@@ -176,11 +176,11 @@ class TestMutatorOcor(unittest.TestCase):
         self.assert_domain_and_ranges(self._binary_expression_query, domain, range_checks)
 
     def test_ocor_ranges_orrn(self) -> None:
-        domain: List[str] = self._language.syntax.relational_opearators
+        domain: List[str] = self._language.syntax.relational_operators
         range_checks = self.create_range_checks(
             [
                 # ORRN
-                self._language.syntax.relational_opearators,
+                self._language.syntax.relational_operators,
             ]
         )
         self.assert_domain_and_ranges(self._binary_expression_query, domain, range_checks)

@@ -34,6 +34,8 @@ class CNodeType(NodeType):
     PLAIN_ASSIGNMENT = "="
     ARITHMETIC_ADDITION = "+"
     ARITHMETIC_SUBTRACTION = "-"
+    ARITHMETIC_ADDITION_ADDITION = "++"
+    ARITHMETIC_SUBTRACTION_SUBTRACTION = "--"
     ARITHMETIC_MULTIPLICATION = "*"
     ARITHMETIC_DIVISION = "/"
     ARITHMETIC_MODULO = "%"
@@ -50,6 +52,7 @@ class CNodeType(NodeType):
     RELATIONAL_GREATER_THAN_OR_EQUAL = ">="
     RELATIONAL_EQUAL = "=="
     RELATIONAL_NOT_EQUAL = "!="
+    Logical_NOT = "!"
     ARITHMETIC_COMPOUND_ADDITION = "+="
     ARITHMETIC_COMPOUND_SUBTRACTION = "-="
     ARITHMETIC_COMPOUND_MULTIPLICATION = "*="
@@ -64,6 +67,7 @@ class CNodeType(NodeType):
     IDENTIFIER = "identifier"
     # Types
     PRIMITIVE_TYPE = "primitive_type"
+    SIZED_TYPE_SPECIFIER = "sized_type_specifier"
     STRUCT_SPECIFIER = "struct_specifier"
     UNION_SPECIFIER = "union_specifier"
     # Constructs
@@ -95,12 +99,22 @@ class CNodeType(NodeType):
     PREPROC_DEF = "preproc_def"
     CASE_STATEMENT = "case_statement"
     PARENTHESIZED_EXPRESSION = "parenthesized_expression"
+    UNARY_EXPRESSION = "unary_expression"
+    BINARY_EXPRESSION = "binary_expression"
+    NUMBER_LITERAL = "number_literal"
+    UPDATE_EXPRESSION = "update_expression"
 
 class CSyntax(Syntax):
     @property
     def plain_assignment(self) -> Iterable[CNodeType]:
         return [
             CNodeType.PLAIN_ASSIGNMENT,
+        ]
+
+    @property
+    def logical_unary_operators(self) -> Iterable[CNodeType]:
+        return [
+            CNodeType.Logical_NOT
         ]
 
     @property
@@ -111,6 +125,20 @@ class CSyntax(Syntax):
             CNodeType.ARITHMETIC_MULTIPLICATION,
             CNodeType.ARITHMETIC_DIVISION,
             CNodeType.ARITHMETIC_MODULO,
+        ]
+
+    @property
+    def arithmetic_unary_operators(self) -> Iterable[CNodeType]:
+        return [
+            CNodeType.ARITHMETIC_ADDITION,
+            CNodeType.ARITHMETIC_SUBTRACTION,
+        ]
+
+    @property
+    def update_expression_operators(self) -> Iterable[CNodeType]:
+        return [
+            CNodeType.ARITHMETIC_ADDITION_ADDITION,
+            CNodeType.ARITHMETIC_SUBTRACTION_SUBTRACTION,
         ]
 
     @property
@@ -136,7 +164,7 @@ class CSyntax(Syntax):
         ]
 
     @property
-    def relational_opearators(self) -> Iterable[CNodeType]:
+    def relational_operators(self) -> Iterable[CNodeType]:
         return [
             CNodeType.RELATIONAL_GREATER_THAN,
             CNodeType.RELATIONAL_GREATER_THAN_OR_EQUAL,
@@ -195,6 +223,18 @@ class CSyntax(Syntax):
         return '((binary_expression) @exp)' + self.assignment_query
 
     @property
+    def unary_expression_query(self) -> str:
+        return '((unary_expression) @exp)'
+
+    @property
+    def update_expression_query(self) -> str:
+        return '((update_expression) @exp)'
+
+    @property
+    def number_literal_query(self) -> str:
+        return '((number_literal) @num)'
+
+    @property
     def function_declaration_query(self) -> str:
         return "((function_definition) @def)"
 
@@ -205,6 +245,10 @@ class CSyntax(Syntax):
     @property
     def if_statement_query(self) -> str:
         return '(if_statement) @if'
+
+    @property
+    def declaration_query(self) -> str:
+        return '(declaration) @declaration'
 
     def get_binary_expression_operator(self, node: Node) -> Node:
         return node.children[1]
@@ -225,6 +269,7 @@ class CSyntax(Syntax):
         current = definition \
             .child_by_field(CField.DECLARATOR) \
             .child_by_field(CField.DECLARATOR)
+        if current is None: return None
         while True:
             next = current.child_by_field(CField.DECLARATOR)
             if next is None: break

@@ -1,3 +1,4 @@
+from typing import Dict
 from mutator import Mutation
 from test_results_parsing import TestResults
 from ts import Node
@@ -58,6 +59,15 @@ class RunMutationTestResponse(UseCaseResponse):
     @property
     def test_results(self) -> TestResults:
         return self._test_results
+    
+    @property
+    def location_visitations(self) -> Dict[str, int]:
+        visitations: Dict[str, int] = dict()
+        for location in self.test_results.trace.sequence:
+            if location.id not in visitations:
+                visitations[location.id] = 0
+            else: visitations[location.id] += 1
+        return visitations
 
 class RunMutationTestUseCase(
     UseCase[RunMutationTestRequest, RunMutationTestResponse]
